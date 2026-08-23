@@ -26,6 +26,15 @@ targets:
       CODE_SIGN_STYLE: Automatic
       DEVELOPMENT_TEAM: ""
       GENERATE_INFOPLIST_FILE: YES
+    infoPlist:
+      UISupportedInterfaceOrientations:
+        - UIInterfaceOrientationPortrait
+        - UIInterfaceOrientationPortraitUpsideDown
+        - UIInterfaceOrientationLandscapeLeft
+        - UIInterfaceOrientationLandscapeRight
+      UILaunchScreen:
+        UIColorName: ""
+        UIImageName: ""
 
 schemes:
   initiative:
