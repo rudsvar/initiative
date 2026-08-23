@@ -100,7 +100,10 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 - Combatants auto-sort by initiative (descending; ties maintain insertion order)
 
 **Combatant Display**
-- List shows: name, initiative number, HP/AC (when set — exact in DM view,
+- Initiative number is its own large, bold, far-left column (not a small
+  caption tucked under the name) — it's the value the whole list is sorted
+  by, so it reads as the primary at-a-glance number, not incidental detail
+- List shows: name, HP/AC (when set — exact in DM view,
   approximate bands in player view, see §12), and a wrapping row of small
   chips for active statuses (reaction used + active effects) — each status
   gets its own darker rounded box (`StatusChip`, `ContentView.swift`) with
@@ -235,42 +238,44 @@ project's standing "no copyrighted ruleset content" constraint.
 **Main Screen (Combat View)**
 ```
 ┌─────────────────────────────────┐
-│ ← Menu                     Add  │  (toolbar)
-│      [Session Name] (centered)  │  (body, not toolbar — true screen center)
-│         Round N (centered)      │
+│  ←     [Session Name / Round N]  Add │  (toolbar, all centered .principal)
 ├─────────────────────────────────┤
 │                                 │
-│  [P1: Initiative 20]            │
-│  [P2: Initiative 18] (current)  │  (list, sorted, swipe to remove)
-│  [P3: Initiative 15]            │
+│  20  [P1: Alice]                │
+│  18  [P2: Bob] (current)        │  (list, sorted, swipe to remove;
+│  15  [P3: Carol]                │   big initiative number, far left)
 │                                 │
 ├─────────────────────────────────┤
-│  [← Previous] [Log][eye] [Next →]│  (bottom bar)
+│  [← Previous] [eye][Log] [Next →]│  (bottom bar)
 └─────────────────────────────────┘
 ```
 
 **Toolbar**
-- **Menu** (leading): returns to the main menu, autosaves first
+- **Back** (leading): icon-only (`chevron.left`, no "Menu" text) — returns to
+  the main menu, autosaves first. Icon-only deliberately: it makes this item
+  the same width as the trailing icon-only Add button, which is what lets
+  `.principal` center correctly (see below)
+- **Session name + Round N** (`.principal`, true center now): a two-line
+  stack — editable name field above, plain round counter below, neither a
+  button. Works reliably in `.principal` now specifically *because* the
+  leading/trailing items are both single icons of equal width — back when
+  leading was "Menu" (icon+text) vs trailing icon-only "Add", the mismatch
+  visibly skewed `.principal` off the true screen center, which is why this
+  content lived in the screen body for a while instead; that workaround is
+  no longer needed
 - **Add** (trailing): opens the add-combatant modal (`AddCombatantSheet`) —
   replaced an earlier top-of-list inline row and, before that, a bottom-of-list
   placeholder row; both approaches turned out to want a dedicated modal (fiddly
   small fields / accidental taps), so this is now the sole entry point
 
-**Body (above the list)**
-- **Session name**: editable text field, centered to the true phone-screen
-  center (not the toolbar's `.principal` slot — see §7 for why), blank input
-  ignored
-- **Round N**: plain centered text below the name, not a button, not in the
-  toolbar
-
 **Bottom bar**
 - **Previous Turn** (left): Reverts to the previous turn's full state (turn
   index, reactions, effects, and log entries — see §9); disabled when there's
   no prior turn to return to
-- **Log** (center, icon-only): opens a read-only feed of what's happened in
-  combat (§9)
-- **Eye icon** (center, next to Log, small): the sole DM/player-view toggle
+- **Eye icon** (center, left of Log, small): the sole DM/player-view toggle
   (§12) — deliberately here rather than in the toolbar, see §7
+- **Log** (center, right of the eye icon, icon-only): opens a read-only feed
+  of what's happened in combat (§9)
 - **Next Turn** (right): Advance to next combatant, reset current's reaction
   to available
 - On iOS 26+, this whole bar uses Liquid Glass (`GlassEffectContainer`,
@@ -338,22 +343,21 @@ struct CombatSession {
 **No explicit save.** There's no "Save Session" button or naming dialog — every combat
 session is automatically saved under its own stable identity as you play. A session's
 name is auto-generated from when it was created (e.g. "Session — Aug 23, 2026 1:45 PM"),
-and is editable at any time — tap the name, centered at the top of the combat
-screen (`SelectAllTextField`, which selects all existing text on focus so
+and is editable at any time — tap the name, in the toolbar's `.principal`
+slot (`SelectAllTextField`, which selects all existing text on focus so
 typing immediately replaces it), type a new one; blank/whitespace-only input
-is ignored rather than leaving the session unnamed. Lives in the screen body
-(`.frame(maxWidth: .infinity, alignment: .center)`), not the nav bar's
-`.principal` toolbar slot — that slot centers relative to leading/trailing
-button widths, not the true phone-screen center, and visibly skews once
-leading ("Menu", icon+text) and trailing ("Add", icon-only) have unequal
-widths. Tried putting it back in `.principal` once already (after the eye
-icon moved out of the toolbar) and it was still off — a body-level row is
-the only fix that reliably lands on the true center regardless of toolbar
-contents, same approach used for the bottom bar's Log button.
+is ignored rather than leaving the session unnamed. This went through a
+couple of iterations: `.principal` centers relative to leading/trailing
+button widths, not the true phone-screen center, so it visibly skewed while
+the leading button was "Menu" (icon+text) against a trailing icon-only "Add"
+— moved to the screen body as a workaround for a while, then back to
+`.principal` once the leading button became icon-only too (see §6), which
+made both flanking items equal width and let `.principal` center correctly.
 
-**Round counter**: shown centered below the session name ("Round N"), starts at 1 and
-increments each time turn order wraps back to the first combatant. Reverts correctly
-via "Previous Turn" and resets to 1 on "New Session".
+**Round counter**: shown directly below the session name in that same
+`.principal` stack, starts at 1 and increments each time turn order wraps
+back to the first combatant. Reverts correctly via "Previous Turn" and
+resets to 1 on "New Session".
 
 **Main Menu** (app launch / navigating back)
 - **Resume**: loads whichever session was last active, if one still exists on disk —

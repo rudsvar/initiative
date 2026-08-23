@@ -21,28 +21,6 @@ struct ContentView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Deliberately in the body, not the toolbar's .principal slot: nav
-                // bar principal-item centering is relative to leading/trailing
-                // button widths, not the true screen center — with a leading "Menu"
-                // (icon+text) and a trailing "Add" (icon-only) of unequal width,
-                // that visibly skews it off the true phone-screen center. A
-                // body-level .frame(maxWidth: .infinity) row is reliably centered
-                // regardless of toolbar contents (same fix used for the bottom
-                // bar's Log button).
-                SelectAllTextField(text: nameBinding, placeholder: "Session Name")
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .frame(height: 22)
-                    .padding(.top, 8)
-
-                Text("Round \(session.roundNumber)")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(Theme.accent)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.top, 4)
-                    .padding(.bottom, 4)
-                    .allowsHitTesting(false)
-
                 List {
                     ForEach(session.sortedCombatants) { combatant in
                         CombatantRow(
@@ -87,18 +65,18 @@ struct ContentView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
 
                             HStack(spacing: 8) {
-                                Button(action: { showLog = true }) {
-                                    Image(systemName: "list.bullet.clipboard")
-                                        .font(.system(size: 16, weight: .semibold))
-                                }
-                                .buttonStyle(.glass)
-
                                 Button(action: { session.playerViewEnabled.toggle() }) {
                                     Image(systemName: session.playerViewEnabled ? "eye.slash.fill" : "eye.fill")
                                         .font(.system(size: 13, weight: .semibold))
                                 }
                                 .buttonStyle(.glass)
                                 .accessibilityLabel(session.playerViewEnabled ? "Showing approximate status (player view)" : "Showing exact status (DM view)")
+
+                                Button(action: { showLog = true }) {
+                                    Image(systemName: "list.bullet.clipboard")
+                                        .font(.system(size: 16, weight: .semibold))
+                                }
+                                .buttonStyle(.glass)
                             }
                             .frame(maxWidth: .infinity, alignment: .center)
 
@@ -130,18 +108,18 @@ struct ContentView: View {
                         .frame(maxWidth: .infinity, alignment: .leading)
 
                         HStack(spacing: 8) {
-                            Button(action: { showLog = true }) {
-                                Image(systemName: "list.bullet.clipboard")
-                                    .font(.system(size: 16, weight: .semibold))
-                            }
-                            .foregroundColor(Theme.accent)
-
                             Button(action: { session.playerViewEnabled.toggle() }) {
                                 Image(systemName: session.playerViewEnabled ? "eye.slash.fill" : "eye.fill")
                                     .font(.system(size: 13, weight: .semibold))
                             }
                             .foregroundColor(Theme.accent)
                             .accessibilityLabel(session.playerViewEnabled ? "Showing approximate status (player view)" : "Showing exact status (DM view)")
+
+                            Button(action: { showLog = true }) {
+                                Image(systemName: "list.bullet.clipboard")
+                                    .font(.system(size: 16, weight: .semibold))
+                            }
+                            .foregroundColor(Theme.accent)
                         }
                         .frame(maxWidth: .infinity, alignment: .center)
 
@@ -166,12 +144,28 @@ struct ContentView: View {
         .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .navigationBarLeading) {
+                // Icon-only (no "Menu" text): saves space and, just as importantly,
+                // makes this item the same width as the trailing Add button below —
+                // .principal centers relative to leading/trailing button widths, not
+                // the true screen center, so two single-icon buttons of equal width
+                // is what lets the session name/round below land dead center.
                 Button(action: backToMenu) {
-                    HStack(spacing: 4) {
-                        Image(systemName: "chevron.left")
-                        Text("Menu")
-                    }
+                    Image(systemName: "chevron.left")
                 }
+                .accessibilityLabel("Back to Menu")
+            }
+
+            ToolbarItem(placement: .principal) {
+                VStack(spacing: 2) {
+                    SelectAllTextField(text: nameBinding, placeholder: "Session Name")
+                        .frame(height: 20)
+                    Text("Round \(session.roundNumber)")
+                        .font(.caption)
+                        .fontWeight(.semibold)
+                        .foregroundColor(Theme.accent)
+                        .allowsHitTesting(false)
+                }
+                .frame(width: 200)
             }
 
             ToolbarItem(placement: .navigationBarTrailing) {
@@ -230,6 +224,13 @@ struct CombatantRow: View {
     let isCurrent: Bool
     let playerViewEnabled: Bool
 
+    // Measured explicitly rather than letting FlowLayout infer width from List's
+    // row-sizing proposal: List can query a custom Layout's sizeThatFits with a
+    // different (looser) width proposal than the one actually used to render the
+    // row, which under-measures the wrapped height and clips the last row of
+    // chips. Pinning FlowLayout to a known, stable width sidesteps the mismatch.
+    @State private var rowWidth: CGFloat = 0
+
     private var hasStatusRow: Bool {
         combatant.currentHP != nil || combatant.armorClass != nil
     }
@@ -261,6 +262,15 @@ struct CombatantRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 12) {
+                // Big and on the far left, its own column — not a small caption
+                // tucked under the name — so it reads immediately as the value the
+                // list is actually sorted by, not just incidental info about the
+                // combatant.
+                Text("\(combatant.initiative)")
+                    .font(.system(size: 26, weight: .bold, design: .rounded))
+                    .foregroundColor(Theme.accent)
+                    .frame(width: 40, alignment: .center)
+
                 VStack(alignment: .leading, spacing: 4) {
                     HStack(spacing: 6) {
                         Text(combatant.name)
@@ -277,11 +287,6 @@ struct CombatantRow: View {
                                 .clipShape(Circle())
                         }
                     }
-
-                    Text("Init \(combatant.initiative)")
-                        .font(.caption)
-                        .foregroundColor(Theme.accent)
-                        .fontWeight(.semibold)
 
                     if hasStatusRow {
                         HStack(spacing: 8) {
@@ -303,14 +308,22 @@ struct CombatantRow: View {
                     }
                 }
             }
+            .background(
+                GeometryReader { geo in
+                    Color.clear
+                        .onAppear { rowWidth = geo.size.width }
+                        .onChange(of: geo.size.width) { _, newWidth in rowWidth = newWidth }
+                }
+            )
 
             // Glance-at-a-glance list, not the detail screen — but still a short
             // label (e.g. "Stunned") alongside the icon in each chip, not bare
             // symbols alone. Reaction-used is just another status chip among the
             // rest, not a special text callout. Each status gets its own small
             // rounded chip, laid out via FlowLayout so several sit side by side
-            // and wrap to the next line on overflow instead of clipping. Only
-            // shown when there's something active — absence implies "none".
+            // and wrap to the next line on overflow instead of clipping (see
+            // rowWidth doc comment above for why width is pinned explicitly).
+            // Only shown when there's something active — absence implies "none".
             if combatant.reactionUsed || !combatant.visibleEffects.isEmpty {
                 FlowLayout(horizontalSpacing: 6, verticalSpacing: 6) {
                     if combatant.reactionUsed {
@@ -321,6 +334,7 @@ struct CombatantRow: View {
                         StatusChip(symbolName: condition?.symbolName ?? "sparkles", label: effect.name, color: condition?.color ?? Theme.accent)
                     }
                 }
+                .frame(width: rowWidth > 0 ? rowWidth : nil, alignment: .leading)
             }
         }
         .padding(12)
