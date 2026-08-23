@@ -125,6 +125,7 @@ private struct EditEncounterView: View {
                     }
                 }
                 .scrollContentBackground(.hidden)
+                .listRowBackground(Theme.inputBackground)
             }
             .navigationTitle("Edit Encounter")
             .navigationBarTitleDisplayMode(.inline)
@@ -208,6 +209,7 @@ private struct AddEncounterEntryView: View {
                     }
                 }
                 .scrollContentBackground(.hidden)
+                .listRowBackground(Theme.inputBackground)
             }
             .navigationTitle("Add Creature")
             .navigationBarTitleDisplayMode(.inline)

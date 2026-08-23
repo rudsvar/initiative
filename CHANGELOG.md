@@ -4,7 +4,40 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Fixed
+- FlowLayout status chips could still clip with enough statuses to wrap
+  multiple lines — the previous fix (measuring width via a `GeometryReader`
+  background + `@State`) updated a frame too late: `List` self-sizes a row
+  once on first appearance and doesn't re-measure afterward, so the row's
+  committed height stayed based on the pre-measurement (unwrapped) guess.
+  Now computed synchronously from screen width up front, no async
+  measurement involved, so the first layout pass already has the right value
+
 ### Changed
+- Main menu drops the "Combat Tracker" subtitle — just "Initiative" now
+- Combat screen toolbar: the trailing Add button is now a hamburger menu
+  (`line.3.horizontal`) containing the DM/player-view toggle and "Log" —
+  frees the bottom bar's middle slot
+- Bottom bar: Add Combatant moved to the middle slot (`+` icon) where
+  Log/eye used to be; Previous/Next unchanged
+- Combatant list row: removed the arrow icon on the current-turn row — the
+  row's background fill + border now solely indicate whose turn it is
+- Combatant rows now have a visible border always, and a stronger
+  accent-tinted fill + thicker border when it's the current turn (previously
+  just a faint background tint, no border at all otherwise)
+- HP/AC on the combatant list switched from text labels ("14/20 HP", "AC 15")
+  to a heart icon (HP) + shield icon (AC), left-aligned in their own column
+  so the icons line up regardless of digit count
+- Reaction icon changed again, from `arrow.triangle.2.circlepath` to
+  `arrow.uturn.left` — closer to the "half-circle back-and-forth arrow" the
+  user described, still distinct from every `ConditionLibrary` icon
+- Damage/Heal amount field shrunk to fit its content (a short number, ~60pt)
+  instead of stretching to fill the row
+- Added `Theme.inputBackground` — lighter than `Theme.background` — and
+  applied it to every text input across the app (CombatantDetailView's
+  custom bordered fields, and Form-based `Section`s in every Add/Edit sheet)
+  so inputs read as distinct fields instead of matching the page behind them
+  or falling back to a system dark-gray Form row background
 - Every screen now uses `Theme` colors — Encounters, Creatures, Load
   Session, Log, and every Add/Edit sheet were still using system-default
   white `Form`/`List` backgrounds and `.secondary` text, unthemed. Added

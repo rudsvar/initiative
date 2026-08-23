@@ -80,6 +80,7 @@ struct AddCombatantSheet: View {
                     }
                 }
                 .scrollContentBackground(.hidden)
+                .listRowBackground(Theme.inputBackground)
             }
             .navigationTitle("Add Combatant")
             .navigationBarTitleDisplayMode(.inline)

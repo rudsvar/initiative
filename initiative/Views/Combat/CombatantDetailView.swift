@@ -90,7 +90,7 @@ struct CombatantDetailView: View {
                                     .foregroundColor(Theme.textPrimary)
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 8)
-                                    .background(Theme.background)
+                                    .background(Theme.inputBackground)
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 8)
                                             .stroke(Theme.divider, lineWidth: 1)
@@ -108,7 +108,7 @@ struct CombatantDetailView: View {
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 8)
                                     .frame(width: 88)
-                                    .background(Theme.background)
+                                    .background(Theme.inputBackground)
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 8)
                                             .stroke(Theme.divider, lineWidth: 1)
@@ -126,7 +126,7 @@ struct CombatantDetailView: View {
                                     .padding(.horizontal, 12)
                                     .padding(.vertical, 8)
                                     .frame(width: 88)
-                                    .background(Theme.background)
+                                    .background(Theme.inputBackground)
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 8)
                                             .stroke(Theme.divider, lineWidth: 1)
@@ -160,7 +160,7 @@ struct CombatantDetailView: View {
                                                 .padding(.horizontal, 12)
                                                 .padding(.vertical, 8)
                                                 .frame(width: 72)
-                                                .background(Theme.background)
+                                                .background(Theme.inputBackground)
                                                 .overlay(
                                                     RoundedRectangle(cornerRadius: 8)
                                                         .stroke(Theme.divider, lineWidth: 1)
@@ -184,7 +184,7 @@ struct CombatantDetailView: View {
                                                 .padding(.horizontal, 12)
                                                 .padding(.vertical, 8)
                                                 .frame(width: 72)
-                                                .background(Theme.background)
+                                                .background(Theme.inputBackground)
                                                 .overlay(
                                                     RoundedRectangle(cornerRadius: 8)
                                                         .stroke(Theme.divider, lineWidth: 1)
@@ -195,20 +195,18 @@ struct CombatantDetailView: View {
                                     }
 
                                     // Single row: amount field + three equal icon-only
-                                    // buttons (damage/heal/increase-max), instead of the
-                                    // old amount field + two-button row + a separate
-                                    // full-width "Increase Max HP" row below it — that
-                                    // layout felt scattered (buttons "placed a bit
-                                    // everywhere" per feedback); this keeps every action
-                                    // on the amount at a glance in one place.
+                                    // buttons (damage/heal/increase-max) so every action
+                                    // on the amount is at a glance in one place.
                                     HStack(spacing: 10) {
-                                        TextField("Amount", text: $hpAdjustAmount)
+                                        TextField("Amt", text: $hpAdjustAmount)
                                             .keyboardType(.numberPad)
                                             .font(.subheadline)
                                             .fontWeight(.semibold)
-                                            .padding(.horizontal, 12)
+                                            .multilineTextAlignment(.center)
+                                            .padding(.horizontal, 8)
                                             .padding(.vertical, 8)
-                                            .background(Theme.background)
+                                            .frame(width: 60)
+                                            .background(Theme.inputBackground)
                                             .overlay(
                                                 RoundedRectangle(cornerRadius: 8)
                                                     .stroke(Theme.divider, lineWidth: 1)
@@ -380,7 +378,7 @@ struct ReactionToggleView: View {
     var body: some View {
         Button(action: onToggle) {
             HStack(spacing: 12) {
-                Image(systemName: "arrow.triangle.2.circlepath")
+                Image(systemName: "arrow.uturn.left")
                     .font(.system(size: 18))
                     .foregroundColor(isUsed ? Theme.textTertiary : Theme.accent)
                     .frame(width: 22)

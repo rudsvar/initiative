@@ -100,26 +100,32 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 - Combatants auto-sort by initiative (descending; ties maintain insertion order)
 
 **Combatant Display**
-- Row layout uses the full row width rather than stacking everything under
-  the name with empty space on the right: **initiative** is a large bold
+- Row layout uses the full row width: **initiative** is a large bold
   far-left column (it's the value the list is sorted by, so it reads as the
-  primary at-a-glance number, not incidental detail); **name** sits next to
-  it; **HP/AC** (when set) is right-aligned near the current-turn arrow,
-  not crammed into a small caption line under the name
-- List shows: name, HP/AC (when set — exact in DM view,
-  approximate bands in player view, see §12), and a wrapping row of small
-  chips for active statuses (reaction used + active effects) — each status
-  gets its own darker rounded box (`StatusChip`, `ContentView.swift`) with
-  an icon plus a short label (e.g. "Stunned", "Used"), laid out via a custom
-  `FlowLayout` (`Theme.swift`, SwiftUI `Layout` protocol) so several sit side
-  by side and wrap to the next line on overflow rather than clipping. Full
-  effect durations still live only on the combatant detail screen. Row is
-  omitted entirely when nothing's active
-- Reaction-used is just another chip in that row (`arrow.triangle.2.circlepath`,
+  primary at-a-glance number); **name** sits next to it; **HP/AC** (when
+  set) is a right-aligned, icon-led column — a heart icon for HP, a shield
+  icon for AC, left-aligned within that column so the icons themselves line
+  up regardless of digit count (exact numbers in DM view, approximate bands
+  in player view, see §12)
+- No arrow/chevron icon marks the current-turn row — the row's own
+  background fill + accent-colored border (see below) is the sole indicator
+- A wrapping row of small chips shows active statuses (reaction used +
+  active effects) below the name/HP row — each status gets its own darker
+  rounded box (`StatusChip`, `ContentView.swift`) with an icon plus a short
+  label (e.g. "Stunned", "Reaction"), laid out via a custom `FlowLayout`
+  (`Theme.swift`, SwiftUI `Layout` protocol) so several sit side by side and
+  wrap to the next line on overflow. `FlowLayout`'s width is computed
+  synchronously from the screen width (not measured via `GeometryReader` +
+  `@State`) — `List` self-sizes a row once on first appearance, so a width
+  that only becomes known a frame later leaves the row's committed height
+  too short and wrapped chips get clipped. Full effect durations still live
+  only on the combatant detail screen. Row is omitted entirely when nothing's active
+- Reaction-used is just another chip in that row (`arrow.uturn.left`,
   labeled "Reaction"), shown alongside effect condition icons — not visually
   special-cased or called out separately from the rest
 - List is always sorted highest to lowest initiative
-- Current combatant (whose turn it is) is visually emphasized
+- Every row has a visible border; the current-turn row additionally gets an
+  accent-tinted background fill and a thicker accent-colored border
 
 ### 2. Initiative Order & Turn Advancement
 
@@ -149,16 +155,18 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 - Hidden from the user-facing effects list (`Combatant.visibleEffects` filters
   it out) — it has its own dedicated Reaction UI, so showing it a second time
   in "Active Effects" would be redundant
-- Visual indicator: `arrow.triangle.2.circlepath` (a curved back-and-forth
-  arrow — available in accent color, used in muted tertiary color; same
-  glyph both states, just recolored). Deliberately not `bolt.fill`/
-  `bolt.slash.fill` or `hand.tap`/`hand.tap.fill` (earlier choices) — picked
-  something visually distinct from every `ConditionLibrary` icon (see §11)
-  so it's never confused with a status condition. On the combatant detail
+- Visual indicator: `arrow.uturn.left` (a half-circle back-turning arrow —
+  available in accent color, used in muted tertiary color; same glyph both
+  states, just recolored). Went through a few earlier choices (`bolt.fill`/
+  `bolt.slash.fill`, `hand.tap`/`hand.tap.fill`, `arrow.triangle.2.circlepath`)
+  before landing here — needed something visually distinct from every
+  `ConditionLibrary` icon (see §11) so it's never confused with a status
+  condition, and closer to the "arrow that goes back and forth in a half
+  circle" shape than the earlier full-circle option. On the combatant detail
   screen's toggle it shows both states; on the main list it's just one more
-  status chip (see §1), shown only when
-  used, not shown at all when available, matching how effects only show when
-  active rather than placeholders for every possible one
+  status chip (see §1), shown only when used, not shown at all when
+  available, matching how effects only show when active rather than
+  placeholders for every possible one
 
 ### 4. Temporary Effects
 
@@ -241,49 +249,47 @@ project's standing "no copyrighted ruleset content" constraint.
 **Main Screen (Combat View)**
 ```
 ┌─────────────────────────────────┐
-│  ←     [Session Name / Round N]  Add │  (toolbar, all centered .principal)
+│  ←   [Session Name / Round N]  ☰│  (toolbar, all centered .principal)
 ├─────────────────────────────────┤
 │                                 │
 │  20  [P1: Alice]                │
-│  18  [P2: Bob] (current)        │  (list, sorted, swipe to remove;
+│  18  [P2: Bob] (current, filled)│  (list, sorted, swipe to remove;
 │  15  [P3: Carol]                │   big initiative number, far left)
 │                                 │
 ├─────────────────────────────────┤
-│  [← Previous] [eye][Log] [Next →]│  (bottom bar)
+│  [← Previous]   [+]   [Next →]  │  (bottom bar)
 └─────────────────────────────────┘
 ```
 
 **Toolbar**
 - **Back** (leading): icon-only (`chevron.left`, no "Menu" text) — returns to
   the main menu, autosaves first. Icon-only deliberately: it makes this item
-  the same width as the trailing icon-only Add button, which is what lets
-  `.principal` center correctly (see below)
-- **Session name + Round N** (`.principal`, true center now): a two-line
-  stack — editable name field above, plain round counter below, neither a
-  button. Works reliably in `.principal` now specifically *because* the
-  leading/trailing items are both single icons of equal width — back when
-  leading was "Menu" (icon+text) vs trailing icon-only "Add", the mismatch
-  visibly skewed `.principal` off the true screen center, which is why this
-  content lived in the screen body for a while instead; that workaround is
-  no longer needed
-- **Add** (trailing): opens the add-combatant modal (`AddCombatantSheet`) —
-  replaced an earlier top-of-list inline row and, before that, a bottom-of-list
-  placeholder row; both approaches turned out to want a dedicated modal (fiddly
-  small fields / accidental taps), so this is now the sole entry point
+  the same width as the trailing icon-only hamburger button, which is what
+  lets `.principal` center correctly (see below)
+- **Session name + Round N** (`.principal`, true center): a two-line stack —
+  editable name field above, plain round counter below, neither a button.
+  Works reliably in `.principal` specifically *because* the leading/trailing
+  items are both single icons of equal width
+- **Hamburger menu** (trailing, `line.3.horizontal`): opens a dropdown with
+  "Show Player/DM View" (the DM/player-view toggle, §12) and "Log" (§9) —
+  consolidates two lower-frequency actions that used to sit in the bottom
+  bar, freeing that bar's middle slot for the Add-combatant button
 
 **Bottom bar**
 - **Previous Turn** (left): Reverts to the previous turn's full state (turn
   index, reactions, effects, and log entries — see §9); disabled when there's
   no prior turn to return to
-- **Eye icon** (center, left of Log, small): the sole DM/player-view toggle
-  (§12) — deliberately here rather than in the toolbar, see §7
-- **Log** (center, right of the eye icon, icon-only): opens a read-only feed
-  of what's happened in combat (§9)
+- **Add Combatant** (center, `+` icon): opens the add-combatant modal
+  (`AddCombatantSheet`) — replaced an earlier top-of-list inline row, a
+  bottom-of-list placeholder row, and later a top-right toolbar button; all
+  turned out to want a dedicated modal (fiddly small fields / accidental
+  taps) reachable from a natural thumb position, so this bottom-center slot
+  is now the entry point
 - **Next Turn** (right): Advance to next combatant, reset current's reaction
   to available
 - On iOS 26+, this whole bar uses Liquid Glass (`GlassEffectContainer`,
   `.glassProminent` on Next Turn as the primary action, `.glass` on Previous
-  Turn and Log) — it's the one floating control bar in the app, the natural
+  Turn and Add) — it's the one floating control bar in the app, the natural
   fit per Apple's glass guidance (see `<agent-config>/skills/ios-hig/SKILL.md`).
   Falls back to the existing themed bar below iOS 26. No other button in the
   app uses glass — see that skill for the full reasoning on which buttons
@@ -351,11 +357,12 @@ slot (`SelectAllTextField`, which selects all existing text on focus so
 typing immediately replaces it), type a new one; blank/whitespace-only input
 is ignored rather than leaving the session unnamed. This went through a
 couple of iterations: `.principal` centers relative to leading/trailing
-button widths, not the true phone-screen center, so it visibly skewed while
-the leading button was "Menu" (icon+text) against a trailing icon-only "Add"
-— moved to the screen body as a workaround for a while, then back to
-`.principal` once the leading button became icon-only too (see §6), which
-made both flanking items equal width and let `.principal` center correctly.
+button widths, not the true phone-screen center, so it visibly skewed
+whenever the two flanking toolbar items had unequal width — moved to the
+screen body as a workaround for a while, then back to `.principal` once
+both the leading (back arrow) and trailing (hamburger) items settled on
+being single icons of equal width (see §6), which lets `.principal` center
+correctly.
 
 **Round counter**: shown directly below the session name in that same
 `.principal` stack, starts at 1 and increments each time turn order wraps
@@ -520,12 +527,12 @@ per-combatant notes — all considered and declined on direct instruction.
 
 ### 12. DM / Player View
 
-A single small eye-icon toggle (`CombatSession.playerViewEnabled`, not
-persisted — always starts in DM view on load/resume) controls whether HP/AC
-show exact numbers or an approximate read, for when the DM's screen is
-visible to players. There is exactly one control for it, in the bottom bar
-next to the Log button — not duplicated per-screen — so it's unambiguous
-which state you're in no matter which screen you're looking at.
+A single toggle (`CombatSession.playerViewEnabled`, not persisted — always
+starts in DM view on load/resume) controls whether HP/AC show exact numbers
+or an approximate read, for when the DM's screen is visible to players.
+There is exactly one control for it, in the toolbar's hamburger menu (§6) —
+not duplicated per-screen — so it's unambiguous which state you're in no
+matter which screen you're looking at.
 
 - **Main combatant list**: shows HP/AC (when set) right under initiative —
   exact numbers ("14/20 HP", "AC 15") in DM view, the same approximate bands

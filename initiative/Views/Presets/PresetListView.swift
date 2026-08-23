@@ -126,6 +126,7 @@ private struct EditPresetView: View {
                     }
                 }
                 .scrollContentBackground(.hidden)
+                .listRowBackground(Theme.inputBackground)
             }
             .navigationTitle(preset.name.isEmpty ? "New Creature" : "Edit Creature")
             .navigationBarTitleDisplayMode(.inline)

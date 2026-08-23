@@ -64,20 +64,12 @@ struct ContentView: View {
                             .disabled(!session.canGoToPreviousTurn)
                             .frame(maxWidth: .infinity, alignment: .leading)
 
-                            HStack(spacing: 8) {
-                                Button(action: { session.playerViewEnabled.toggle() }) {
-                                    Image(systemName: session.playerViewEnabled ? "eye.slash.fill" : "eye.fill")
-                                        .font(.system(size: 13, weight: .semibold))
-                                }
-                                .buttonStyle(.glass)
-                                .accessibilityLabel(session.playerViewEnabled ? "Showing approximate status (player view)" : "Showing exact status (DM view)")
-
-                                Button(action: { showLog = true }) {
-                                    Image(systemName: "list.bullet.clipboard")
-                                        .font(.system(size: 16, weight: .semibold))
-                                }
-                                .buttonStyle(.glass)
+                            Button(action: { showAddCombatant = true }) {
+                                Image(systemName: "plus")
+                                    .font(.system(size: 18, weight: .semibold))
                             }
+                            .buttonStyle(.glass)
+                            .accessibilityLabel("Add Combatant")
                             .frame(maxWidth: .infinity, alignment: .center)
 
                             Button(action: { session.nextTurn() }) {
@@ -107,20 +99,12 @@ struct ContentView: View {
                         .disabled(!session.canGoToPreviousTurn)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
-                        HStack(spacing: 8) {
-                            Button(action: { session.playerViewEnabled.toggle() }) {
-                                Image(systemName: session.playerViewEnabled ? "eye.slash.fill" : "eye.fill")
-                                    .font(.system(size: 13, weight: .semibold))
-                            }
-                            .foregroundColor(Theme.accent)
-                            .accessibilityLabel(session.playerViewEnabled ? "Showing approximate status (player view)" : "Showing exact status (DM view)")
-
-                            Button(action: { showLog = true }) {
-                                Image(systemName: "list.bullet.clipboard")
-                                    .font(.system(size: 16, weight: .semibold))
-                            }
-                            .foregroundColor(Theme.accent)
+                        Button(action: { showAddCombatant = true }) {
+                            Image(systemName: "plus")
+                                .font(.system(size: 18, weight: .semibold))
                         }
+                        .foregroundColor(Theme.accent)
+                        .accessibilityLabel("Add Combatant")
                         .frame(maxWidth: .infinity, alignment: .center)
 
                         Button(action: { session.nextTurn() }) {
@@ -143,12 +127,10 @@ struct ContentView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .toolbar {
+            // Icon-only (no "Menu" text): keeps this item the same width as the
+            // trailing hamburger button below, which is what lets .principal
+            // center the session name/round on the true screen center.
             ToolbarItem(placement: .navigationBarLeading) {
-                // Icon-only (no "Menu" text): saves space and, just as importantly,
-                // makes this item the same width as the trailing Add button below —
-                // .principal centers relative to leading/trailing button widths, not
-                // the true screen center, so two single-icon buttons of equal width
-                // is what lets the session name/round below land dead center.
                 Button(action: backToMenu) {
                     Image(systemName: "chevron.left")
                 }
@@ -169,10 +151,24 @@ struct ContentView: View {
             }
 
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: { showAddCombatant = true }) {
-                    Image(systemName: "plus")
+                Menu {
+                    Button {
+                        session.playerViewEnabled.toggle()
+                    } label: {
+                        Label(
+                            session.playerViewEnabled ? "Show DM View" : "Show Player View",
+                            systemImage: session.playerViewEnabled ? "eye.slash.fill" : "eye.fill"
+                        )
+                    }
+                    Button {
+                        showLog = true
+                    } label: {
+                        Label("Log", systemImage: "list.bullet.clipboard")
+                    }
+                } label: {
+                    Image(systemName: "line.3.horizontal")
                 }
-                .accessibilityLabel("Add Combatant")
+                .accessibilityLabel("Options")
             }
         }
         .onDisappear { autosave() }
@@ -224,38 +220,47 @@ struct CombatantRow: View {
     let isCurrent: Bool
     let playerViewEnabled: Bool
 
-    // Measured explicitly rather than letting FlowLayout infer width from List's
-    // row-sizing proposal: List can query a custom Layout's sizeThatFits with a
-    // different (looser) width proposal than the one actually used to render the
-    // row, which under-measures the wrapped height and clips the last row of
-    // chips. Pinning FlowLayout to a known, stable width sidesteps the mismatch.
-    @State private var rowWidth: CGFloat = 0
-
-    private var hasStatusRow: Bool {
-        combatant.currentHP != nil || combatant.armorClass != nil
+    // Computed synchronously (not via GeometryReader + @State) so FlowLayout gets
+    // a correct width on the very first layout pass. List rows are self-sizing
+    // once, on first appearance — if the true width only became known a frame
+    // later (as with a GeometryReader background), List had already committed a
+    // too-short row height and never re-measured, clipping wrapped chip rows.
+    // Screen width minus the row's own fixed insets is deterministic up front.
+    private var rowWidth: CGFloat {
+        UIScreen.main.bounds.width - 40 // 16 listRowInsets + 24 row padding
     }
 
     @ViewBuilder
-    private var healthText: some View {
+    private var healthRow: some View {
         if let current = combatant.currentHP, let max = combatant.maxHP {
-            if playerViewEnabled {
-                let band = StatusBand.health(current: current, max: max)
-                Text(band.label).foregroundColor(band.color)
-            } else {
-                Text("\(current)/\(max) HP").foregroundColor(Theme.textSecondary)
+            let (text, color): (String, Color) = playerViewEnabled
+                ? {
+                    let band = StatusBand.health(current: current, max: max)
+                    return (band.label, band.color)
+                }()
+                : ("\(current)/\(max)", Theme.textSecondary)
+            HStack(spacing: 4) {
+                Image(systemName: "heart.fill").font(.caption2)
+                Text(text)
             }
+            .foregroundColor(color)
         }
     }
 
     @ViewBuilder
-    private var armorClassText: some View {
+    private var armorClassRow: some View {
         if let ac = combatant.armorClass {
-            if playerViewEnabled {
-                let band = StatusBand.armorClass(ac)
-                Text(band.label).foregroundColor(band.color)
-            } else {
-                Text("AC \(ac)").foregroundColor(Theme.textSecondary)
+            let (text, color): (String, Color) = playerViewEnabled
+                ? {
+                    let band = StatusBand.armorClass(ac)
+                    return (band.label, band.color)
+                }()
+                : ("\(ac)", Theme.textSecondary)
+            HStack(spacing: 4) {
+                Image(systemName: "shield.fill").font(.caption2)
+                Text(text)
             }
+            .foregroundColor(color)
         }
     }
 
@@ -289,54 +294,39 @@ struct CombatantRow: View {
 
                 Spacer()
 
-                // Right-aligned rather than crammed into a caption line under the
-                // name — puts the row's spare width (between name and the
-                // current-turn arrow) to use instead of leaving it empty.
-                if hasStatusRow {
-                    VStack(alignment: .trailing, spacing: 2) {
-                        healthText
-                        armorClassText
-                    }
-                    .font(.caption)
+                // Icon-led (heart/shield) instead of text labels ("14/20 HP"), and
+                // left-aligned within their own column so the icons themselves
+                // line up vertically regardless of how many digits each value has.
+                VStack(alignment: .leading, spacing: 2) {
+                    healthRow
+                    armorClassRow
                 }
-
-                if isCurrent {
-                    Image(systemName: "arrow.right.circle.fill")
-                        .font(.system(size: 20))
-                        .foregroundColor(Theme.accent)
-                }
+                .font(.caption)
             }
-            .background(
-                GeometryReader { geo in
-                    Color.clear
-                        .onAppear { rowWidth = geo.size.width }
-                        .onChange(of: geo.size.width) { _, newWidth in rowWidth = newWidth }
-                }
-            )
 
-            // Glance-at-a-glance list, not the detail screen — but still a short
-            // label (e.g. "Stunned") alongside the icon in each chip, not bare
-            // symbols alone. Reaction-used is just another status chip among the
-            // rest, not a special text callout. Each status gets its own small
-            // rounded chip, laid out via FlowLayout so several sit side by side
-            // and wrap to the next line on overflow instead of clipping (see
-            // rowWidth doc comment above for why width is pinned explicitly).
-            // Only shown when there's something active — absence implies "none".
+            // Glance-at-a-glance list, not the detail screen — a short label (e.g.
+            // "Stunned") alongside the icon in each chip, not bare symbols alone.
+            // Reaction-used is just another status chip among the rest. FlowLayout
+            // wraps to the next line on overflow instead of clipping.
             if combatant.reactionUsed || !combatant.visibleEffects.isEmpty {
                 FlowLayout(horizontalSpacing: 6, verticalSpacing: 6) {
                     if combatant.reactionUsed {
-                        StatusChip(symbolName: "arrow.triangle.2.circlepath", label: "Reaction", color: Theme.textTertiary)
+                        StatusChip(symbolName: "arrow.uturn.left", label: "Reaction", color: Theme.textTertiary)
                     }
                     ForEach(combatant.visibleEffects) { effect in
                         let condition = ConditionLibrary.matching(name: effect.name)
                         StatusChip(symbolName: condition?.symbolName ?? "sparkles", label: effect.name, color: condition?.color ?? Theme.accent)
                     }
                 }
-                .frame(width: rowWidth > 0 ? rowWidth : nil, alignment: .leading)
+                .frame(width: rowWidth, alignment: .leading)
             }
         }
         .padding(12)
-        .background(isCurrent ? Theme.divider.opacity(0.3) : Color.clear)
+        .background(isCurrent ? Theme.accent.opacity(0.22) : Theme.background)
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .stroke(isCurrent ? Theme.accent : Theme.divider, lineWidth: isCurrent ? 2 : 1)
+        )
         .cornerRadius(8)
         .opacity(combatant.isDead ? 0.55 : 1)
     }

@@ -53,6 +53,7 @@ struct AddEffectView: View {
                     }
                 }
                 .scrollContentBackground(.hidden)
+                .listRowBackground(Theme.inputBackground)
             }
             .navigationTitle("Add Effect")
             .navigationBarTitleDisplayMode(.inline)

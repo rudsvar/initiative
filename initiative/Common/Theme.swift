@@ -13,6 +13,9 @@ enum Theme {
     static let textSecondary = Color(red: 0.78, green: 0.70, blue: 0.60)
     static let textTertiary = Color(red: 0.60, green: 0.52, blue: 0.44)
     static let divider = Color(red: 0.40, green: 0.30, blue: 0.24)
+    // Lighter than `background` so text inputs read as distinct fields instead
+    // of a flat dark hole matching the page behind them.
+    static let inputBackground = Color(red: 0.33, green: 0.24, blue: 0.19)
 
     // Semantic status colors (health/armor bands, etc.) — warm-toned to sit
     // comfortably against the dark brown background instead of clashing

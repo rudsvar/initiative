@@ -26,16 +26,11 @@ struct MainMenuView: View {
             GeometryReader { proxy in
                 ScrollView {
                     VStack(spacing: 32) {
-                        VStack(spacing: 4) {
-                            Text("Initiative")
-                                .font(.system(.largeTitle, design: .serif))
-                                .fontWeight(.bold)
-                                .foregroundColor(Theme.textPrimary)
-                            Text("Combat Tracker")
-                                .font(.subheadline)
-                                .foregroundColor(Theme.textTertiary)
-                        }
-                        .multilineTextAlignment(.center)
+                        Text("Initiative")
+                            .font(.system(.largeTitle, design: .serif))
+                            .fontWeight(.bold)
+                            .foregroundColor(Theme.textPrimary)
+                            .multilineTextAlignment(.center)
 
                         VStack(spacing: 16) {
                             if canResume {
