@@ -101,15 +101,17 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 
 **Combatant Display**
 - List shows: name, initiative number, HP/AC (when set — exact in DM view,
-  approximate bands in player view, see §12), and a row of **symbols only**
-  for active statuses (reaction used + active effects) — no text names here,
-  that's reserved for the combatant detail screen (tap in to see full names/
-  durations). Row is omitted entirely when nothing's active
-- Reaction-used is just another symbol in that row (the red "R" `LetterBadge`,
-  `Theme.swift`), shown alongside effect condition icons — not visually
-  special-cased or called out with its own text label the way it used to be
-- Symbol row only shown when something's active — available/no-effects is
-  the default, implied by absence
+  approximate bands in player view, see §12), and a wrapping row of small
+  chips for active statuses (reaction used + active effects) — each status
+  gets its own darker rounded box (`StatusChip`, `ContentView.swift`) with
+  an icon plus a short label (e.g. "Stunned", "Used"), laid out via a custom
+  `FlowLayout` (`Theme.swift`, SwiftUI `Layout` protocol) so several sit side
+  by side and wrap to the next line on overflow rather than clipping. Full
+  effect durations still live only on the combatant detail screen. Row is
+  omitted entirely when nothing's active
+- Reaction-used is just another chip in that row (`hand.tap`, labeled
+  "Used"), shown alongside effect condition icons — not visually
+  special-cased or called out separately from the rest
 - List is always sorted highest to lowest initiative
 - Current combatant (whose turn it is) is visually emphasized
 
@@ -141,10 +143,14 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 - Hidden from the user-facing effects list (`Combatant.visibleEffects` filters
   it out) — it has its own dedicated Reaction UI, so showing it a second time
   in "Active Effects" would be redundant
-- Visual indicator on the list is a custom red "R" `LetterBadge`, shown only
-  when used — not shown at all when available, matching how the effects list
-  only shows active effects rather than placeholders for every possible one
-  (see §1's "Combatant Display" note)
+- Visual indicator: an SF Symbol — `hand.tap.fill` when available / `hand.tap`
+  (outline) when used. Deliberately not `bolt.fill`/`bolt.slash.fill`: those
+  are already used by the Paralyzed/Incapacitated standard conditions (see
+  §11), and reaction needs its own distinct icon so it's never confused with
+  either. On the combatant detail screen's toggle it shows both states; on
+  the main list it's just one more status chip (see §1), shown only when
+  used, not shown at all when available, matching how effects only show when
+  active rather than placeholders for every possible one
 
 ### 4. Temporary Effects
 

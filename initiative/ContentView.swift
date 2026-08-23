@@ -304,33 +304,53 @@ struct CombatantRow: View {
                 }
             }
 
-            // Symbols only here — this is the glance-at-a-glance list, not the
-            // detail screen. Reaction-used is just another status icon among the
-            // rest, not a special text callout; the "R" LetterBadge is its symbol.
-            // Only shown when there's something active — absence implies "none",
-            // same convention as before.
+            // Glance-at-a-glance list, not the detail screen — but still a short
+            // label (e.g. "Stunned") alongside the icon in each chip, not bare
+            // symbols alone. Reaction-used is just another status chip among the
+            // rest, not a special text callout. Each status gets its own small
+            // rounded chip, laid out via FlowLayout so several sit side by side
+            // and wrap to the next line on overflow instead of clipping. Only
+            // shown when there's something active — absence implies "none".
             if combatant.reactionUsed || !combatant.visibleEffects.isEmpty {
-                HStack(spacing: 8) {
+                FlowLayout(horizontalSpacing: 6, verticalSpacing: 6) {
                     if combatant.reactionUsed {
-                        LetterBadge(letter: "R", isOn: false, size: 18)
+                        StatusChip(symbolName: "hand.tap", label: "Used", color: Theme.textTertiary)
                     }
                     ForEach(combatant.visibleEffects) { effect in
                         let condition = ConditionLibrary.matching(name: effect.name)
-                        Image(systemName: condition?.symbolName ?? "sparkles")
-                            .font(.system(size: 14))
-                            .foregroundColor(condition?.color ?? Theme.accent)
+                        StatusChip(symbolName: condition?.symbolName ?? "sparkles", label: effect.name, color: condition?.color ?? Theme.accent)
                     }
                 }
-                .padding(.horizontal, 8)
-                .padding(.vertical, 6)
-                .background(Theme.divider.opacity(0.3))
-                .cornerRadius(4)
             }
         }
         .padding(12)
         .background(isCurrent ? Theme.divider.opacity(0.3) : Color.clear)
         .cornerRadius(8)
         .opacity(combatant.isDead ? 0.55 : 1)
+    }
+}
+
+/// A single status symbol in its own small rounded, darker box — used for both
+/// reaction-used and effect condition icons in the combatant list, laid out via
+/// FlowLayout so several can sit side by side and wrap instead of clipping.
+private struct StatusChip: View {
+    let symbolName: String
+    let label: String
+    let color: Color
+
+    var body: some View {
+        HStack(spacing: 4) {
+            Image(systemName: symbolName)
+                .font(.system(size: 12))
+            Text(label)
+                .font(.caption2)
+                .fontWeight(.semibold)
+        }
+        .foregroundColor(color)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 5)
+        .background(Theme.divider.opacity(0.4))
+        .cornerRadius(6)
     }
 }
 

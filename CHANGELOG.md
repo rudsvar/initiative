@@ -5,6 +5,15 @@ All notable changes to this project are documented here, newest first.
 ## [Unreleased]
 
 ### Changed
+- Combatant list's status row reworked into wrapping chips: each active
+  status (reaction used, each effect) now gets its own small darker rounded
+  box with an icon + short label (e.g. "Stunned", "Used"), laid out via a
+  new `FlowLayout` (`Theme.swift`) that wraps to the next line on overflow
+  instead of clipping. Replaces the earlier bare-icons-in-a-row version and
+  the `LetterBadge` component (removed, now unused)
+- Reaction's icon changed from the custom "R" `LetterBadge` to SF Symbols
+  `hand.tap.fill`/`hand.tap` — deliberately not `bolt.fill`/`bolt.slash.fill`,
+  which are already used by the Paralyzed/Incapacitated standard conditions
 - Combat Log now reads chronologically (oldest round/entry first, like a
   chat log) instead of newest-first, and opens scrolled to the bottom
   (most recent entry) via `ScrollViewReader` — that's almost always what
