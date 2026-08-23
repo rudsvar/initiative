@@ -18,9 +18,9 @@ targets:
     sources:
       - path: initiative
         includes:
-          - "*.swift"
+          - "**/*.swift"
         excludes:
-          - "*Tests.swift"
+          - "**/*Tests.swift"
     resources:
       - path: initiative/Assets.xcassets
     settings:
@@ -44,7 +44,7 @@ targets:
     sources:
       - path: initiative
         includes:
-          - "*Tests.swift"
+          - "**/*Tests.swift"
     dependencies:
       - target: initiative
     settings:

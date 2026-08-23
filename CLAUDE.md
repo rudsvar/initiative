@@ -19,7 +19,7 @@ open initiative.xcodeproj
 - First run prompts for Apple ID code signing
 
 **Add new Swift file**
-XcodeGen automatically discovers all `.swift` files in the `initiative/` directory. Add a new `.swift` file there, then regenerate the project:
+XcodeGen automatically discovers all `.swift` files under `initiative/`, recursively (see Project structure below for where things live). Add a new `.swift` file in the appropriate subfolder, then regenerate the project:
 ```bash
 xcodegen generate
 ```
@@ -35,24 +35,41 @@ Open the Canvas (⌥⌘↩) to see live previews while editing.
 
 ## Project structure
 
+Grouped by feature/layer, not flat — `project.yml`'s source glob is
+`initiative/**/*.swift` (recursive), so XcodeGen picks up any subfolder
+automatically; just put a new file in the right group and regenerate.
+
 ```
 initiative/
-├── initiativeApp.swift        # @main entry point, defines WindowGroup scene
-├── ContentView.swift          # Main root view
-├── Assets.xcassets/           # Images, colors, app icon
-project.yml                    # XcodeGen configuration (regenerates .xcodeproj)
-.gitignore                     # Excludes Xcode build artifacts, .DS_Store, etc.
+├── App/              # initiativeApp.swift (@main), RootView.swift (nav root, owns
+│                        the shared CombatSession/SessionStore/PresetStore/EncounterStore)
+├── Models/           # Models.swift (CombatSession, Combatant, Effect, LogEntry, ...) + its tests
+├── Stores/           # SessionStore/PresetStore/EncounterStore (JSON-file persistence) + tests
+├── Views/
+│   ├── Combat/        # ContentView, CombatantDetailView, LogView, AddCombatantSheet, AddEffectView
+│   ├── MainMenu/       # MainMenuView
+│   ├── Presets/        # PresetListView (Main Menu -> Creatures)
+│   ├── Encounters/      # EncounterListView (+ its nested Edit/Add sheets)
+│   └── Sessions/       # SessionListView (Main Menu -> Load Session)
+├── Common/            # Theme.swift (colors, StatusBand, FlowLayout), Conditions.swift,
+│                        SelectAllTextField.swift, ViewExtensions.swift — shared across screens
+├── Assets.xcassets/   # Images, colors, app icon
+project.yml            # XcodeGen configuration (regenerates .xcodeproj)
+.gitignore              # Excludes Xcode build artifacts, .DS_Store, etc.
 ```
 
 ## Architecture
 
-**App entry point** (`initiativeApp.swift`):
+**App entry point** (`App/initiativeApp.swift`):
 - Uses `@main` macro to bootstrap the app
-- Defines a `WindowGroup` scene containing the root view
+- Defines a `WindowGroup` scene containing `RootView`
 
 **View hierarchy**:
-- `ContentView` is the root view
-- Add new screens/views as separate `.swift` files in the `initiative/` directory
+- `RootView` (`App/`) is the navigation root — owns the app's shared state
+  (session, stores) and the `NavigationStack`/`Route` routing
+- `ContentView` (`Views/Combat/`) is the main combat screen
+- Add new screens/views as separate `.swift` files under the matching
+  `Views/<feature>/` subfolder (or a new one, for a new feature area)
 - Use navigation containers (NavigationStack, TabView, etc.) for multi-screen navigation
 
 **Styling & Colors**:
@@ -62,7 +79,7 @@ project.yml                    # XcodeGen configuration (regenerates .xcodeproj)
   system *components* (`Form`/`Section`, `List`, `ContentUnavailableView`,
   native swipe actions/confirmation dialogs) over hand-rolled containers —
   that part hasn't changed — but their *colors* must come from `Theme.swift`
-  (`~/git/initiative/initiative/Theme.swift`), not system defaults. A `Form`/
+  (`~/git/initiative/initiative/Common/Theme.swift`), not system defaults. A `Form`/
   `List` is white by default; pair it with `Theme.background` +
   `.scrollContentBackground(.hidden)` (see `ContentView.swift` for the
   pattern) so it doesn't stand out as unthemed.
@@ -89,11 +106,12 @@ This keeps the project structure reproducible and diffable (the generated `.pbxp
 
 ## Testing
 
-The `initiativeTests` target (XCTest) covers `Models.swift` and `SessionStore.swift` —
-turn order, reaction resets, effect expiration, and session persistence. Add new test
-files ending in `*Tests.swift` in `initiative/`; they're auto-excluded from the app
-target and auto-included in the test target via `project.yml`'s include/exclude globs,
-no manual wiring needed.
+The `initiativeTests` target (XCTest) covers `Models/Models.swift` and the `Stores/`
+files — turn order, reaction resets, effect expiration, and session persistence. Add
+new test files ending in `*Tests.swift` anywhere under `initiative/` (conventionally
+alongside the file they test, e.g. `Stores/PresetStoreTests.swift`); they're
+auto-excluded from the app target and auto-included in the test target via
+`project.yml`'s recursive include/exclude globs, no manual wiring needed.
 
 **Every new piece of testable logic gets a test, and every bug fix gets a regression
 test that fails without the fix and passes with it** — not just "does it build."
