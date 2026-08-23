@@ -29,9 +29,11 @@ struct SessionListView: View {
                                     .font(.caption)
                                     .foregroundColor(Theme.textTertiary)
                             }
-                            .padding(.vertical, 4)
                         }
-                        .listRowBackground(Theme.background)
+                        .cardRowStyle()
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8))
+                        .listRowBackground(Color.clear)
                         .swipeActions(edge: .trailing) {
                             // No extra confirmation dialog here: swipe-to-reveal + tap
                             // Delete is already two deliberate actions.
@@ -44,6 +46,7 @@ struct SessionListView: View {
                         }
                     }
                 }
+                .listStyle(.plain)
                 .scrollContentBackground(.hidden)
             }
         }

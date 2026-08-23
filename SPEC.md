@@ -125,7 +125,11 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
   special-cased or called out separately from the rest
 - List is always sorted highest to lowest initiative
 - Every row has a visible border; the current-turn row additionally gets an
-  accent-tinted background fill and a thicker accent-colored border
+  accent-tinted background fill and a thicker accent-colored border. This
+  card look (`View.cardRowStyle(isHighlighted:)`, `ViewExtensions.swift`) is
+  shared with every other list in the app (Creatures, Encounters, Load
+  Session, New Session) so they all look consistent rather than each screen
+  reimplementing its own row chrome
 
 ### 2. Initiative Order & Turn Advancement
 
@@ -575,12 +579,15 @@ it. `EncounterStore` persists one JSON file per encounter, mirroring `SessionSto
   name/HP/AC/initiative bonus) or typing custom values directly, plus a count
   per entry; swipe to delete an entry or the whole encounter (no extra
   confirmation dialog, matching the pattern used elsewhere)
-- **Starting from one**: Main Menu → **New Session** now opens a chooser
-  (`confirmationDialog`) — "Fresh Session" or any saved encounter by name.
-  Picking an encounter resets the session then calls `addCombatants` once per
-  entry; initiative is always rolled fresh per combatant at start time (never
-  stored in the encounter itself) — an encounter is a creature list, not a
-  frozen turn order
+- **Starting from one**: Main Menu → **New Session** opens a dedicated list
+  screen (`NewSessionView`, `Route.newSessionChooser`) — "Fresh Session" or
+  any saved encounter by name, styled like every other list in the app
+  (`cardRowStyle`). Replaced an earlier `confirmationDialog` action sheet,
+  which looked out of place as the one native-chrome sheet in an otherwise
+  fully custom-themed app. Picking an encounter resets the session then
+  calls `addCombatants` once per entry; initiative is always rolled fresh
+  per combatant at start time (never stored in the encounter itself) — an
+  encounter is a creature list, not a frozen turn order
 
 ## UI/UX Principles
 
@@ -598,7 +605,12 @@ the single source of truth (`Theme.background`, `.accent`, `.textPrimary`,
 health/armor bands and the Damage/Heal/Increase-Max-HP buttons — muted/
 warm-toned versions of red/green/blue rather than raw SwiftUI `.red`/
 `.green`/`.blue`, which read as too saturated against the rest of the
-palette). No screen should fall back to system-default white/black — a `Form`/
+palette; and `.placeholderText`, a lighter warm tan for `TextField`
+placeholders specifically — SwiftUI's plain `TextField("placeholder",
+text:)` always renders its placeholder in a fixed system gray regardless of
+theme, so every placeholder-bearing field uses the `TextField(text:label:)`
+closure form instead, with an explicit `Text("...").foregroundColor(Theme.placeholderText)`
+label). No screen should fall back to system-default white/black — a `Form`/
 `List` is white by default and needs an explicit `Theme.background` +
 `.scrollContentBackground(.hidden)` to pick up the theme (see ContentView for
 the pattern). Native system *components* (`Form`/`Section`, `List`,

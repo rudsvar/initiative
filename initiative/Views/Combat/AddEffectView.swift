@@ -38,7 +38,9 @@ struct AddEffectView: View {
                     }
 
                     Section("Effect Name") {
-                        TextField("e.g., Stunned, Poisoned", text: $effectName)
+                        TextField(text: $effectName) {
+                            Text("e.g., Stunned, Poisoned").foregroundColor(Theme.placeholderText)
+                        }
                     }
 
                     Section("Duration") {

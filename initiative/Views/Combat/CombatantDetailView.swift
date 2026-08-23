@@ -85,7 +85,9 @@ struct CombatantDetailView: View {
                                     .font(.caption)
                                     .fontWeight(.semibold)
                                     .foregroundColor(Theme.textTertiary)
-                                TextField("Name", text: nameBinding)
+                                TextField(text: nameBinding) {
+                                    Text("Name").foregroundColor(Theme.placeholderText)
+                                }
                                     .font(.title2)
                                     .fontWeight(.bold)
                                     .foregroundColor(Theme.textPrimary)
@@ -101,7 +103,9 @@ struct CombatantDetailView: View {
                                     .font(.caption)
                                     .fontWeight(.semibold)
                                     .foregroundColor(Theme.textTertiary)
-                                TextField("Initiative", text: initiativeBinding)
+                                TextField(text: initiativeBinding) {
+                                    Text("Initiative").foregroundColor(Theme.placeholderText)
+                                }
                                     .keyboardType(.numberPad)
                                     .font(.subheadline)
                                     .fontWeight(.semibold)
@@ -119,7 +123,9 @@ struct CombatantDetailView: View {
                                     .font(.caption)
                                     .fontWeight(.semibold)
                                     .foregroundColor(Theme.textTertiary)
-                                TextField("Optional", text: armorClassBinding)
+                                TextField(text: armorClassBinding) {
+                                    Text("Optional").foregroundColor(Theme.placeholderText)
+                                }
                                     .keyboardType(.numberPad)
                                     .font(.subheadline)
                                     .fontWeight(.semibold)
@@ -158,7 +164,9 @@ struct CombatantDetailView: View {
                                                 Text("Current")
                                                     .font(.caption)
                                                     .foregroundColor(Theme.textTertiary)
-                                                TextField("HP", text: currentHPBinding)
+                                                TextField(text: currentHPBinding) {
+                                                    Text("HP").foregroundColor(Theme.placeholderText)
+                                                }
                                                     .keyboardType(.numberPad)
                                                     .font(.title3)
                                                     .fontWeight(.bold)
@@ -178,7 +186,9 @@ struct CombatantDetailView: View {
                                                 Text("Amount")
                                                     .font(.caption)
                                                     .foregroundColor(Theme.textTertiary)
-                                                TextField("Amt", text: $damageHealAmount)
+                                                TextField(text: $damageHealAmount) {
+                                                    Text("Amt").foregroundColor(Theme.placeholderText)
+                                                }
                                                     .keyboardType(.numberPad)
                                                     .font(.subheadline)
                                                     .fontWeight(.semibold)
@@ -215,7 +225,9 @@ struct CombatantDetailView: View {
                                                 Text("Max")
                                                     .font(.caption)
                                                     .foregroundColor(Theme.textTertiary)
-                                                TextField("Max HP", text: maxHPBinding)
+                                                TextField(text: maxHPBinding) {
+                                                    Text("Max HP").foregroundColor(Theme.placeholderText)
+                                                }
                                                     .keyboardType(.numberPad)
                                                     .font(.title3)
                                                     .fontWeight(.bold)
@@ -235,7 +247,9 @@ struct CombatantDetailView: View {
                                                 Text("Amount")
                                                     .font(.caption)
                                                     .foregroundColor(Theme.textTertiary)
-                                                TextField("Amt", text: $maxIncreaseAmount)
+                                                TextField(text: $maxIncreaseAmount) {
+                                                    Text("Amt").foregroundColor(Theme.placeholderText)
+                                                }
                                                     .keyboardType(.numberPad)
                                                     .font(.subheadline)
                                                     .fontWeight(.semibold)
@@ -337,7 +351,9 @@ struct CombatantDetailView: View {
             }
         }
         .alert("Track HP", isPresented: $showEnableHP) {
-            TextField("Max HP", text: $newMaxHPText)
+            TextField(text: $newMaxHPText) {
+                Text("Max HP").foregroundColor(Theme.placeholderText)
+            }
                 .keyboardType(.numberPad)
             Button("Start Tracking") {
                 if let value = Int(newMaxHPText), value > 0 {

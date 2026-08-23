@@ -16,6 +16,11 @@ enum Theme {
     // Lighter than `background` so text inputs read as distinct fields instead
     // of a flat dark hole matching the page behind them.
     static let inputBackground = Color(red: 0.33, green: 0.24, blue: 0.19)
+    // A lighter, warmer tan for placeholder text specifically — SwiftUI's plain
+    // `TextField("placeholder", text:)` always renders its placeholder in a fixed
+    // system gray, ignoring the app theme entirely; the `TextField(text:label:)`
+    // form is needed to override it with this color instead.
+    static let placeholderText = Color(red: 0.72, green: 0.62, blue: 0.52)
 
     // Semantic status colors (health/armor bands, etc.) — warm-toned to sit
     // comfortably against the dark brown background instead of clashing

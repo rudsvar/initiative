@@ -4,10 +4,7 @@ struct MainMenuView: View {
     let session: CombatSession
     let sessionStore: SessionStore
     let presetStore: PresetStore
-    let encounterStore: EncounterStore
     @Binding var path: NavigationPath
-
-    @State private var showNewSessionChooser = false
 
     // Deliberately a stored, explicitly-refreshed @State rather than a computed
     // property: resumableSession() reads UserDefaults/disk, which @Observable
@@ -40,7 +37,7 @@ struct MainMenuView: View {
                             }
 
                             MenuButton(title: "New Session", systemImage: "plus.circle.fill") {
-                                showNewSessionChooser = true
+                                path.append(Route.newSessionChooser)
                             }
 
                             MenuButton(title: "Load Session", systemImage: "folder.fill") {
@@ -64,38 +61,11 @@ struct MainMenuView: View {
         }
         .navigationBarHidden(true)
         .onAppear { canResume = sessionStore.resumableSession() != nil }
-        .confirmationDialog("Start New Session", isPresented: $showNewSessionChooser, titleVisibility: .visible) {
-            Button("Fresh Session") { startFreshSession() }
-            ForEach(encounterStore.listEncounters()) { encounter in
-                Button(encounter.name) { startSession(from: encounter) }
-            }
-            Button("Cancel", role: .cancel) {}
-        }
     }
 
     private func resume() {
         guard let record = sessionStore.resumableSession() else { return }
         session.load(record)
-        path.append(Route.combat)
-    }
-
-    private func startFreshSession() {
-        session.reset()
-        path.append(Route.combat)
-    }
-
-    private func startSession(from encounter: Encounter) {
-        session.reset()
-        for entry in encounter.entries {
-            session.addCombatants(
-                name: entry.name,
-                initiative: nil,
-                maxHP: entry.maxHP,
-                armorClass: entry.armorClass,
-                count: entry.count,
-                initiativeBonus: entry.initiativeBonus ?? 0
-            )
-        }
         path.append(Route.combat)
     }
 }
@@ -128,6 +98,6 @@ private struct MenuButton: View {
 
 #Preview {
     NavigationStack {
-        MainMenuView(session: CombatSession(), sessionStore: SessionStore(), presetStore: PresetStore(), encounterStore: EncounterStore(), path: .constant(NavigationPath()))
+        MainMenuView(session: CombatSession(), sessionStore: SessionStore(), presetStore: PresetStore(), path: .constant(NavigationPath()))
     }
 }

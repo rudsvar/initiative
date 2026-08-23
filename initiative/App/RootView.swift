@@ -5,6 +5,7 @@ enum Route: Hashable {
     case sessionList
     case presetList
     case encounterList
+    case newSessionChooser
 }
 
 /// App-wide navigation root. Owns the single CombatSession, SessionStore,
@@ -23,7 +24,6 @@ struct RootView: View {
                 session: session,
                 sessionStore: sessionStore,
                 presetStore: presetStore,
-                encounterStore: encounterStore,
                 path: $path
             )
             .navigationDestination(for: Route.self) { route in
@@ -36,6 +36,8 @@ struct RootView: View {
                     PresetListView(presetStore: presetStore)
                 case .encounterList:
                     EncounterListView(encounterStore: encounterStore, presetStore: presetStore)
+                case .newSessionChooser:
+                    NewSessionView(session: session, encounterStore: encounterStore, path: $path)
                 }
             }
         }

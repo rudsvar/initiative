@@ -33,9 +33,11 @@ struct EncounterListView: View {
                                     .font(.caption)
                                     .foregroundColor(Theme.textTertiary)
                             }
-                            .padding(.vertical, 4)
                         }
-                        .listRowBackground(Theme.background)
+                        .cardRowStyle()
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8))
+                        .listRowBackground(Color.clear)
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) {
                                 encounterStore.delete(id: encounter.id)
@@ -46,6 +48,7 @@ struct EncounterListView: View {
                         }
                     }
                 }
+                .listStyle(.plain)
                 .scrollContentBackground(.hidden)
             }
         }
@@ -97,7 +100,9 @@ private struct EditEncounterView: View {
                 Theme.background.ignoresSafeArea()
                 Form {
                     Section("Name") {
-                        TextField("Encounter name", text: $encounter.name)
+                        TextField(text: $encounter.name) {
+                            Text("Encounter name").foregroundColor(Theme.placeholderText)
+                        }
                     }
 
                     Section("Creatures") {
@@ -190,21 +195,29 @@ private struct AddEncounterEntryView: View {
                     }
 
                     Section("Name") {
-                        TextField("Combatant name", text: $name)
+                        TextField(text: $name) {
+                            Text("Combatant name").foregroundColor(Theme.placeholderText)
+                        }
                             .onChange(of: name) { _, newValue in
                                 prefillFromPreset(named: newValue)
                             }
                     }
                     Section("Max HP") {
-                        TextField("Optional", text: $hpText)
+                        TextField(text: $hpText) {
+                            Text("Optional").foregroundColor(Theme.placeholderText)
+                        }
                             .keyboardType(.numberPad)
                     }
                     Section("Armor Class") {
-                        TextField("Optional", text: $acText)
+                        TextField(text: $acText) {
+                            Text("Optional").foregroundColor(Theme.placeholderText)
+                        }
                             .keyboardType(.numberPad)
                     }
                     Section("Count") {
-                        TextField("1", text: $countText)
+                        TextField(text: $countText) {
+                            Text("1").foregroundColor(Theme.placeholderText)
+                        }
                             .keyboardType(.numberPad)
                     }
                 }

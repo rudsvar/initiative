@@ -40,7 +40,9 @@ struct AddCombatantSheet: View {
                     }
 
                     Section("Name") {
-                        TextField("Combatant name", text: $name)
+                        TextField(text: $name) {
+                            Text("Combatant name").foregroundColor(Theme.placeholderText)
+                        }
                             .focused($nameFieldFocused)
                             .onChange(of: name) { _, newValue in
                                 prefillFromPreset(named: newValue)
@@ -48,22 +50,30 @@ struct AddCombatantSheet: View {
                     }
 
                     Section("Max HP") {
-                        TextField("Optional", text: $hpText)
+                        TextField(text: $hpText) {
+                            Text("Optional").foregroundColor(Theme.placeholderText)
+                        }
                             .keyboardType(.numberPad)
                     }
 
                     Section("Armor Class") {
-                        TextField("Optional", text: $acText)
+                        TextField(text: $acText) {
+                            Text("Optional").foregroundColor(Theme.placeholderText)
+                        }
                             .keyboardType(.numberPad)
                     }
 
                     Section("Count") {
-                        TextField("1", text: $countText)
+                        TextField(text: $countText) {
+                            Text("1").foregroundColor(Theme.placeholderText)
+                        }
                             .keyboardType(.numberPad)
                     }
 
                     Section("Initiative") {
-                        TextField("Random 1–20 if left blank", text: $initiativeText)
+                        TextField(text: $initiativeText) {
+                            Text("Random 1–20 if left blank").foregroundColor(Theme.placeholderText)
+                        }
                             .keyboardType(.numberPad)
                     }
 

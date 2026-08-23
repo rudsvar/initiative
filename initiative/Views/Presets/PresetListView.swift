@@ -46,9 +46,11 @@ struct PresetListView: View {
                                     }
                                 }
                             }
-                            .padding(.vertical, 4)
                         }
-                        .listRowBackground(Theme.background)
+                        .cardRowStyle()
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8))
+                        .listRowBackground(Color.clear)
                         .swipeActions(edge: .trailing) {
                             // No extra confirmation dialog: swipe-to-reveal + tap
                             // Delete is already two deliberate actions.
@@ -61,6 +63,7 @@ struct PresetListView: View {
                         }
                     }
                 }
+                .listStyle(.plain)
                 .scrollContentBackground(.hidden)
             }
         }
@@ -119,18 +122,26 @@ private struct EditPresetView: View {
                 Theme.background.ignoresSafeArea()
                 Form {
                     Section("Name") {
-                        TextField("Name", text: $name)
+                        TextField(text: $name) {
+                            Text("Name").foregroundColor(Theme.placeholderText)
+                        }
                     }
                     Section("Max HP") {
-                        TextField("Optional", text: $hpText)
+                        TextField(text: $hpText) {
+                            Text("Optional").foregroundColor(Theme.placeholderText)
+                        }
                             .keyboardType(.numberPad)
                     }
                     Section("Armor Class") {
-                        TextField("Optional", text: $acText)
+                        TextField(text: $acText) {
+                            Text("Optional").foregroundColor(Theme.placeholderText)
+                        }
                             .keyboardType(.numberPad)
                     }
                     Section("Initiative Bonus") {
-                        TextField("Optional, added to random rolls", text: $bonusText)
+                        TextField(text: $bonusText) {
+                            Text("Optional, added to random rolls").foregroundColor(Theme.placeholderText)
+                        }
                             .keyboardType(.numbersAndPunctuation)
                     }
                 }

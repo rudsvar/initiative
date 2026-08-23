@@ -66,7 +66,7 @@ struct ContentView: View {
 
                             Button(action: { showAddCombatant = true }) {
                                 Image(systemName: "plus")
-                                    .font(.system(size: 18, weight: .semibold))
+                                    .font(.system(size: 26, weight: .bold))
                             }
                             .buttonStyle(.glass)
                             .accessibilityLabel("Add Combatant")
@@ -101,7 +101,7 @@ struct ContentView: View {
 
                         Button(action: { showAddCombatant = true }) {
                             Image(systemName: "plus")
-                                .font(.system(size: 18, weight: .semibold))
+                                .font(.system(size: 26, weight: .bold))
                         }
                         .foregroundColor(Theme.accent)
                         .accessibilityLabel("Add Combatant")
@@ -321,13 +321,7 @@ struct CombatantRow: View {
                 .frame(width: rowWidth, alignment: .leading)
             }
         }
-        .padding(12)
-        .background(isCurrent ? Theme.accent.opacity(0.22) : Theme.background)
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(isCurrent ? Theme.accent : Theme.divider, lineWidth: isCurrent ? 2 : 1)
-        )
-        .cornerRadius(8)
+        .cardRowStyle(isHighlighted: isCurrent)
         .opacity(combatant.isDead ? 0.55 : 1)
     }
 }

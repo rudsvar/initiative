@@ -5,6 +5,20 @@ All notable changes to this project are documented here, newest first.
 ## [Unreleased]
 
 ### Added
+- **New Session picker screen** (`NewSessionView`) replaces the earlier
+  `confirmationDialog` action sheet for choosing Fresh Session vs. a saved
+  encounter — a proper list screen styled like the rest of the app instead
+  of the one native-chrome sheet left in an otherwise fully custom-themed app
+- `Theme.placeholderText` — a lighter warm tan for `TextField` placeholders.
+  Plain `TextField("placeholder", text:)` always renders its placeholder in
+  a fixed system gray regardless of app theme; every placeholder-bearing
+  field across the app switched to the `TextField(text:label:)` closure
+  form so the placeholder can actually be recolored
+- `View.cardRowStyle(isHighlighted:)` (`ViewExtensions.swift`) — the
+  bordered-card look from the combat screen's combatant rows (border always,
+  accent-tinted fill + thicker border when highlighted), now shared by every
+  list in the app (Creatures, Encounters, Load Session, New Session) instead
+  of being unique to the combat screen
 - **Restore Defaults** button (top-left of Main Menu → Creatures,
   `arrow.counterclockwise`) — `PresetStore.restoreMissingDefaults()` adds
   back any default creature whose name isn't currently present, without
@@ -14,6 +28,8 @@ All notable changes to this project are documented here, newest first.
   the rest permanently with no way back until now
 
 ### Changed
+- Bigger Add Combatant "+" icon in the combat screen's bottom bar (18pt
+  semibold -> 26pt bold)
 - Health section split into two rows — Current HP with its own Amount
   field + Damage/Heal buttons, Max HP below with its own Amount field +
   a blue heart-plus Increase-Max-HP button — instead of one shared Amount
