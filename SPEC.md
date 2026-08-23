@@ -101,14 +101,15 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 
 **Combatant Display**
 - List shows: name, initiative number, HP/AC (when set — exact in DM view,
-  approximate bands in player view, see §12), reaction status (only when used
-  — available is the default, implied by absence), active effects
-- Reaction status, when shown, sits on its own row (not appended after Init
-  on the same line) so it lands at a consistent position
-- Reaction indicator is a custom red "R" `LetterBadge` (`Theme.swift`) — a
-  `Circle` + `Text`, no image asset. Used identically on the combatant detail
-  screen's reaction toggle (which always shows both states, since that's the
-  actual control for changing it)
+  approximate bands in player view, see §12), and a row of **symbols only**
+  for active statuses (reaction used + active effects) — no text names here,
+  that's reserved for the combatant detail screen (tap in to see full names/
+  durations). Row is omitted entirely when nothing's active
+- Reaction-used is just another symbol in that row (the red "R" `LetterBadge`,
+  `Theme.swift`), shown alongside effect condition icons — not visually
+  special-cased or called out with its own text label the way it used to be
+- Symbol row only shown when something's active — available/no-effects is
+  the default, implied by absence
 - List is always sorted highest to lowest initiative
 - Current combatant (whose turn it is) is visually emphasized
 

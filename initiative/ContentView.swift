@@ -291,19 +291,6 @@ struct CombatantRow: View {
                         .font(.caption)
                     }
 
-                    // Only shown when used — available (the default) is implied by
-                    // absence, same convention as the effects list below (which only
-                    // shows active effects, not a placeholder for each possible one).
-                    // On its own row (not appended after Init/HP) so it still lands
-                    // at a consistent position when it does appear.
-                    if combatant.reactionUsed {
-                        HStack(spacing: 6) {
-                            LetterBadge(letter: "R", isOn: false, size: 14)
-                            Text("Reaction used")
-                                .font(.caption)
-                                .foregroundColor(Theme.divider)
-                        }
-                    }
                 }
 
                 Spacer()
@@ -317,21 +304,25 @@ struct CombatantRow: View {
                 }
             }
 
-            if !combatant.visibleEffects.isEmpty {
-                VStack(alignment: .leading, spacing: 6) {
+            // Symbols only here — this is the glance-at-a-glance list, not the
+            // detail screen. Reaction-used is just another status icon among the
+            // rest, not a special text callout; the "R" LetterBadge is its symbol.
+            // Only shown when there's something active — absence implies "none",
+            // same convention as before.
+            if combatant.reactionUsed || !combatant.visibleEffects.isEmpty {
+                HStack(spacing: 8) {
+                    if combatant.reactionUsed {
+                        LetterBadge(letter: "R", isOn: false, size: 18)
+                    }
                     ForEach(combatant.visibleEffects) { effect in
                         let condition = ConditionLibrary.matching(name: effect.name)
-                        HStack(spacing: 8) {
-                            Image(systemName: condition?.symbolName ?? "sparkles")
-                                .font(.caption)
-                                .foregroundColor(condition?.color ?? Theme.accent)
-                            Text(effect.name)
-                                .font(.caption)
-                                .foregroundColor(Theme.textTertiary)
-                        }
+                        Image(systemName: condition?.symbolName ?? "sparkles")
+                            .font(.system(size: 14))
+                            .foregroundColor(condition?.color ?? Theme.accent)
                     }
                 }
-                .padding(8)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 6)
                 .background(Theme.divider.opacity(0.3))
                 .cornerRadius(4)
             }

@@ -5,6 +5,11 @@ All notable changes to this project are documented here, newest first.
 ## [Unreleased]
 
 ### Changed
+- Reaction-used is no longer specially called out with its own text row on
+  the main combatant list — it's just another symbol (the red "R"
+  `LetterBadge`) alongside the effect condition icons. And that whole status
+  row now shows symbols only, no text names — full names/durations are
+  reserved for the combatant detail screen
 - Combatant detail screen no longer hides exact HP/AC in player view — it
   always shows editable exact numbers now, regardless of the toggle.
   Tapping into a creature is a deliberate DM action, not something a player
