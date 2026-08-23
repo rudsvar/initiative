@@ -4,16 +4,39 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Fixed
+- **App ran letterboxed (black bars top/bottom) on real devices.** Root cause:
+  `GENERATE_INFOPLIST_FILE: YES` makes Xcode build Info.plist purely from
+  `INFOPLIST_KEY_*` build settings — the target's `infoPlist:` dict in `project.yml`
+  (launch screen, scene manifest, orientations) was silently ignored and never reached
+  the built app, so iOS fell back to legacy letterboxed scaling. Replaced with
+  `INFOPLIST_KEY_UILaunchScreen_Generation`/`INFOPLIST_KEY_UIApplicationSceneManifest_Generation`/
+  `INFOPLIST_KEY_UISupportedInterfaceOrientations`, verified present in the built
+  `.app`'s actual Info.plist this time (`plutil -p`), not just trusted from `project.yml`
+- `AddEffectView` had overlapping content on smaller screens / with the target picker
+  expanded — rewritten from a hand-rolled `VStack` to a native `Form`/`Section` layout,
+  which scrolls and handles safe areas on its own
+
+### Changed
+- No more explicit "Save Session" step: every `CombatSession` now has a stable auto-
+  generated identity (`id` + date-based `name`); autosave just overwrites that session's
+  file, so it's discoverable under "Load Session" without a save button/name prompt
+- "Load Session": swipe-to-delete now requires confirmation before deleting, and the
+  empty state uses the native `ContentUnavailableView`
+- Direction: new/reworked screens should prefer native iOS components (`Form`, `List`,
+  system tint) over the custom `Theme` styling, for now — see `CLAUDE.md`
+
 ### Added
 - Main menu (Resume / New Session / Load Session) as the app's launch screen,
   wired through a shared `NavigationStack` (`RootView.swift`)
-- Session persistence: `SessionStore` (JSON-on-disk, one file per named save plus
-  an autosave slot), `SessionRecord`, `CombatSession.reset()/makeRecord()/load()`
+- Session persistence: `SessionStore` (JSON-on-disk, one file per session, keyed by
+  the session's stable id), `SessionRecord`, `CombatSession.reset()/makeRecord()/load()`
 - `Participant`/`Effect`/`DurationType` are now `Codable` (`DurationType` has a
   hand-written implementation since its associated-value cases can't synthesize)
-- "Menu" button (top-left) and a save-session button (top-right, prompts for a
-  name) on the combat screen; autosaves on leaving the screen or app backgrounding
-- `SessionStoreTests` (6 tests) and new `CombatSession` reset/record tests
+- "Menu" button (top-left) on the combat screen; autosaves on leaving the screen or
+  app backgrounding
+- New `ios-hig` skill (`<agent-config>/skills/ios-hig/SKILL.md`)
+- `SessionStoreTests` and new `CombatSession` reset/record tests (35 tests total)
 
 ### Fixed
 - `DEVELOPMENT_TEAM` in `project.yml` was blank, so every `xcodegen generate`

@@ -168,9 +168,10 @@ final class CombatSessionTests: XCTestCase {
         session.addParticipant(name: "P1", initiative: 20)
         session.nextTurn()
 
-        let record = session.makeRecord(name: "My Fight")
+        let record = session.makeRecord()
 
-        XCTAssertEqual(record.name, "My Fight")
+        XCTAssertEqual(record.id, session.id)
+        XCTAssertEqual(record.name, session.name)
         XCTAssertEqual(record.participants.count, 1)
         XCTAssertEqual(record.currentTurnIndex, session.currentTurnIndex)
     }
@@ -179,16 +180,24 @@ final class CombatSessionTests: XCTestCase {
         session.addParticipant(name: "P1", initiative: 20)
         session.addParticipant(name: "P2", initiative: 10)
         session.nextTurn()
-        let record = session.makeRecord(name: "Saved")
+        let record = session.makeRecord()
 
         session.reset()
         session.addParticipant(name: "Other", initiative: 5)
 
         session.load(record)
 
+        XCTAssertEqual(session.id, record.id)
+        XCTAssertEqual(session.name, record.name)
         XCTAssertEqual(session.participants.count, 2)
         XCTAssertEqual(session.currentTurnIndex, record.currentTurnIndex)
         XCTAssertFalse(session.canGoToPreviousTurn)
+    }
+
+    func testResetAssignsFreshIdentity() {
+        let originalId = session.id
+        session.reset()
+        XCTAssertNotEqual(session.id, originalId)
     }
 
     // MARK: - Effect Management

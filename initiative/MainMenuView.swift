@@ -5,8 +5,8 @@ struct MainMenuView: View {
     let sessionStore: SessionStore
     @Binding var path: NavigationPath
 
-    private var hasAutosave: Bool {
-        sessionStore.loadAutosave() != nil
+    private var canResume: Bool {
+        sessionStore.resumableSession() != nil
     }
 
     var body: some View {
@@ -32,8 +32,8 @@ struct MainMenuView: View {
                             MenuButton(title: "Resume", systemImage: "play.circle.fill", isPrimary: true) {
                                 resume()
                             }
-                            .disabled(!hasAutosave)
-                            .opacity(hasAutosave ? 1 : 0.4)
+                            .disabled(!canResume)
+                            .opacity(canResume ? 1 : 0.4)
 
                             MenuButton(title: "New Session", systemImage: "plus.circle.fill") {
                                 startNewSession()
@@ -54,14 +54,13 @@ struct MainMenuView: View {
     }
 
     private func resume() {
-        guard let record = sessionStore.loadAutosave() else { return }
+        guard let record = sessionStore.resumableSession() else { return }
         session.load(record)
         path.append(Route.combat)
     }
 
     private func startNewSession() {
         session.reset()
-        sessionStore.clearAutosave()
         path.append(Route.combat)
     }
 }

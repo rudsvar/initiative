@@ -182,15 +182,19 @@ struct CombatSession {
 
 ### 6. Main Menu & Session Persistence
 
+**No explicit save.** There's no "Save Session" button or naming dialog — every combat
+session is automatically saved under its own stable identity as you play. A session's
+name is auto-generated from when it was created (e.g. "Session — Aug 23, 2026 1:45 PM").
+
 **Main Menu** (app launch / navigating back)
-- **Resume**: loads the autosaved in-progress session, if one exists (disabled otherwise)
-- **New Session**: clears all combat state and starts fresh
-- **Load Session**: browse explicitly-named saved sessions, tap to load, swipe to delete
+- **Resume**: loads whichever session was last active, if one still exists on disk
+  (disabled otherwise)
+- **New Session**: clears all combat state and starts a fresh session (new identity)
+- **Load Session**: browse all auto-saved sessions, tap to load, swipe left + confirm
+  to delete
 
 **Combat screen persistence**
 - Top-left "Menu" button returns to the main menu (autosaves first)
-- Top-right save icon prompts for a name and writes a named `SessionRecord` that
-  appears under "Load Session" going forward
 - Autosave happens on leaving the combat screen or the app backgrounding — not on
   every micro-mutation (reaction toggle, effect add) — this is an intentional
   scope tradeoff, not a bug
@@ -208,8 +212,16 @@ persistence compatibility" section in `CLAUDE.md`. Not yet in force pre-publish.
 
 ## Design & Theming
 
-**Color Palette** — old paper with a bold red accent (see `Theme.swift`, the single source
-of truth for these colors — all views reference `Theme.*`, never raw color literals):
+**Current priority: native, modern iOS UI over the custom theme.** Screens should
+default to standard system components (`Form`/`Section`, `List`, `ContentUnavailableView`,
+system tint/materials, native swipe actions and confirmation dialogs) rather than
+hand-rolled custom-styled views. The rust-red/old-paper theme below is applied
+selectively (currently: the combat participant list) rather than everywhere — see the
+"Styling & Colors" note in `CLAUDE.md` and the `ios-hig` skill
+(`<agent-config>/skills/ios-hig/SKILL.md`) before building a new screen.
+
+**Color Palette** — old paper with a bold red accent, used selectively (see `Theme.swift`,
+the single source of truth for these colors where the theme is applied):
 - **Background**: Off-white / cream (#F5F1ED or similar)
 - **Primary text**: Dark brown/charcoal (#2B2520 or similar)
 - **Accent**: Saturated red (#C7241C or similar — deliberately more red than rust) for

@@ -23,19 +23,24 @@ struct SessionRecord: Codable, Identifiable {
     }
 }
 
-/// Reads and writes combat sessions to disk as JSON. Named saves live one-file-per-session
-/// under `SavedSessions/`; the autosave slot is a single well-known file used to support
-/// "Resume" without requiring an explicit save.
+/// Reads and writes combat sessions to disk as JSON, one file per session under
+/// `SavedSessions/`, keyed by the session's stable id so repeated autosaves overwrite
+/// the same file. There's no separate explicit-save step: every session (in-progress
+/// or finished) is a regular record on disk the moment it's saved. "Resume" is just
+/// "reload whichever session id was last active", tracked via UserDefaults.
 @Observable
 class SessionStore {
     private let fileManager = FileManager.default
     private let baseDirectory: URL
+    private let userDefaults: UserDefaults
+    private let lastActiveIDKey = "lastActiveSessionID"
 
-    init(baseDirectory: URL? = nil) {
+    init(baseDirectory: URL? = nil, userDefaults: UserDefaults = .standard) {
         let directory = baseDirectory
             ?? FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         self.baseDirectory = directory
+        self.userDefaults = userDefaults
     }
 
     private var sessionsDirectory: URL {
@@ -44,10 +49,6 @@ class SessionStore {
             try? fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
         }
         return dir
-    }
-
-    private var autosaveURL: URL {
-        baseDirectory.appendingPathComponent("autosave.json")
     }
 
     func listSavedSessions() -> [SessionRecord] {
@@ -71,19 +72,29 @@ class SessionStore {
     func delete(id: UUID) {
         let url = sessionsDirectory.appendingPathComponent("\(id.uuidString).json")
         try? fileManager.removeItem(at: url)
+        if lastActiveSessionID() == id {
+            clearLastActiveSessionID()
+        }
     }
 
-    func saveAutosave(_ record: SessionRecord) {
-        guard let data = try? JSONEncoder().encode(record) else { return }
-        try? data.write(to: autosaveURL)
+    func setLastActiveSessionID(_ id: UUID) {
+        userDefaults.set(id.uuidString, forKey: lastActiveIDKey)
     }
 
-    func loadAutosave() -> SessionRecord? {
-        guard let data = try? Data(contentsOf: autosaveURL) else { return nil }
+    func clearLastActiveSessionID() {
+        userDefaults.removeObject(forKey: lastActiveIDKey)
+    }
+
+    func lastActiveSessionID() -> UUID? {
+        guard let string = userDefaults.string(forKey: lastActiveIDKey) else { return nil }
+        return UUID(uuidString: string)
+    }
+
+    /// The session to offer via "Resume" — the last active one, if it still exists on disk.
+    func resumableSession() -> SessionRecord? {
+        guard let id = lastActiveSessionID() else { return nil }
+        let url = sessionsDirectory.appendingPathComponent("\(id.uuidString).json")
+        guard let data = try? Data(contentsOf: url) else { return nil }
         return try? JSONDecoder().decode(SessionRecord.self, from: data)
-    }
-
-    func clearAutosave() {
-        try? fileManager.removeItem(at: autosaveURL)
     }
 }

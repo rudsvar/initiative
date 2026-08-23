@@ -4,16 +4,21 @@ import XCTest
 final class SessionStoreTests: XCTestCase {
     var store: SessionStore!
     var tempDirectory: URL!
+    var defaults: UserDefaults!
+    var defaultsSuiteName: String!
 
     override func setUp() {
         super.setUp()
         tempDirectory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
-        store = SessionStore(baseDirectory: tempDirectory)
+        defaultsSuiteName = "SessionStoreTests.\(UUID().uuidString)"
+        defaults = UserDefaults(suiteName: defaultsSuiteName)
+        store = SessionStore(baseDirectory: tempDirectory, userDefaults: defaults)
     }
 
     override func tearDown() {
         try? FileManager.default.removeItem(at: tempDirectory)
+        UserDefaults().removePersistentDomain(forName: defaultsSuiteName)
         super.tearDown()
     }
 
@@ -39,24 +44,38 @@ final class SessionStoreTests: XCTestCase {
         XCTAssertTrue(store.listSavedSessions().isEmpty)
     }
 
-    func testAutosaveRoundTrip() {
-        XCTAssertNil(store.loadAutosave())
-
-        let participant = Participant(name: "Hero", initiative: 15)
-        let record = SessionRecord(name: "In Progress", participants: [participant], currentTurnIndex: 0)
-        store.saveAutosave(record)
-
-        let loaded = store.loadAutosave()
-        XCTAssertEqual(loaded?.participants.first?.name, "Hero")
+    func testResumableSessionNilWhenNoneActive() {
+        XCTAssertNil(store.resumableSession())
     }
 
-    func testClearAutosave() {
+    func testResumableSessionReturnsLastActive() {
+        let participant = Participant(name: "Hero", initiative: 15)
+        let record = SessionRecord(name: "In Progress", participants: [participant], currentTurnIndex: 0)
+        store.save(record)
+        store.setLastActiveSessionID(record.id)
+
+        let resumed = store.resumableSession()
+        XCTAssertEqual(resumed?.participants.first?.name, "Hero")
+    }
+
+    func testResumableSessionNilAfterDeletingLastActive() {
         let record = SessionRecord(name: "In Progress", participants: [], currentTurnIndex: 0)
-        store.saveAutosave(record)
+        store.save(record)
+        store.setLastActiveSessionID(record.id)
 
-        store.clearAutosave()
+        store.delete(id: record.id)
 
-        XCTAssertNil(store.loadAutosave())
+        XCTAssertNil(store.resumableSession())
+    }
+
+    func testClearLastActiveSessionID() {
+        let record = SessionRecord(name: "In Progress", participants: [], currentTurnIndex: 0)
+        store.save(record)
+        store.setLastActiveSessionID(record.id)
+
+        store.clearLastActiveSessionID()
+
+        XCTAssertNil(store.resumableSession())
     }
 
     func testSessionsAreSortedNewestFirst() {

@@ -89,7 +89,19 @@ class CombatSession {
     var participants: [Participant] = []
     var currentTurnIndex: Int = 0
 
+    /// Identity of this session's on-disk record — stable across autosaves so
+    /// repeated saves overwrite the same file instead of piling up duplicates.
+    private(set) var id = UUID()
+    private(set) var name = CombatSession.defaultName()
+
     private var history: [(participants: [Participant], currentTurnIndex: Int)] = []
+
+    private static func defaultName() -> String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .short
+        return "Session — \(formatter.string(from: Date()))"
+    }
 
     var canGoToPreviousTurn: Bool {
         !history.isEmpty
@@ -133,18 +145,22 @@ class CombatSession {
         currentTurnIndex = previous.currentTurnIndex
     }
 
-    /// Clears all combat state, for starting a brand-new session.
+    /// Clears all combat state and assigns a fresh identity, for starting a brand-new session.
     func reset() {
+        id = UUID()
+        name = CombatSession.defaultName()
         participants = []
         currentTurnIndex = 0
         history = []
     }
 
-    func makeRecord(name: String) -> SessionRecord {
-        SessionRecord(name: name, participants: participants, currentTurnIndex: currentTurnIndex)
+    func makeRecord() -> SessionRecord {
+        SessionRecord(id: id, name: name, participants: participants, currentTurnIndex: currentTurnIndex)
     }
 
     func load(_ record: SessionRecord) {
+        id = record.id
+        name = record.name
         participants = record.participants
         currentTurnIndex = record.currentTurnIndex
         history = []

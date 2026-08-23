@@ -10,97 +10,41 @@ struct AddEffectView: View {
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                Theme.background
-                    .ignoresSafeArea()
-
-                VStack(spacing: 20) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Effect Name")
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .foregroundColor(Theme.textSecondary)
-                        TextField("e.g., Stunned, Poisoned", text: $effectName)
-                            .textFieldStyle(.roundedBorder)
-                            .padding(.horizontal, 4)
-                    }
-
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("Duration")
-                            .font(.subheadline)
-                            .fontWeight(.semibold)
-                            .foregroundColor(Theme.textSecondary)
-
-                        VStack(spacing: 8) {
-                            DurationTypeButton(
-                                title: "Until start of their next turn",
-                                isSelected: selectedDurationType == .untilStartOfTheirTurn,
-                                action: {
-                                    selectedDurationType = .untilStartOfTheirTurn
-                                    selectedTargetId = nil
-                                }
-                            )
-
-                            DurationTypeButton(
-                                title: "Until end of their next turn",
-                                isSelected: selectedDurationType == .untilEndOfTheirTurn,
-                                action: {
-                                    selectedDurationType = .untilEndOfTheirTurn
-                                    selectedTargetId = nil
-                                }
-                            )
-
-                            DurationTypeButton(
-                                title: "Until start of target's next turn",
-                                isSelected: selectedDurationType == .untilStartOfTargetTurn,
-                                action: {
-                                    selectedDurationType = .untilStartOfTargetTurn
-                                    if selectedTargetId == nil {
-                                        selectedTargetId = session.participants
-                                            .first(where: { $0.id != participant.id })?
-                                            .id
-                                    }
-                                }
-                            )
-
-                            DurationTypeButton(
-                                title: "Until end of target's next turn",
-                                isSelected: selectedDurationType == .untilEndOfTargetTurn,
-                                action: {
-                                    selectedDurationType = .untilEndOfTargetTurn
-                                    if selectedTargetId == nil {
-                                        selectedTargetId = session.participants
-                                            .first(where: { $0.id != participant.id })?
-                                            .id
-                                    }
-                                }
-                            )
-                        }
-                    }
-
-                    if selectedDurationType.isTargetBased {
-                        VStack(alignment: .leading, spacing: 8) {
-                            Text("Target")
-                                .font(.subheadline)
-                                .fontWeight(.semibold)
-                                .foregroundColor(Theme.textSecondary)
-
-                            Picker("Select target", selection: $selectedTargetId) {
-                                ForEach(
-                                    session.participants.filter { $0.id != participant.id },
-                                    id: \.id
-                                ) { target in
-                                    Text(target.name).tag(Optional(target.id))
-                                }
-                            }
-                            .pickerStyle(.menu)
-                            .foregroundColor(Theme.textPrimary)
-                        }
-                    }
-
-                    Spacer()
+            Form {
+                Section("Effect Name") {
+                    TextField("e.g., Stunned, Poisoned", text: $effectName)
                 }
-                .padding(20)
+
+                Section("Duration") {
+                    Picker("Duration", selection: $selectedDurationType) {
+                        Text("Until start of their next turn").tag(DurationTypeSelection.untilStartOfTheirTurn)
+                        Text("Until end of their next turn").tag(DurationTypeSelection.untilEndOfTheirTurn)
+                        Text("Until start of target's next turn").tag(DurationTypeSelection.untilStartOfTargetTurn)
+                        Text("Until end of target's next turn").tag(DurationTypeSelection.untilEndOfTargetTurn)
+                    }
+                    .pickerStyle(.inline)
+                    .labelsHidden()
+                    .onChange(of: selectedDurationType) { _, newValue in
+                        if newValue.isTargetBased, selectedTargetId == nil {
+                            selectedTargetId = session.participants.first(where: { $0.id != participant.id })?.id
+                        } else if !newValue.isTargetBased {
+                            selectedTargetId = nil
+                        }
+                    }
+                }
+
+                if selectedDurationType.isTargetBased {
+                    Section("Target") {
+                        Picker("Target", selection: $selectedTargetId) {
+                            ForEach(
+                                session.participants.filter { $0.id != participant.id },
+                                id: \.id
+                            ) { target in
+                                Text(target.name).tag(Optional(target.id))
+                            }
+                        }
+                    }
+                }
             }
             .navigationTitle("Add Effect")
             .navigationBarTitleDisplayMode(.inline)
@@ -109,7 +53,6 @@ struct AddEffectView: View {
                     Button("Cancel") {
                         isPresented = false
                     }
-                    .foregroundColor(Theme.accent)
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
@@ -117,7 +60,6 @@ struct AddEffectView: View {
                         addEffect()
                         isPresented = false
                     }
-                    .foregroundColor(Theme.accent)
                     .fontWeight(.semibold)
                     .disabled(effectName.trimmingCharacters(in: .whitespaces).isEmpty ||
                               (selectedDurationType.isTargetBased && selectedTargetId == nil))
@@ -152,32 +94,7 @@ struct AddEffectView: View {
     }
 }
 
-struct DurationTypeButton: View {
-    let title: String
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: 12) {
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 18))
-                    .foregroundColor(Theme.accent)
-
-                Text(title)
-                    .font(.subheadline)
-                    .foregroundColor(Theme.textPrimary)
-
-                Spacer()
-            }
-            .padding(12)
-            .background(isSelected ? Theme.accent.opacity(0.1) : Color.clear)
-            .cornerRadius(8)
-        }
-    }
-}
-
-enum DurationTypeSelection: Equatable {
+enum DurationTypeSelection: Equatable, Hashable {
     case untilStartOfTheirTurn
     case untilEndOfTheirTurn
     case untilStartOfTargetTurn

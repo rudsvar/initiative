@@ -56,7 +56,16 @@ project.yml                    # XcodeGen configuration (regenerates .xcodeproj)
 - Use navigation containers (NavigationStack, TabView, etc.) for multi-screen navigation
 
 **Styling & Colors**:
-- Use SwiftUI's built-in semantic colors (`.tint`, `.background`, etc.) for theme consistency
+- **Prioritize native, modern iOS UI over the custom theme for now.** Prefer system
+  components (`Form`/`Section`, `List`, `ContentUnavailableView`, system tint/materials)
+  over hand-rolled `ZStack` + `Theme.background` + custom bordered fields. Reach for
+  `Theme.swift` (`~/git/initiative/initiative/Theme.swift`) only where a custom look is
+  actually wanted (e.g. the combat list's rust-red accents), not by default on every
+  new screen — `AddEffectView` was rewritten from a custom `VStack` to a native `Form`
+  for exactly this reason (it also fixed a real row-overlap bug for free, since `Form`
+  handles scrolling/safe-area itself instead of a hand-rolled `ScrollView`).
+- Consult the `ios-hig` skill (`<agent-config>/skills/ios-hig/SKILL.md`) before building new
+  screens — practical Apple HIG checklist for this app.
 - Colors can be defined in Assets.xcassets for app-wide theming
 
 ## Important notes
@@ -109,8 +118,32 @@ current value and update `project.yml` to match — don't leave it blank.
 **Not yet published — no compatibility constraint currently applies.** Once this app
 ships to a device as a "real" install the user relies on day-to-day, `SessionRecord`
 (in `SessionStore.swift`) and its `Codable` encoding become a durable on-disk format:
-saved sessions and the autosave slot must keep decoding across app updates, or a
-person's in-progress combat gets silently wiped. At that point: only add fields with
-defaults (never remove/rename existing `CodingKeys` without a migration), and treat
-`DurationType`'s manual `Codable` implementation as equally frozen. Revisit this note
-and make it a hard rule once the app is actually installed/published somewhere real.
+saved sessions must keep decoding across app updates, or a person's in-progress combat
+gets silently wiped. At that point: only add fields with defaults (never remove/rename
+existing `CodingKeys` without a migration), and treat `DurationType`'s manual `Codable`
+implementation as equally frozen. Revisit this note and make it a hard rule once the
+app is actually installed/published somewhere real.
+
+## Session model (no explicit save)
+
+There is no "Save Session" button/dialog — every `CombatSession` has a stable `id`
+(assigned at `init`/`reset()`) and an auto-generated `name` (date/time-based). Autosave
+just writes `session.makeRecord()` to `SessionStore` under that same `id`, so repeated
+autosaves overwrite one file rather than piling up duplicates — the record on disk
+*is* the session, named automatically, no user action required. `SessionStore` tracks
+which session id was last active (UserDefaults) so "Resume" on the main menu knows
+what to reload. Deleting a saved session (swipe + confirm on the Load Session screen)
+also clears the last-active pointer if it pointed at the deleted one.
+
+## Info.plist / launch screen (important gotcha)
+
+This target uses `GENERATE_INFOPLIST_FILE: YES`, which means **Xcode builds Info.plist
+purely from `INFOPLIST_KEY_*` build settings** — a top-level `infoPlist:` dict in
+`project.yml` (nested keys like `UILaunchScreen`, `UIApplicationSceneManifest`) is
+silently ignored and never reaches the built app. This previously caused the app to run
+letterboxed (black bars top/bottom) on a real device since no launch screen config
+existed at all. Use `INFOPLIST_KEY_UILaunchScreen_Generation: YES` and
+`INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES` instead (see `project.yml`).
+After any Info.plist-related change, verify the key actually landed —
+`plutil -p <built .app>/Info.plist` — rather than trusting `xcodegen generate` output
+alone; a clean build can silently drop keys that look correct in `project.yml`.
