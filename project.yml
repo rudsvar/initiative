@@ -32,9 +32,21 @@ targets:
         - UIInterfaceOrientationPortraitUpsideDown
         - UIInterfaceOrientationLandscapeLeft
         - UIInterfaceOrientationLandscapeRight
+      UISupportedInterfaceOrientationsIPhone:
+        - UIInterfaceOrientationPortrait
+        - UIInterfaceOrientationPortraitUpsideDown
+        - UIInterfaceOrientationLandscapeLeft
+        - UIInterfaceOrientationLandscapeRight
+      UIApplicationSceneManifest:
+        UIApplicationSupportsMultipleScenes: false
+        UISceneConfigurations:
+          UIWindowSceneSessionRoleApplication:
+            - UISceneConfigurationName: Default Configuration
+              UISceneDelegateClassName: ""
       UILaunchScreen:
         UIColorName: ""
         UIImageName: ""
+        UIImageRespectsSafeAreaInsets: false
 
 schemes:
   initiative:

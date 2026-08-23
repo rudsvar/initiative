@@ -14,7 +14,7 @@
 /* Begin PBXFileReference section */
 		0C602D49912CF215015A47FE /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		80F716A445CE95BB18ED0CB6 /* initiativeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = initiativeApp.swift; sourceTree = "<group>"; };
-		F7082DB36F1CEF76E4B26086 /* initiative.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = initiative.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F7082DB36F1CEF76E4B26086 /* initiative.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = initiative.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -73,6 +73,7 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					4C6A86035534699E7F5ECAC9 = {
+						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -178,7 +179,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = YOUR_TEAM_ID;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -197,7 +198,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = YOUR_TEAM_ID;
+				DEVELOPMENT_TEAM = "";
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
