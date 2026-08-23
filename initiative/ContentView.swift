@@ -76,14 +76,14 @@ struct InlineAddParticipantRow: View {
                         .stroke(Theme.divider, lineWidth: 1)
                 )
 
-            TextField("Init", text: $initiativeText)
+            TextField("Initiative", text: $initiativeText)
                 .keyboardType(.numberPad)
                 .foregroundColor(Theme.accent)
                 .fontWeight(.semibold)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 8)
                 .padding(.vertical, 8)
-                .frame(width: 56)
+                .frame(width: 88)
                 .background(Theme.background)
                 .overlay(
                     RoundedRectangle(cornerRadius: 8)
