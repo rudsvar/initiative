@@ -19,9 +19,14 @@ struct MainMenuView: View {
     @State private var canResume = false
 
     var body: some View {
-        ZStack {
+        ZStack(alignment: .topTrailing) {
             Theme.background
                 .ignoresSafeArea()
+
+            // TEMPORARY: palette comparison, see Theme.swift's ThemePicker doc comment.
+            ThemePicker()
+                .foregroundColor(Theme.textTertiary)
+                .padding()
 
             GeometryReader { proxy in
                 ScrollView {

@@ -618,6 +618,15 @@ the single source of truth for these colors where the theme is applied):
 
 **Impact**: Every view should have a `#Preview` block; test UI visually during development.
 
+## Temporary Tooling
+
+**Theme picker** (`ThemeManager`/`ThemePicker`/`ThemePalette` in `Theme.swift`,
+paint-palette icon top-right of the main menu): lets the 5 color palettes be
+switched live for side-by-side comparison. Explicitly temporary — once a
+final palette is picked, hardcode its colors back into `Theme`'s plain
+`static let` constants and delete `ThemeManager`, `ThemePicker`,
+`ThemePalette.allCases`, and the menu button call site.
+
 ## Non-Goals
 
 - Cross-platform (Android, web)

@@ -4,6 +4,15 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Added
+- **Temporary theme picker** (paint palette icon, top-right of the main menu)
+  for comparing 5 color palettes live: the original Rust & Paper, plus Ink &
+  Parchment, Dungeon Stone, Tavern Candlelight, and Old Map. `Theme.swift`
+  now sources its colors from a switchable `ThemeManager.shared.palette`
+  instead of hardcoded constants. Marked TEMPORARY in code comments — once a
+  palette is chosen, hardcode it back into `Theme` and delete `ThemeManager`/
+  `ThemePicker`/`ThemePalette.allCases` and the menu button
+
 ### Changed
 - Damage/Heal/Increase-Max-HP controls consolidated into one row: the amount
   field plus three equal icon-only buttons (minus/plus/up-heart) next to it,
