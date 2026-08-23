@@ -34,7 +34,8 @@ struct ContentView: View {
                     ForEach(session.sortedCombatants) { combatant in
                         CombatantRow(
                             combatant: combatant,
-                            isCurrent: session.currentCombatant?.id == combatant.id
+                            isCurrent: session.currentCombatant?.id == combatant.id,
+                            playerViewEnabled: session.playerViewEnabled
                         )
                         .contentShape(Rectangle())
                         .background(
@@ -219,6 +220,35 @@ struct ContentView: View {
 struct CombatantRow: View {
     let combatant: Combatant
     let isCurrent: Bool
+    let playerViewEnabled: Bool
+
+    private var hasStatusRow: Bool {
+        combatant.currentHP != nil || combatant.armorClass != nil
+    }
+
+    @ViewBuilder
+    private var healthText: some View {
+        if let current = combatant.currentHP, let max = combatant.maxHP {
+            if playerViewEnabled {
+                let band = StatusBand.health(current: current, max: max)
+                Text(band.label).foregroundColor(band.color)
+            } else {
+                Text("\(current)/\(max) HP").foregroundColor(Theme.textSecondary)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var armorClassText: some View {
+        if let ac = combatant.armorClass {
+            if playerViewEnabled {
+                let band = StatusBand.armorClass(ac)
+                Text(band.label).foregroundColor(band.color)
+            } else {
+                Text("AC \(ac)").foregroundColor(Theme.textSecondary)
+            }
+        }
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -240,14 +270,18 @@ struct CombatantRow: View {
                         }
                     }
 
-                    // HP intentionally not shown here — main list stays spoiler-free
-                    // even with the screen visible to players; see the combatant
-                    // detail screen for HP (exact for the DM, or approximate with
-                    // the eye-icon player-view toggle on).
                     Text("Init \(combatant.initiative)")
                         .font(.caption)
                         .foregroundColor(Theme.accent)
                         .fontWeight(.semibold)
+
+                    if hasStatusRow {
+                        HStack(spacing: 8) {
+                            healthText
+                            armorClassText
+                        }
+                        .font(.caption)
+                    }
 
                     // Only shown when used — available (the default) is implied by
                     // absence, same convention as the effects list below (which only

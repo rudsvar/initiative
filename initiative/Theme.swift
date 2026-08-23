@@ -10,6 +10,26 @@ enum Theme {
     static let divider = Color(red: 0.83, green: 0.76, blue: 0.72)
 }
 
+/// Generic approximate-status bands shown in player view (DM's screen visible to
+/// players) instead of exact numbers — deliberately generic wording, not
+/// tabletop RPG-specific terms like "Bloodied". Shared by the combatant list and detail
+/// screen so both read the same bands.
+enum StatusBand {
+    static func health(current: Int, max: Int) -> (label: String, color: Color) {
+        if current <= 0 { return ("Dead", .black) }
+        let fraction = Double(current) / Double(max)
+        if fraction > 0.5 { return ("Healthy", .green) }
+        if fraction > 0.25 { return ("Wounded", .orange) }
+        return ("Critical", .red)
+    }
+
+    static func armorClass(_ ac: Int) -> (label: String, color: Color) {
+        if ac >= 17 { return ("High AC", .blue) }
+        if ac >= 13 { return ("Average AC", .orange) }
+        return ("Low AC", .red)
+    }
+}
+
 /// A small circular letter badge — e.g. a red "R" for reaction status — built
 /// entirely from SwiftUI shapes/text, no image asset needed. Filled + bold when
 /// "on" (e.g. reaction available), outlined + muted when "off" (used up).

@@ -100,9 +100,9 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 - Combatants auto-sort by initiative (descending; ties maintain insertion order)
 
 **Combatant Display**
-- List shows: name, initiative number, reaction status (only when used —
-  available is the default, implied by absence), active effects. HP/AC are
-  deliberately never shown here (see §12, DM/Player View)
+- List shows: name, initiative number, HP/AC (when set — exact in DM view,
+  approximate bands in player view, see §12), reaction status (only when used
+  — available is the default, implied by absence), active effects
 - Reaction status, when shown, sits on its own row (not appended after Init
   on the same line) so it lands at a consistent position
 - Reaction indicator is a custom red "R" `LetterBadge` (`Theme.swift`) — a
@@ -499,10 +499,10 @@ visible to players. There is exactly one control for it, in the bottom bar
 next to the Log button — not duplicated per-screen — so it's unambiguous
 which state you're in no matter which screen you're looking at.
 
-- **Main combatant list never shows HP or AC at all**, regardless of the
-  toggle — it only ever shows name, initiative, reaction status, and active
-  effects. This isn't the player-view feature; it's a permanent decision to
-  keep the main screen spoiler-free
+- **Main combatant list**: shows HP/AC (when set) right under initiative —
+  exact numbers ("14/20 HP", "AC 15") in DM view, the same approximate bands
+  as the detail screen in player view. Omitted entirely for a combatant with
+  neither set
 - **Combatant detail screen**: DM view (default) shows editable exact
   Current/Max HP and Armor Class fields, plus the damage/heal/increase-max-HP
   controls. Player view replaces HP with a single read-only health band —

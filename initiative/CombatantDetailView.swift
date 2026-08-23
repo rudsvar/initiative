@@ -70,24 +70,6 @@ struct CombatantDetailView: View {
         )
     }
 
-    /// Generic health bands for player-view mode — no exact numbers, just a rough
-    /// read, and deliberately not using tabletop RPG-specific terminology like "Bloodied".
-    private func healthBand(current: Int, max: Int) -> (label: String, color: Color) {
-        if current <= 0 { return ("Dead", .black) }
-        let fraction = Double(current) / Double(max)
-        if fraction > 0.5 { return ("Healthy", .green) }
-        if fraction > 0.25 { return ("Wounded", .orange) }
-        return ("Critical", .red)
-    }
-
-    /// Generic armor class band for player-view mode, mirroring healthBand — an
-    /// approximate read instead of the exact number.
-    private func armorClassBand(_ ac: Int) -> (label: String, color: Color) {
-        if ac >= 17 { return ("High AC", .blue) }
-        if ac >= 13 { return ("Average AC", .orange) }
-        return ("Low AC", .red)
-    }
-
     var body: some View {
         ZStack {
             Theme.background
@@ -138,7 +120,7 @@ struct CombatantDetailView: View {
                                     .foregroundColor(Theme.textTertiary)
                                 if session.playerViewEnabled {
                                     if let ac = combatant.armorClass {
-                                        let band = armorClassBand(ac)
+                                        let band = StatusBand.armorClass(ac)
                                         Text(band.label)
                                             .font(.subheadline)
                                             .fontWeight(.semibold)
@@ -179,7 +161,7 @@ struct CombatantDetailView: View {
 
                                 if session.playerViewEnabled {
                                     if let current = combatant.currentHP, let maxHP = combatant.maxHP {
-                                        let band = healthBand(current: current, max: maxHP)
+                                        let band = StatusBand.health(current: current, max: maxHP)
                                         Text(band.label)
                                             .font(.title3)
                                             .fontWeight(.bold)

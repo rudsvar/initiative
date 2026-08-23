@@ -4,6 +4,14 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Changed
+- Main combatant list now shows HP/AC again (when set) — exact numbers in DM
+  view, the same approximate bands as the detail screen in player view.
+  Reverses the earlier "spoiler-free list" decision on direct instruction.
+  `healthBand`/`armorClassBand` extracted to a shared `StatusBand` enum
+  (`Theme.swift`) so the list and detail screen read identical bands instead
+  of two copies that could drift
+
 ### Fixed
 - Armor Class was hidden entirely (not shown as an approximate, just gone) in
   the combatant detail screen when player view was on — now shows a Low/
