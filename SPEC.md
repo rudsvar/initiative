@@ -65,17 +65,20 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 ### 1. Combatant Management
 
 **Add Combatant**
-- Top-right toolbar button ("Add") opens a modal (native `Form`) with Name,
-  Initiative, Max HP, and Count fields, each a full-size Form row (not small
-  inline boxes) so they're easy to hit precisely. This is the sole entry
-  point — earlier designs (an inline row atop the list, then a bottom
-  placeholder row) both turned out to want a dedicated modal in the end
-  (fiddly small fields, or risk of an accidental tap), so the toolbar button
-  replaced the placeholder row entirely rather than adding a second one
+- Top-right toolbar button ("Add") opens a modal (native `Form`) with fields
+  in this order: Name, Max HP, Count, Initiative (Initiative last — it's the
+  field most often left blank, so it doesn't need to interrupt the fields
+  that are usually filled in). Each is a full-size Form row (not small inline
+  boxes) so they're easy to hit precisely. This is the sole entry point —
+  earlier designs (an inline row atop the list, then a bottom placeholder
+  row) both turned out to want a dedicated modal in the end (fiddly small
+  fields, or risk of an accidental tap), so the toolbar button replaced the
+  placeholder row entirely rather than adding a second one
 - Leaving initiative blank rolls random 1–20 on add
 - Count > 1 spawns that many copies with numbered names ("Goblin 1", "Goblin 2",
-  ...), each rolling its own independent random initiative (a shared explicit
-  initiative wouldn't make sense across multiple copies)
+  ...). If initiative is left blank, each copy rolls independently; if an
+  explicit initiative is given, **every copy gets that same value** — no
+  special-casing, what you typed is what they get
 - A "Choose Creature" menu (shown only when at least one preset exists) lists
   saved presets by name — picking one fills Name + Max HP directly (overwrites
   HP, unlike the passive typing-based match below, since this is an explicit choice)
@@ -371,13 +374,30 @@ concrete need for more.
 
 ### 9. Combat Log
 
-Read-only feed of what's happened during the current session — opened from the
-**Log** button in the bottom bar (center, between Previous/Next Turn). Newest
-entries first.
+Feed of what's happened during the current session — opened from the **Log**
+button in the bottom bar (center, between Previous/Next Turn). Grouped into
+sections by round number, newest round first; entries within a round are
+newest-first too.
 
 **What gets logged**: turn changes ("Alice's turn", "Round 2 began"), damage,
-healing, max-HP increases, deaths, combatants added/removed. Reaction toggles
-are deliberately *not* logged — too frequent/low-value to be worth the noise.
+healing, max-HP increases (including the implicit baseline set when HP
+tracking starts, whether at add-time or later via "Track HP"), deaths,
+combatants added/removed. Reaction toggles are deliberately *not* logged —
+too frequent/low-value to be worth the noise.
+
+**Editable, scoped to HP.** HP-affecting entries (damage, healing, max-HP
+increase, HP-tracking-started) can be swiped away to correct a mistake —
+deleting one **recomputes that combatant's current/max HP from scratch** by
+replaying its remaining HP-operation entries, in order (`CombatSession.
+deleteLogEntry`/`recomputeHP`). Structured data (`HPOperation` enum: which
+operation + amount, plus the target `combatantId`) backs this; the entry's
+`text` is only ever the display rendering, never parsed back. Turn changes,
+combatant add/remove, and death entries are **not** deletable yet — no
+defined "undo" for those without touching turn order, which is a materially
+bigger and riskier change (see the design discussion this was scoped down
+from, in project history). Deleting the damage entry that caused a death
+naturally revives the combatant, since `isDead` is derived from `currentHP`,
+which the recompute restores.
 
 **Revert-aware**: `Previous Turn` doesn't just revert combatant/turn state — it
 truncates the log back to exactly where it was before the turn being undone,

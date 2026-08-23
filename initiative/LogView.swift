@@ -1,11 +1,22 @@
 import SwiftUI
 
-/// Read-only feed of what's happened in combat (turns, damage, heals, adds/removes).
-/// Newest entries first. The underlying log is truncated automatically when
-/// Previous Turn undoes a turn — see CombatSession.previousTurn().
+/// Feed of what's happened in combat (turns, damage, heals, adds/removes), grouped
+/// by round, newest round first. HP-affecting entries (damage/heal/max-HP-increase/
+/// enable-tracking) can be swiped away — deleting one recomputes the affected
+/// combatant's current/max HP from the remaining entries. See
+/// CombatSession.deleteLogEntry/recomputeHP. Other entries (turn changes, adds/
+/// removes, deaths) aren't deletable yet.
 struct LogView: View {
     let session: CombatSession
     @Environment(\.dismiss) private var dismiss
+
+    private var roundsDescending: [Int] {
+        Set(session.log.map { $0.roundNumber }).sorted(by: >)
+    }
+
+    private func entries(forRound round: Int) -> [LogEntry] {
+        session.log.filter { $0.roundNumber == round }.reversed()
+    }
 
     var body: some View {
         NavigationStack {
@@ -17,15 +28,30 @@ struct LogView: View {
                         description: Text("Actions taken during combat appear here.")
                     )
                 } else {
-                    List(session.log.reversed()) { entry in
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(entry.text)
-                                .font(.subheadline)
-                            Text(entry.timestamp.formatted(date: .omitted, time: .shortened))
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                    List {
+                        ForEach(roundsDescending, id: \.self) { round in
+                            Section("Round \(round)") {
+                                ForEach(entries(forRound: round)) { entry in
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(entry.text)
+                                            .font(.subheadline)
+                                        Text(entry.timestamp.formatted(date: .omitted, time: .shortened))
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                    }
+                                    .padding(.vertical, 2)
+                                    .swipeActions(edge: .trailing) {
+                                        if entry.isDeletable {
+                                            Button(role: .destructive) {
+                                                session.deleteLogEntry(entry.id)
+                                            } label: {
+                                                Label("Delete", systemImage: "trash")
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
-                        .padding(.vertical, 2)
                     }
                 }
             }

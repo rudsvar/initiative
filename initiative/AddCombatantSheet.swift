@@ -44,11 +44,6 @@ struct AddCombatantSheet: View {
                         }
                 }
 
-                Section("Initiative") {
-                    TextField("Random 1–20 if left blank", text: $initiativeText)
-                        .keyboardType(.numberPad)
-                }
-
                 Section("Max HP") {
                     TextField("Optional", text: $hpText)
                         .keyboardType(.numberPad)
@@ -59,11 +54,20 @@ struct AddCombatantSheet: View {
                         .keyboardType(.numberPad)
                 }
 
+                Section("Initiative") {
+                    TextField("Random 1–20 if left blank", text: $initiativeText)
+                        .keyboardType(.numberPad)
+                }
+
                 if (Int(countText) ?? 1) > 1 {
                     Section {
-                        Text("Each copy gets its own random initiative roll.")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+                        Text(
+                            initiativeText.isEmpty
+                                ? "Each copy gets its own random initiative roll."
+                                : "All copies get this same initiative."
+                        )
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                     }
                 }
             }

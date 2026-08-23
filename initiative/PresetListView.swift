@@ -8,7 +8,6 @@ struct PresetListView: View {
 
     @State private var presets: [CreaturePreset] = []
     @State private var editingPreset: CreaturePreset?
-    @State private var pendingDeletePreset: CreaturePreset?
 
     var body: some View {
         Group {
@@ -43,8 +42,11 @@ struct PresetListView: View {
                         }
                         .tint(.primary)
                         .swipeActions(edge: .trailing) {
+                            // No extra confirmation dialog: swipe-to-reveal + tap
+                            // Delete is already two deliberate actions.
                             Button(role: .destructive) {
-                                pendingDeletePreset = preset
+                                presetStore.delete(id: preset.id)
+                                presets = presetStore.listPresets()
                             } label: {
                                 Label("Delete", systemImage: "trash")
                             }
@@ -59,25 +61,6 @@ struct PresetListView: View {
         .sheet(item: $editingPreset) { preset in
             EditPresetView(presetStore: presetStore, preset: preset) {
                 presets = presetStore.listPresets()
-            }
-        }
-        .confirmationDialog(
-            "Delete \"\(pendingDeletePreset?.name ?? "")\"?",
-            isPresented: Binding(
-                get: { pendingDeletePreset != nil },
-                set: { if !$0 { pendingDeletePreset = nil } }
-            ),
-            titleVisibility: .visible
-        ) {
-            Button("Delete", role: .destructive) {
-                if let preset = pendingDeletePreset {
-                    presetStore.delete(id: preset.id)
-                    presets = presetStore.listPresets()
-                }
-                pendingDeletePreset = nil
-            }
-            Button("Cancel", role: .cancel) {
-                pendingDeletePreset = nil
             }
         }
     }

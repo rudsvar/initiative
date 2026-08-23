@@ -323,6 +323,105 @@ final class CombatSessionTests: XCTestCase {
         XCTAssertTrue(session.log[0].text.contains("Goblin"))
     }
 
+    func testLogEntriesTagRoundNumber() {
+        session.addCombatant(name: "P1", initiative: 20)
+        session.addCombatant(name: "P2", initiative: 10)
+        XCTAssertTrue(session.log.allSatisfy { $0.roundNumber == 1 })
+
+        session.nextTurn()
+        session.nextTurn() // wraps to round 2
+
+        XCTAssertTrue(session.log.contains { $0.roundNumber == 2 })
+    }
+
+    func testDamageEntryIsDeletableAndCarriesStructuredOperation() {
+        session.addCombatant(name: "Goblin", initiative: 10, maxHP: 10)
+        let id = session.combatants[0].id
+
+        session.applyDamage(to: id, amount: 4)
+
+        let entry = session.log.last { $0.combatantId == id && $0.hpOperation != nil }!
+        XCTAssertTrue(entry.isDeletable)
+        XCTAssertEqual(entry.hpOperation, .damage(amount: 4))
+    }
+
+    func testTurnChangeEntryIsNotDeletable() {
+        session.addCombatant(name: "Goblin", initiative: 10)
+        let entry = session.log.first!
+        XCTAssertFalse(entry.isDeletable)
+    }
+
+    func testDeleteDamageEntryRecomputesHP() {
+        session.addCombatant(name: "Goblin", initiative: 10, maxHP: 20)
+        let id = session.combatants[0].id
+        session.applyDamage(to: id, amount: 5) // 15/20
+        session.applyDamage(to: id, amount: 3) // 12/20
+        let firstDamageEntry = session.log.first { $0.hpOperation == .damage(amount: 5) }!
+
+        session.deleteLogEntry(firstDamageEntry.id)
+
+        // Only the second damage (3) should remain applied: 20 - 3 = 17
+        XCTAssertEqual(session.combatants[0].currentHP, 17)
+        XCTAssertEqual(session.combatants[0].maxHP, 20)
+    }
+
+    func testDeleteHealingEntryRecomputesHP() {
+        session.addCombatant(name: "Goblin", initiative: 10, maxHP: 20)
+        let id = session.combatants[0].id
+        session.applyDamage(to: id, amount: 15) // 5/20
+        session.applyHealing(to: id, amount: 10) // 15/20
+        let healEntry = session.log.first { $0.hpOperation == .healing(amount: 10) }!
+
+        session.deleteLogEntry(healEntry.id)
+
+        XCTAssertEqual(session.combatants[0].currentHP, 5)
+    }
+
+    func testDeleteMaxHPIncreaseEntryRecomputesHP() {
+        session.addCombatant(name: "Goblin", initiative: 10, maxHP: 10)
+        let id = session.combatants[0].id
+        session.increaseMaxHP(for: id, amount: 5) // 15/15
+        let increaseEntry = session.log.first { $0.hpOperation == .maxHPIncrease(amount: 5) }!
+
+        session.deleteLogEntry(increaseEntry.id)
+
+        XCTAssertEqual(session.combatants[0].maxHP, 10)
+        XCTAssertEqual(session.combatants[0].currentHP, 10)
+    }
+
+    func testDeleteEnableTrackingEntryClearsHP() {
+        session.addCombatant(name: "Goblin", initiative: 10, maxHP: 10)
+        let id = session.combatants[0].id
+        let enableEntry = session.log.first { $0.hpOperation == .enableTracking(amount: 10) }!
+
+        session.deleteLogEntry(enableEntry.id)
+
+        XCTAssertNil(session.combatants[0].maxHP)
+        XCTAssertNil(session.combatants[0].currentHP)
+    }
+
+    func testDeleteDamageThatCausedDeathRevivesCombatant() {
+        session.addCombatant(name: "Goblin", initiative: 10, maxHP: 10)
+        let id = session.combatants[0].id
+        session.applyDamage(to: id, amount: 10)
+        XCTAssertTrue(session.combatants[0].isDead)
+        let damageEntry = session.log.first { $0.hpOperation == .damage(amount: 10) }!
+
+        session.deleteLogEntry(damageEntry.id)
+
+        XCTAssertFalse(session.combatants[0].isDead)
+        XCTAssertEqual(session.combatants[0].currentHP, 10)
+    }
+
+    func testDeleteNonExistentLogEntryDoesNothing() {
+        session.addCombatant(name: "Goblin", initiative: 10)
+        let countBefore = session.log.count
+
+        session.deleteLogEntry(UUID())
+
+        XCTAssertEqual(session.log.count, countBefore)
+    }
+
     func testNextTurnLogsWhoseTurnAndRoundOnWrap() {
         session.addCombatant(name: "P1", initiative: 20)
         session.addCombatant(name: "P2", initiative: 10)
@@ -582,13 +681,18 @@ final class CombatSessionTests: XCTestCase {
         XCTAssertTrue(goblins.allSatisfy { $0.maxHP == 5 && $0.currentHP == 5 })
     }
 
-    func testAddCombatantsWithCountGreaterThanOneIgnoresExplicitInitiative() {
-        // A shared initiative across multiple spawned copies wouldn't make sense --
-        // count > 1 always rolls independently per copy, even if a value was given.
+    func testAddCombatantsWithExplicitInitiativeAppliesToAllCopies() {
         session.addCombatants(name: "Goblin", initiative: 15, maxHP: nil, count: 5)
 
         let initiatives = session.combatants.map { $0.initiative }
-        XCTAssertFalse(initiatives.allSatisfy { $0 == 15 }, "expected independent random rolls, not all 15")
+        XCTAssertTrue(initiatives.allSatisfy { $0 == 15 }, "an explicit initiative should apply to every spawned copy")
+    }
+
+    func testAddCombatantsWithNilInitiativeRollsIndependentlyPerCopy() {
+        session.addCombatants(name: "Goblin", initiative: nil, maxHP: nil, count: 6)
+
+        let initiatives = session.combatants.map { $0.initiative }
+        XCTAssertFalse(initiatives.allSatisfy { $0 == initiatives[0] }, "expected independent random rolls when no initiative is given")
     }
 
     func testAddCombatantsWithCountOneUsesUnsuffixedNameAndGivenInitiative() {

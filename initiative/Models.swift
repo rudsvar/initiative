@@ -36,15 +36,44 @@ struct Effect: Identifiable, Codable {
     }
 }
 
+/// A structured HP change underlying a log entry's display text. Entries that carry
+/// one of these can be deleted from the log — deleting recomputes the affected
+/// combatant's current/max HP from scratch by replaying the remaining HP-operation
+/// entries for just that combatant, in order. Entries without one (turn changes,
+/// combatant added/removed, deaths) aren't deletable — there's no defined "undo"
+/// for them yet.
+enum HPOperation: Codable, Equatable {
+    case enableTracking(amount: Int)
+    case damage(amount: Int)
+    case healing(amount: Int)
+    case maxHPIncrease(amount: Int)
+}
+
 struct LogEntry: Identifiable, Codable {
     let id: UUID
     var text: String
     var timestamp: Date
+    var roundNumber: Int
+    var combatantId: UUID?
+    var hpOperation: HPOperation?
 
-    init(id: UUID = UUID(), text: String, timestamp: Date = Date()) {
+    /// Whether this entry can be swiped away in the log UI.
+    var isDeletable: Bool { hpOperation != nil }
+
+    init(
+        id: UUID = UUID(),
+        text: String,
+        timestamp: Date = Date(),
+        roundNumber: Int,
+        combatantId: UUID? = nil,
+        hpOperation: HPOperation? = nil
+    ) {
         self.id = id
         self.text = text
         self.timestamp = timestamp
+        self.roundNumber = roundNumber
+        self.combatantId = combatantId
+        self.hpOperation = hpOperation
     }
 }
 
@@ -128,8 +157,8 @@ class CombatSession {
 
     private var history: [(combatants: [Combatant], currentTurnIndex: Int, roundNumber: Int, logCount: Int)] = []
 
-    private func appendLog(_ text: String) {
-        log.append(LogEntry(text: text))
+    private func appendLog(_ text: String, combatantId: UUID? = nil, hpOperation: HPOperation? = nil) {
+        log.append(LogEntry(text: text, roundNumber: roundNumber, combatantId: combatantId, hpOperation: hpOperation))
     }
 
     private static func defaultName() -> String {
@@ -161,40 +190,68 @@ class CombatSession {
         combatants.append(combatant)
         combatants.sort { $0.initiative > $1.initiative }
         appendLog("\(name) added to combat (initiative \(resolvedInitiative))")
+        if let maxHP {
+            // A separate, structured entry so recomputeHP has a baseline to replay
+            // from even when HP was set at creation time rather than via "Track HP".
+            appendLog(
+                "\(name) started tracking HP (\(maxHP)/\(maxHP))",
+                combatantId: combatant.id,
+                hpOperation: .enableTracking(amount: maxHP)
+            )
+        }
     }
 
-    /// Spawns `count` copies of the same creature. Each copy always rolls its own
-    /// random initiative (1...20 + initiativeBonus) — a shared explicit initiative
-    /// wouldn't make sense across multiple entrants, so `count > 1` ignores any
-    /// single provided value. Names get a numeric suffix ("Goblin 1", "Goblin 2", ...)
-    /// when count > 1.
+    /// Spawns `count` copies of the same creature. `initiative: nil` rolls each copy
+    /// independently (1...20 + initiativeBonus); an explicit `initiative` value is
+    /// used as-is for every copy (no per-copy randomization — if you typed a number,
+    /// that's what they all get). Names get a numeric suffix ("Goblin 1", "Goblin 2",
+    /// ...) when count > 1.
     func addCombatants(name: String, initiative: Int?, maxHP: Int?, count: Int, initiativeBonus: Int = 0) {
         guard count > 0 else { return }
+        var spawned: [Combatant] = []
         for i in 1...count {
-            let rolledInitiative = count > 1
-                ? Int.random(in: 1...20) + initiativeBonus
-                : (initiative ?? (Int.random(in: 1...20) + initiativeBonus))
+            let resolvedInitiative = initiative ?? (Int.random(in: 1...20) + initiativeBonus)
             let displayName = count > 1 ? "\(name) \(i)" : name
-            combatants.append(Combatant(name: displayName, initiative: rolledInitiative, maxHP: maxHP))
+            spawned.append(Combatant(name: displayName, initiative: resolvedInitiative, maxHP: maxHP))
         }
+        combatants.append(contentsOf: spawned)
         combatants.sort { $0.initiative > $1.initiative }
         appendLog(count > 1 ? "\(count)x \(name) added to combat" : "\(name) added to combat")
+        if let maxHP {
+            // Same reasoning as addCombatant: a structured baseline entry per
+            // spawned copy, tied to that copy's own id, so recomputeHP works.
+            for combatant in spawned {
+                appendLog(
+                    "\(combatant.name) started tracking HP (\(maxHP)/\(maxHP))",
+                    combatantId: combatant.id,
+                    hpOperation: .enableTracking(amount: maxHP)
+                )
+            }
+        }
     }
 
     func enableHPTracking(for id: UUID, maxHP: Int) {
         guard let index = combatants.firstIndex(where: { $0.id == id }), maxHP > 0 else { return }
         combatants[index].maxHP = maxHP
         combatants[index].currentHP = maxHP
-        appendLog("\(combatants[index].name) started tracking HP (\(maxHP)/\(maxHP))")
+        appendLog(
+            "\(combatants[index].name) started tracking HP (\(maxHP)/\(maxHP))",
+            combatantId: id,
+            hpOperation: .enableTracking(amount: maxHP)
+        )
     }
 
     func applyDamage(to id: UUID, amount: Int) {
         guard amount > 0, let index = combatants.firstIndex(where: { $0.id == id }),
               let current = combatants[index].currentHP else { return }
         combatants[index].currentHP = max(0, current - amount)
-        appendLog("\(combatants[index].name) took \(amount) damage (\(combatants[index].currentHP!)/\(combatants[index].maxHP!) HP)")
+        appendLog(
+            "\(combatants[index].name) took \(amount) damage (\(combatants[index].currentHP!)/\(combatants[index].maxHP!) HP)",
+            combatantId: id,
+            hpOperation: .damage(amount: amount)
+        )
         if combatants[index].isDead {
-            appendLog("\(combatants[index].name) died")
+            appendLog("\(combatants[index].name) died", combatantId: id)
         }
     }
 
@@ -203,7 +260,11 @@ class CombatSession {
               let current = combatants[index].currentHP,
               let maxHP = combatants[index].maxHP else { return }
         combatants[index].currentHP = min(maxHP, current + amount)
-        appendLog("\(combatants[index].name) healed \(amount) HP (\(combatants[index].currentHP!)/\(maxHP) HP)")
+        appendLog(
+            "\(combatants[index].name) healed \(amount) HP (\(combatants[index].currentHP!)/\(maxHP) HP)",
+            combatantId: id,
+            hpOperation: .healing(amount: amount)
+        )
     }
 
     /// Raises both max and current HP by `amount` (a temporary buff, leveling up,
@@ -214,7 +275,50 @@ class CombatSession {
               let current = combatants[index].currentHP else { return }
         combatants[index].maxHP = maxHP + amount
         combatants[index].currentHP = current + amount
-        appendLog("\(combatants[index].name)'s max HP increased by \(amount) (\(combatants[index].currentHP!)/\(combatants[index].maxHP!) HP)")
+        appendLog(
+            "\(combatants[index].name)'s max HP increased by \(amount) (\(combatants[index].currentHP!)/\(combatants[index].maxHP!) HP)",
+            combatantId: id,
+            hpOperation: .maxHPIncrease(amount: amount)
+        )
+    }
+
+    /// Deletes a log entry. If it carried an HP operation, the affected combatant's
+    /// current/max HP is recomputed from scratch by replaying the remaining
+    /// HP-operation entries for that combatant, in order — see `recomputeHP`.
+    func deleteLogEntry(_ entryId: UUID) {
+        guard let index = log.firstIndex(where: { $0.id == entryId }) else { return }
+        let entry = log[index]
+        log.remove(at: index)
+        if let combatantId = entry.combatantId, entry.hpOperation != nil {
+            recomputeHP(for: combatantId)
+        }
+    }
+
+    private func recomputeHP(for combatantId: UUID) {
+        guard let index = combatants.firstIndex(where: { $0.id == combatantId }) else { return }
+        var maxHP: Int?
+        var currentHP: Int?
+        for entry in log where entry.combatantId == combatantId {
+            switch entry.hpOperation {
+            case .enableTracking(let amount):
+                maxHP = amount
+                currentHP = amount
+            case .damage(let amount):
+                guard let current = currentHP else { continue }
+                currentHP = max(0, current - amount)
+            case .healing(let amount):
+                guard let current = currentHP, let max = maxHP else { continue }
+                currentHP = min(max, current + amount)
+            case .maxHPIncrease(let amount):
+                guard let max = maxHP, let current = currentHP else { continue }
+                maxHP = max + amount
+                currentHP = current + amount
+            case nil:
+                continue
+            }
+        }
+        combatants[index].maxHP = maxHP
+        combatants[index].currentHP = currentHP
     }
 
     func removeCombatant(id: UUID) {

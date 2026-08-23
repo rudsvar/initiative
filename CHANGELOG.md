@@ -4,7 +4,35 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Added
+- **Log entries are now editable, scoped to HP.** Damage/healing/max-HP-increase/
+  HP-tracking-started entries carry structured data (`HPOperation` enum + target
+  combatant id) behind the display text; swiping one away recomputes that
+  combatant's current/max HP from the remaining entries via
+  `CombatSession.deleteLogEntry`/`recomputeHP`. Turn changes, add/remove, and
+  deaths stay non-deletable for now — undoing those safely means touching
+  derived turn order, which is a bigger, riskier change than fixing an HP
+  typo; discussed the scope with the user before building rather than
+  guessing at it
+- Log view now groups entries into sections by round number, newest round first
+- Add-combatant modal: "Choose Creature" menu listing saved presets by name
+- Removed the extra delete-confirmation dialog for creature presets — swipe +
+  tap Delete is already two deliberate actions, matching sessions/combatants
+
+### Changed
+- Add-combatant modal field order: Name, Max HP, Count, Initiative (Initiative
+  moved last since it's the field most often left blank)
+- `addCombatants` no longer forces independent random rolls when count > 1 and
+  an explicit initiative is given — every spawned copy now gets that same
+  value, matching what you'd expect from typing a number. Still rolls
+  independently per copy when initiative is left blank
+
 ### Fixed
+- Real bug found while building the above: combatants created with Max HP set
+  *at add time* (vs. later via "Track HP") had no `.enableTracking` log entry,
+  so deleting an unrelated HP entry for them would recompute to nil HP,
+  wiping them. Both `addCombatant` and `addCombatants` now log that baseline
+  entry whenever `maxHP` is provided at creation
 - Bottom bar's Log button wasn't actually centered — the two-`Spacer()` layout
   only balances the gaps around it, not the true bar center, when the side
   buttons ("Previous Turn" vs "Next Turn") have unequal widths. Fixed with
