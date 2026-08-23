@@ -36,32 +36,62 @@ struct ContentView: View {
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
 
-                HStack(spacing: 12) {
-                    Button(action: { session.previousTurn() }) {
-                        HStack(spacing: 4) {
-                            Image(systemName: "chevron.left")
-                            Text("Previous Turn")
-                        }
-                        .font(.system(size: 14, weight: .semibold))
-                    }
-                    .foregroundColor(Theme.accent)
-                    .disabled(!session.canGoToPreviousTurn)
+                if #available(iOS 26.0, *) {
+                    GlassEffectContainer(spacing: 12) {
+                        HStack(spacing: 12) {
+                            Button(action: { session.previousTurn() }) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "chevron.left")
+                                    Text("Previous Turn")
+                                }
+                                .font(.system(size: 14, weight: .semibold))
+                            }
+                            .buttonStyle(.glass)
+                            .disabled(!session.canGoToPreviousTurn)
 
-                    Spacer()
+                            Spacer()
 
-                    Button(action: { session.nextTurn() }) {
-                        HStack(spacing: 4) {
-                            Text("Next Turn")
-                            Image(systemName: "chevron.right")
+                            Button(action: { session.nextTurn() }) {
+                                HStack(spacing: 4) {
+                                    Text("Next Turn")
+                                    Image(systemName: "chevron.right")
+                                }
+                                .font(.system(size: 14, weight: .semibold))
+                            }
+                            .buttonStyle(.glassProminent)
+                            .tint(Theme.accent)
+                            .disabled(session.sortedCombatants.isEmpty)
                         }
-                        .font(.system(size: 14, weight: .semibold))
+                        .padding(16)
                     }
-                    .foregroundColor(Theme.accent)
-                    .disabled(session.sortedCombatants.isEmpty)
+                } else {
+                    HStack(spacing: 12) {
+                        Button(action: { session.previousTurn() }) {
+                            HStack(spacing: 4) {
+                                Image(systemName: "chevron.left")
+                                Text("Previous Turn")
+                            }
+                            .font(.system(size: 14, weight: .semibold))
+                        }
+                        .foregroundColor(Theme.accent)
+                        .disabled(!session.canGoToPreviousTurn)
+
+                        Spacer()
+
+                        Button(action: { session.nextTurn() }) {
+                            HStack(spacing: 4) {
+                                Text("Next Turn")
+                                Image(systemName: "chevron.right")
+                            }
+                            .font(.system(size: 14, weight: .semibold))
+                        }
+                        .foregroundColor(Theme.accent)
+                        .disabled(session.sortedCombatants.isEmpty)
+                    }
+                    .padding(16)
+                    .background(Theme.background)
+                    .borderTop(Theme.divider)
                 }
-                .padding(16)
-                .background(Theme.background)
-                .borderTop(Theme.divider)
             }
         }
         .navigationTitle("Initiative")

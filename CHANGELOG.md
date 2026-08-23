@@ -4,6 +4,15 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Added
+- Previous/Next Turn bar now uses Liquid Glass on iOS 26+ (`GlassEffectContainer`,
+  `.glassProminent` for Next Turn, `.glass` for Previous Turn), gated with
+  `#available(iOS 26.0, *)` and falling back to the existing themed bar below
+  that. It's the only glass button in the app — went through every button and
+  only this one qualifies as a floating control per Apple's guidance ("reserved
+  for the navigation layer that floats above content"); documented the full
+  reasoning in the `ios-hig` skill so future buttons get evaluated the same way
+
 ### Changed
 - Main menu "Resume" button is now hidden entirely (not just disabled) when
   there's no session to resume, instead of showing a muted-but-still-visible

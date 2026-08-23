@@ -180,6 +180,12 @@ project's standing "no copyrighted ruleset content" constraint.
 **Buttons**
 - **Add combatant row** (top): Always-visible inline row; fill in name (and optional initiative) and submit to add, no modal
 - **Previous Turn** (bottom left): Reverts to the previous turn's full state (turn index, reactions, effects); disabled when there is no prior turn to return to
+- On iOS 26+, the Previous/Next Turn bar uses Liquid Glass (`GlassEffectContainer`,
+  `.glassProminent` on Next Turn as the primary action, `.glass` on Previous Turn) —
+  it's the one floating control bar in the app, the natural fit per Apple's glass
+  guidance (see `<agent-config>/skills/ios-hig/SKILL.md`). Falls back to the existing
+  themed bar below iOS 26. No other button in the app uses glass — see that skill
+  for the full reasoning on which buttons qualify
 - **Next Turn** (bottom right): Advance to next combatant, reset current's reaction to available
 
 **Combatant Detail** (tap a combatant row)
