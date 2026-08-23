@@ -350,9 +350,7 @@ struct ReactionToggleView: View {
     var body: some View {
         Button(action: onToggle) {
             HStack(spacing: 12) {
-                Image(systemName: isUsed ? "xmark.circle.fill" : "checkmark.circle.fill")
-                    .font(.system(size: 20))
-                    .foregroundColor(Theme.accent)
+                LetterBadge(letter: "R", isOn: !isUsed, size: 22)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(isUsed ? "Reaction Used" : "Reaction Available")

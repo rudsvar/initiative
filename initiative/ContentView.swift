@@ -249,14 +249,11 @@ struct CombatantRow: View {
                     // On its own row (not appended after Init/HP) so it lands at the
                     // same horizontal position across every row, regardless of
                     // whether HP text is present for a given combatant.
-                    if combatant.reactionUsed {
-                        Label("Reaction used", systemImage: "xmark.circle.fill")
+                    HStack(spacing: 6) {
+                        LetterBadge(letter: "R", isOn: !combatant.reactionUsed, size: 14)
+                        Text(combatant.reactionUsed ? "Reaction used" : "Reaction available")
                             .font(.caption)
-                            .foregroundColor(Theme.divider)
-                    } else {
-                        Label("Reaction available", systemImage: "checkmark.circle.fill")
-                            .font(.caption)
-                            .foregroundColor(Theme.accent)
+                            .foregroundColor(combatant.reactionUsed ? Theme.divider : Theme.accent)
                     }
                 }
 

@@ -93,6 +93,10 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 - Reaction status sits on its own row (not appended after Init/HP on the same
   line) so it lands at the same horizontal position across every combatant
   card, regardless of whether that combatant has HP tracked
+- Reaction indicator is a custom red "R" `LetterBadge` (`Theme.swift`) — a
+  `Circle` + `Text`, no image asset — filled red when available, outlined/
+  muted when used. Replaced the earlier SF Symbol checkmark/xmark, used
+  identically on the combatant detail screen's reaction toggle
 - List is always sorted highest to lowest initiative
 - Current combatant (whose turn it is) is visually emphasized
 

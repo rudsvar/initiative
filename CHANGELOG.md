@@ -4,6 +4,13 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Changed
+- Reaction indicator replaced the SF Symbol checkmark/xmark with a custom red
+  "R" badge (`Theme.LetterBadge` — a `Circle` + `Text`, no image asset
+  needed): filled red when available, outlined/muted when used. Used both on
+  the combatant list row and the detail screen's reaction toggle for
+  consistency
+
 ### Fixed
 - Reaction status ("Reaction available"/"Reaction used") on combatant list
   rows wasn't horizontally aligned between combatants — it was appended after
