@@ -14,37 +14,40 @@ struct MainMenuView: View {
             Theme.background
                 .ignoresSafeArea()
 
-            VStack(spacing: 32) {
-                Spacer()
+            GeometryReader { proxy in
+                ScrollView {
+                    VStack(spacing: 32) {
+                        VStack(spacing: 4) {
+                            Text("Initiative")
+                                .font(.system(.largeTitle, design: .serif))
+                                .fontWeight(.bold)
+                                .foregroundColor(Theme.textPrimary)
+                            Text("Combat Tracker")
+                                .font(.subheadline)
+                                .foregroundColor(Theme.textTertiary)
+                        }
+                        .multilineTextAlignment(.center)
 
-                VStack(spacing: 4) {
-                    Text("Initiative")
-                        .font(.system(size: 34, weight: .bold, design: .serif))
-                        .foregroundColor(Theme.textPrimary)
-                    Text("Combat Tracker")
-                        .font(.subheadline)
-                        .foregroundColor(Theme.textTertiary)
+                        VStack(spacing: 16) {
+                            MenuButton(title: "Resume", systemImage: "play.circle.fill", isPrimary: true) {
+                                resume()
+                            }
+                            .disabled(!hasAutosave)
+                            .opacity(hasAutosave ? 1 : 0.4)
+
+                            MenuButton(title: "New Session", systemImage: "plus.circle.fill") {
+                                startNewSession()
+                            }
+
+                            MenuButton(title: "Load Session", systemImage: "folder.fill") {
+                                path.append(Route.sessionList)
+                            }
+                        }
+                        .padding(.horizontal, 32)
+                    }
+                    .padding(.vertical, 40)
+                    .frame(minWidth: proxy.size.width, minHeight: proxy.size.height)
                 }
-
-                VStack(spacing: 16) {
-                    MenuButton(title: "Resume", systemImage: "play.circle.fill", isPrimary: true) {
-                        resume()
-                    }
-                    .disabled(!hasAutosave)
-                    .opacity(hasAutosave ? 1 : 0.4)
-
-                    MenuButton(title: "New Session", systemImage: "plus.circle.fill") {
-                        startNewSession()
-                    }
-
-                    MenuButton(title: "Load Session", systemImage: "folder.fill") {
-                        path.append(Route.sessionList)
-                    }
-                }
-                .padding(.horizontal, 32)
-
-                Spacer()
-                Spacer()
             }
         }
         .navigationBarHidden(true)
@@ -73,13 +76,14 @@ private struct MenuButton: View {
         Button(action: action) {
             HStack(spacing: 12) {
                 Image(systemName: systemImage)
-                    .font(.system(size: 18))
+                    .font(.body)
                 Text(title)
-                    .font(.system(size: 17, weight: .semibold))
+                    .font(.body.weight(.semibold))
                 Spacer()
             }
             .padding(.horizontal, 16)
-            .frame(height: 52)
+            .padding(.vertical, 14)
+            .frame(minHeight: 44)
             .background(isPrimary ? Theme.accent : Theme.divider.opacity(0.2))
             .foregroundColor(isPrimary ? .white : Theme.textPrimary)
             .cornerRadius(10)
