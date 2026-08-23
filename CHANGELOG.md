@@ -4,6 +4,12 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Changed
+- Reaction icon changed again, from `hand.tap`/`hand.tap.fill` to
+  `arrow.triangle.2.circlepath` (a curved back-and-forth arrow — same glyph
+  for both states, just recolored between accent/tertiary). List chip label
+  changed from "Used" to "Reaction"
+
 ### Added
 - **Temporary theme picker** (paint palette icon, top-right of the main menu)
   for comparing 5 color palettes live: the original Rust & Paper, plus Ink &

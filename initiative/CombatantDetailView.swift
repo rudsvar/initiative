@@ -380,7 +380,7 @@ struct ReactionToggleView: View {
     var body: some View {
         Button(action: onToggle) {
             HStack(spacing: 12) {
-                Image(systemName: isUsed ? "hand.tap" : "hand.tap.fill")
+                Image(systemName: "arrow.triangle.2.circlepath")
                     .font(.system(size: 18))
                     .foregroundColor(isUsed ? Theme.textTertiary : Theme.accent)
                     .frame(width: 22)

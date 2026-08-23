@@ -109,8 +109,8 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
   by side and wrap to the next line on overflow rather than clipping. Full
   effect durations still live only on the combatant detail screen. Row is
   omitted entirely when nothing's active
-- Reaction-used is just another chip in that row (`hand.tap`, labeled
-  "Used"), shown alongside effect condition icons — not visually
+- Reaction-used is just another chip in that row (`arrow.triangle.2.circlepath`,
+  labeled "Reaction"), shown alongside effect condition icons — not visually
   special-cased or called out separately from the rest
 - List is always sorted highest to lowest initiative
 - Current combatant (whose turn it is) is visually emphasized
@@ -143,12 +143,14 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 - Hidden from the user-facing effects list (`Combatant.visibleEffects` filters
   it out) — it has its own dedicated Reaction UI, so showing it a second time
   in "Active Effects" would be redundant
-- Visual indicator: an SF Symbol — `hand.tap.fill` when available / `hand.tap`
-  (outline) when used. Deliberately not `bolt.fill`/`bolt.slash.fill`: those
-  are already used by the Paralyzed/Incapacitated standard conditions (see
-  §11), and reaction needs its own distinct icon so it's never confused with
-  either. On the combatant detail screen's toggle it shows both states; on
-  the main list it's just one more status chip (see §1), shown only when
+- Visual indicator: `arrow.triangle.2.circlepath` (a curved back-and-forth
+  arrow — available in accent color, used in muted tertiary color; same
+  glyph both states, just recolored). Deliberately not `bolt.fill`/
+  `bolt.slash.fill` or `hand.tap`/`hand.tap.fill` (earlier choices) — picked
+  something visually distinct from every `ConditionLibrary` icon (see §11)
+  so it's never confused with a status condition. On the combatant detail
+  screen's toggle it shows both states; on the main list it's just one more
+  status chip (see §1), shown only when
   used, not shown at all when available, matching how effects only show when
   active rather than placeholders for every possible one
 

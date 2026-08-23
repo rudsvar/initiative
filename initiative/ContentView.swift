@@ -314,7 +314,7 @@ struct CombatantRow: View {
             if combatant.reactionUsed || !combatant.visibleEffects.isEmpty {
                 FlowLayout(horizontalSpacing: 6, verticalSpacing: 6) {
                     if combatant.reactionUsed {
-                        StatusChip(symbolName: "hand.tap", label: "Used", color: Theme.textTertiary)
+                        StatusChip(symbolName: "arrow.triangle.2.circlepath", label: "Reaction", color: Theme.textTertiary)
                     }
                     ForEach(combatant.visibleEffects) { effect in
                         let condition = ConditionLibrary.matching(name: effect.name)
