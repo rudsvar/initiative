@@ -40,11 +40,10 @@ final class CombatSessionTests: XCTestCase {
 
     func testReactionResetOnTurnStart() {
         session.addParticipant(name: "Warrior", initiative: 15)
-        let warrior = session.participants.first!
 
         // Use reaction
         session.participants[0].reactionUsed = true
-        XCTAssertTrue(warrior.reactionUsed)
+        XCTAssertTrue(session.participants[0].reactionUsed)
 
         // Advance turn
         session.nextTurn()
@@ -131,23 +130,17 @@ final class CombatSessionTests: XCTestCase {
         XCTAssertEqual(session.participants[0].effects.count, 0)
     }
 
-    func testEffectUntilEndOfTheirTurnPersistsUntilNextStart() {
+    func testEffectUntilEndOfTheirTurnExpiresWhenOwnersTurnEnds() {
         session.addParticipant(name: "P1", initiative: 20)
         session.addParticipant(name: "P2", initiative: 10)
 
         let effect = Effect(name: "Poisoned", durationType: .untilEndOfTheirTurn)
         session.participants[0].effects.append(effect)
 
-        // P1's turn ends
+        // P1's turn ends (the trigger condition), P2's begins
         session.nextTurn()
 
-        // Effect should still be there (only expires at end of P1's turn, not start)
-        XCTAssertEqual(session.participants[0].effects.count, 1)
-
-        // P2's turn ends, back to P1
-        session.nextTurn()
-
-        // Now effect should be gone (it expired at end of P1's turn)
+        // Effect expires immediately since P1's turn just ended
         XCTAssertEqual(session.participants[0].effects.count, 0)
     }
 
@@ -208,12 +201,12 @@ final class CombatSessionTests: XCTestCase {
         session.participants[0].effects.append(contentsOf: [effect1, effect2, effect3])
         XCTAssertEqual(session.participants[0].effects.count, 3)
 
-        // Advance turns
+        // Advance turns: P1's turn ends (triggers E2), P2's turn starts (triggers E3)
         session.nextTurn()
 
-        // Only effect1 and effect3 should expire (start-based)
+        // E2 (end of P1's turn) and E3 (start of target P2's turn) expire; E1 (start of P1's turn) remains
         XCTAssertEqual(session.participants[0].effects.count, 1)
-        XCTAssertEqual(session.participants[0].effects.first?.name, "E2")
+        XCTAssertEqual(session.participants[0].effects.first?.name, "E1")
     }
 }
 

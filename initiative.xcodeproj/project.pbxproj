@@ -11,7 +11,6 @@
 		38695A715EF0360D9B867764 /* ViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 155E562E12403C00DE8A62AB /* ViewExtensions.swift */; };
 		57E43D881FDA3ACE96602F3D /* ParticipantDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BA786828925EBEB33514E25 /* ParticipantDetailView.swift */; };
 		73B4B754E931AFDD980BA521 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C602D49912CF215015A47FE /* ContentView.swift */; };
-		A44A67DA94C286235B913B1E /* ModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374032899B38F3EF7AFFA6BF /* ModelsTests.swift */; };
 		B5FC3C6073488D73C6F11502 /* AddEffectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB9B65C9C807B3A6A012AA17 /* AddEffectView.swift */; };
 		E62AEBA1E275012E4B58F9A0 /* ModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374032899B38F3EF7AFFA6BF /* ModelsTests.swift */; };
 		ED7A10670E88FF02C4D63E4B /* initiativeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F716A445CE95BB18ED0CB6 /* initiativeApp.swift */; };
@@ -122,6 +121,9 @@
 						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
+					5E6DF4E626F9E9519FFF6C89 = {
+						ProvisioningStyle = Automatic;
+					};
 				};
 			};
 			buildConfigurationList = 76EB26D1109072E8A0734F74 /* Build configuration list for PBXProject "initiative" */;
@@ -152,7 +154,6 @@
 				B5FC3C6073488D73C6F11502 /* AddEffectView.swift in Sources */,
 				73B4B754E931AFDD980BA521 /* ContentView.swift in Sources */,
 				28A7C8C9661750E79B806092 /* Models.swift in Sources */,
-				A44A67DA94C286235B913B1E /* ModelsTests.swift in Sources */,
 				57E43D881FDA3ACE96602F3D /* ParticipantDetailView.swift in Sources */,
 				38695A715EF0360D9B867764 /* ViewExtensions.swift in Sources */,
 				ED7A10670E88FF02C4D63E4B /* initiativeApp.swift in Sources */,
@@ -182,6 +183,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -299,6 +304,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGNING_REQUIRED = NO;
+				CODE_SIGN_IDENTITY = "";
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

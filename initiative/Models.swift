@@ -67,49 +67,35 @@ class CombatSession {
     }
 
     func nextTurn() {
-        if participants.isEmpty { return }
+        guard !participants.isEmpty else { return }
 
-        // Reset reaction for current participant
-        if currentTurnIndex < participants.count {
-            participants[currentTurnIndex].reactionUsed = false
-
-            // Remove expired effects
-            removeExpiredEffects(for: currentTurnIndex, at: .start)
-        }
-
-        // Advance to next participant
+        let endingParticipantId = participants[currentTurnIndex].id
         currentTurnIndex = (currentTurnIndex + 1) % participants.count
+        let startingParticipantId = participants[currentTurnIndex].id
+
+        removeExpiredEffects(
+            turnEndingParticipantId: endingParticipantId,
+            turnStartingParticipantId: startingParticipantId
+        )
+
+        participants[currentTurnIndex].reactionUsed = false
     }
 
-    private func removeExpiredEffects(for participantIndex: Int, at timing: EffectTiming) {
-        guard participantIndex < participants.count else { return }
-
-        participants[participantIndex].effects.removeAll { effect in
-            shouldRemoveEffect(effect, at: timing, forParticipant: participantIndex)
+    private func removeExpiredEffects(turnEndingParticipantId: UUID, turnStartingParticipantId: UUID) {
+        for i in participants.indices {
+            let ownerId = participants[i].id
+            participants[i].effects.removeAll { effect in
+                switch effect.durationType {
+                case .untilEndOfTheirTurn:
+                    return ownerId == turnEndingParticipantId
+                case .untilEndOfTargetTurn(let targetID):
+                    return targetID == turnEndingParticipantId
+                case .untilStartOfTheirTurn:
+                    return ownerId == turnStartingParticipantId
+                case .untilStartOfTargetTurn(let targetID):
+                    return targetID == turnStartingParticipantId
+                }
+            }
         }
     }
-
-    private func shouldRemoveEffect(_ effect: Effect, at timing: EffectTiming, forParticipant participantIndex: Int) -> Bool {
-        switch (effect.durationType, timing) {
-        case (.untilStartOfTheirTurn, .start):
-            return true
-        case (.untilEndOfTheirTurn, .end):
-            return true
-        case (.untilStartOfTargetTurn(let targetID), .start):
-            return findParticipantIndex(by: targetID) == participantIndex
-        case (.untilEndOfTargetTurn(let targetID), .end):
-            return findParticipantIndex(by: targetID) == participantIndex
-        default:
-            return false
-        }
-    }
-
-    private func findParticipantIndex(by id: UUID) -> Int? {
-        participants.firstIndex { $0.id == id }
-    }
-}
-
-enum EffectTiming {
-    case start
-    case end
 }

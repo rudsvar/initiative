@@ -79,9 +79,25 @@ This keeps the project structure reproducible and diffable (the generated `.pbxp
 
 ## Testing
 
-Xcode supports XCTest. To add unit or UI tests:
-1. Create a test target in `project.yml` under `targets:`
-2. Add test files ending in `Tests.swift`
-3. Run via ⌘U in Xcode
+The `initiativeTests` target (XCTest) covers `Models.swift` — turn order, reaction
+resets, and effect expiration logic. Add new test files ending in `*Tests.swift` in
+`initiative/`; they're auto-excluded from the app target and auto-included in the
+test target via `project.yml`'s include/exclude globs, no manual wiring needed.
 
-Currently no tests are configured—add as needed.
+**Always run tests after changing `Models.swift` or any view logic, before considering
+a change done.** Run from the CLI (faster feedback than opening Xcode, and avoids
+device code-signing prompts):
+
+```bash
+xcodebuild test -scheme initiative -destination "platform=iOS Simulator,name=phone 16 Pro"
+```
+
+If that destination isn't available, list available simulators with
+`xcrun simctl list devices available` and substitute one, or use
+`-destination "platform=iOS Simulator,id=<UDID>"`.
+
+Note: `xcodebuild build -destination generic/platform=iOS` (device build) will fail
+locally with a code-signing error since no dev team is set in `project.yml` — that's
+expected; only Xcode's GUI (with your signed-in Apple ID) can build for the physical
+device. The simulator test command above is the correct way to verify changes from
+the CLI.
