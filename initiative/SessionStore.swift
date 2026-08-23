@@ -91,10 +91,21 @@ class SessionStore {
     }
 
     /// The session to offer via "Resume" — the last active one, if it still exists on disk.
+    ///
+    /// Self-healing: if the pointer refers to a session that's missing or unreadable
+    /// (deleted from outside the app, corrupted file, etc.), the stale pointer is
+    /// cleared here rather than left dangling. Without this, a UI that checks
+    /// `resumableSession() != nil` to decide whether "Resume" is enabled could show
+    /// it as enabled on one call and have it silently no-op on the next — the pointer
+    /// itself is the single source of truth, so it must never lie about resumability.
     func resumableSession() -> SessionRecord? {
         guard let id = lastActiveSessionID() else { return nil }
         let url = sessionsDirectory.appendingPathComponent("\(id.uuidString).json")
-        guard let data = try? Data(contentsOf: url) else { return nil }
-        return try? JSONDecoder().decode(SessionRecord.self, from: data)
+        guard let data = try? Data(contentsOf: url),
+              let record = try? JSONDecoder().decode(SessionRecord.self, from: data) else {
+            clearLastActiveSessionID()
+            return nil
+        }
+        return record
     }
 }

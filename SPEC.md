@@ -39,6 +39,11 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 - Visual indicators for effects and reaction state
 - Haptic feedback on turn advance
 
+### Phase 3: HP Tracking (planned, not yet implemented — see below)
+- Per-participant current/max HP, opt-in (not every participant needs it tracked)
+- Quick damage/heal adjustment
+- Clear "dead" indicator when HP reaches 0
+
 ## Core Features
 
 ### 1. Participant Management
@@ -114,7 +119,39 @@ An effect has:
 - Tapping an effect should allow manual removal
 - Optional: swipe-to-delete
 
-### 5. Navigation & Layout
+### 5. HP Tracking (planned — not yet implemented, awaiting confirmation before build)
+
+**Opt-in per participant.** Not every participant needs HP tracked (e.g. a
+GM-controlled NPC that's narrative-only) — `maxHP`/`currentHP` are `nil` until
+explicitly enabled for that participant, so existing sessions and the "add
+participant" flow are unaffected by default.
+
+**Enabling & editing** (from the participant detail screen, alongside Reaction/Effects)
+- "Track HP" action prompts for a max HP value, sets `currentHP = maxHP`
+- Once tracked: quick +/- damage/heal controls, plus direct numeric entry for
+  exact values (e.g. correcting after a heal spell)
+- `currentHP` clamps to `0...maxHP` — no negative HP, no overheal past max for
+  now (temp HP / overheal is out of scope until there's a concrete need)
+
+**Dead indicator**
+- A participant is dead when `currentHP == 0` (only meaningful if HP is tracked)
+- Dead participants get an unambiguous visual marker — not just a color change —
+  on both the main list row and the detail screen (e.g. skull icon + dimmed/
+  grayed row + "Dead" label), so it reads correctly even for colorblind users
+  and at a glance during play
+- Dead participants **stay in turn order** (don't auto-remove) — narratively a
+  character can still be dead-and-present (death saves, corpse still "acts" as
+  a turn placeholder in some systems); removal is a separate explicit action
+  under the existing Phase 2 "remove/edit participant" item, not automatic
+- HP display in the list (e.g. "12/20") is colored by remaining-HP fraction so
+  a wounded participant is visible without opening the detail screen
+
+**Explicitly out of scope for now**: temp HP, overheal, damage types/resistances,
+death saving throws, or any specific ruleset's dying mechanics — this tracks a
+plain current/max HP number and a dead/alive boolean, system-agnostic, per the
+project's standing "no copyrighted ruleset content" constraint.
+
+### 6. Navigation & Layout
 
 **Main Screen (Combat View)**
 ```
@@ -158,6 +195,8 @@ struct Participant {
     initiative: Int  // 1–20 (or higher)
     reactionUsed: Bool  // false = available, true = used
     effects: [Effect]
+    maxHP: Int?      // planned (Phase 3) — nil until HP tracking is enabled for this participant
+    currentHP: Int?  // planned (Phase 3) — clamped 0...maxHP; 0 == dead
 }
 
 struct Effect {
@@ -180,7 +219,7 @@ struct CombatSession {
 }
 ```
 
-### 6. Main Menu & Session Persistence
+### 7. Main Menu & Session Persistence
 
 **No explicit save.** There's no "Save Session" button or naming dialog — every combat
 session is automatically saved under its own stable identity as you play. A session's

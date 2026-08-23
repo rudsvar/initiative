@@ -4,7 +4,20 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Planned
+- HP tracking (opt-in per participant) + a clear "dead" indicator when HP hits 0 —
+  design written up in `SPEC.md` §5 ("HP Tracking"); not yet implemented, awaiting
+  confirmation on the design before building
+
 ### Fixed
+- Main menu "Resume" button could appear enabled (bold red, primary styling) while
+  actually disabled, and would silently no-op if tapped in that state — this could
+  happen if the tracked "last active session" pointer went stale (its file missing/
+  unreadable). Fixed two ways: `SessionStore.resumableSession()` now self-heals by
+  clearing the stale pointer the moment it can't load the record, and the Resume
+  button only uses the bold "primary" styling when it's actually enabled (falls back
+  to the same muted look as New Session/Load Session otherwise) so a disabled state
+  can't be visually mistaken for a live one
 - **App ran letterboxed (black bars top/bottom) on real devices.** Root cause:
   `GENERATE_INFOPLIST_FILE: YES` makes Xcode build Info.plist purely from
   `INFOPLIST_KEY_*` build settings — the target's `infoPlist:` dict in `project.yml`

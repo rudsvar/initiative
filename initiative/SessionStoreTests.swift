@@ -68,6 +68,21 @@ final class SessionStoreTests: XCTestCase {
         XCTAssertNil(store.resumableSession())
     }
 
+    func testResumableSessionSelfHealsOrphanedPointer() {
+        // Regression test: a "Resume" button that checks resumableSession() != nil
+        // to decide whether it's enabled must never see it return non-nil once, then
+        // silently fail on the actual resume attempt. Simulate a pointer left dangling
+        // by something outside the app's own save/delete flow (e.g. the underlying
+        // file vanishing) and confirm the store notices and clears it rather than
+        // leaving the UI in a state where the button looks live but does nothing.
+        let orphanedID = UUID()
+        store.setLastActiveSessionID(orphanedID)
+        XCTAssertNotNil(store.lastActiveSessionID())
+
+        XCTAssertNil(store.resumableSession())
+        XCTAssertNil(store.lastActiveSessionID(), "stale pointer should self-heal to nil")
+    }
+
     func testClearLastActiveSessionID() {
         let record = SessionRecord(name: "In Progress", participants: [], currentTurnIndex: 0)
         store.save(record)
