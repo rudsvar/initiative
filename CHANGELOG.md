@@ -5,6 +5,27 @@ All notable changes to this project are documented here, newest first.
 ## [Unreleased]
 
 ### Added
+- **Combat log**: `CombatSession.log` ([LogEntry]), appended on turn changes,
+  damage/heal/max-HP-increase, deaths, and combatant add/remove. New "Log"
+  button in the bottom bar (center, between Previous/Next Turn) opens a
+  read-only `LogView`. `Previous Turn` now truncates the log back to its
+  state before the turn being undone — the existing turn-revert history
+  snapshot also stores the log length at that point. Persisted with the
+  session (`SessionRecord.log`, optional for old-save compatibility)
+
+### Changed
+- **Add Combatant moved to a top-right toolbar button**; the bottom-of-list
+  placeholder row is gone. Discussed placement/log design with the user before
+  building rather than guessing
+- Round counter removed from the toolbar (was squeezed out by the Add button
+  anyway) — the centered plain-text display above the list remains the only
+  round indicator
+- Confirmed Previous/Next Turn's Liquid Glass qualifies per Apple's own
+  examples (media transport controls, which don't navigate either, are
+  explicitly called out as appropriate) — bar now also carries the Log button
+  with the same glass treatment (`.glass`, non-prominent)
+
+### Added
 - **Increase Max HP**: `CombatSession.increaseMaxHP(for:amount:)` raises both
   max and current HP together (a buff/level-up, not just a higher ceiling) —
   new third button on the combatant detail screen reusing the existing amount

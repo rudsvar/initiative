@@ -10,6 +10,9 @@ struct SessionRecord: Codable, Identifiable {
     /// Optional so older saved sessions (from before round tracking existed) still
     /// decode — CombatSession.load() treats a missing value as round 1.
     var roundNumber: Int?
+    /// Optional for the same reason (sessions saved before the log existed) —
+    /// CombatSession.load() treats a missing value as an empty log.
+    var log: [LogEntry]?
 
     init(
         id: UUID = UUID(),
@@ -17,7 +20,8 @@ struct SessionRecord: Codable, Identifiable {
         savedAt: Date = Date(),
         combatants: [Combatant],
         currentTurnIndex: Int,
-        roundNumber: Int? = nil
+        roundNumber: Int? = nil,
+        log: [LogEntry]? = nil
     ) {
         self.id = id
         self.name = name
@@ -25,6 +29,7 @@ struct SessionRecord: Codable, Identifiable {
         self.combatants = combatants
         self.currentTurnIndex = currentTurnIndex
         self.roundNumber = roundNumber
+        self.log = log
     }
 }
 

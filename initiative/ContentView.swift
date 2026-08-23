@@ -9,6 +9,7 @@ struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var pendingRemoveCombatant: Combatant?
     @State private var showAddCombatant = false
+    @State private var showLog = false
 
     private var nameBinding: Binding<String> {
         Binding(get: { session.name }, set: { session.name = $0 })
@@ -53,8 +54,6 @@ struct ContentView: View {
                             }
                         }
                     }
-
-                    AddCombatantRow(showAddCombatant: $showAddCombatant)
                 }
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
@@ -71,6 +70,14 @@ struct ContentView: View {
                             }
                             .buttonStyle(.glass)
                             .disabled(!session.canGoToPreviousTurn)
+
+                            Spacer()
+
+                            Button(action: { showLog = true }) {
+                                Image(systemName: "list.bullet.clipboard")
+                                    .font(.system(size: 16, weight: .semibold))
+                            }
+                            .buttonStyle(.glass)
 
                             Spacer()
 
@@ -98,6 +105,14 @@ struct ContentView: View {
                         }
                         .foregroundColor(Theme.accent)
                         .disabled(!session.canGoToPreviousTurn)
+
+                        Spacer()
+
+                        Button(action: { showLog = true }) {
+                            Image(systemName: "list.bullet.clipboard")
+                                .font(.system(size: 16, weight: .semibold))
+                        }
+                        .foregroundColor(Theme.accent)
 
                         Spacer()
 
@@ -138,10 +153,7 @@ struct ContentView: View {
             }
 
             ToolbarItem(placement: .navigationBarTrailing) {
-                Text("Round \(session.roundNumber)")
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
-                    .foregroundColor(Theme.accent)
+                Button("Add") { showAddCombatant = true }
             }
         }
         .onDisappear { autosave() }
@@ -171,6 +183,9 @@ struct ContentView: View {
         .sheet(isPresented: $showAddCombatant) {
             AddCombatantSheet(session: session, presetStore: presetStore, isPresented: $showAddCombatant)
         }
+        .sheet(isPresented: $showLog) {
+            LogView(session: session)
+        }
     }
 
     private func backToMenu() {
@@ -182,29 +197,6 @@ struct ContentView: View {
         guard !session.combatants.isEmpty else { return }
         sessionStore.save(session.makeRecord())
         sessionStore.setLastActiveSessionID(session.id)
-    }
-}
-
-/// Plain tap target at the bottom of the list — no visible fields, no icon, so it
-/// can't be triggered by an accidental tap the way the small inline fields/button
-/// used to be. Tapping opens AddCombatantSheet for the actual entry.
-struct AddCombatantRow: View {
-    @Binding var showAddCombatant: Bool
-
-    var body: some View {
-        Button(action: { showAddCombatant = true }) {
-            Text("Add Combatant")
-                .font(.subheadline)
-                .fontWeight(.semibold)
-                .foregroundColor(Theme.textTertiary)
-                .frame(maxWidth: .infinity, alignment: .center)
-        }
-        .padding(12)
-        .background(Theme.divider.opacity(0.12))
-        .cornerRadius(8)
-        .listRowSeparator(.hidden)
-        .listRowInsets(EdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8))
-        .listRowBackground(Color.clear)
     }
 }
 

@@ -65,13 +65,13 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 ### 1. Combatant Management
 
 **Add Combatant**
-- A plain row at the *bottom* of the combatant list, centered placeholder text
-  ("Add Combatant") only — no visible fields, no icon. Tapping it opens a modal
-  (native `Form`) with Name, Initiative, Max HP, and Count fields, each a
-  full-size Form row (not small inline boxes) so they're easy to hit
-  precisely — this replaced an earlier inline-row design that was too easy to
-  trigger accidentally (tapping outside the row) and too fiddly to hit the
-  small per-field controls on-screen
+- Top-right toolbar button ("Add") opens a modal (native `Form`) with Name,
+  Initiative, Max HP, and Count fields, each a full-size Form row (not small
+  inline boxes) so they're easy to hit precisely. This is the sole entry
+  point — earlier designs (an inline row atop the list, then a bottom
+  placeholder row) both turned out to want a dedicated modal in the end
+  (fiddly small fields, or risk of an accidental tap), so the toolbar button
+  replaced the placeholder row entirely rather than adding a second one
 - Leaving initiative blank rolls random 1–20 on add
 - Count > 1 spawns that many copies with numbered names ("Goblin 1", "Goblin 2",
   ...), each rolling its own independent random initiative (a shared explicit
@@ -185,28 +185,44 @@ project's standing "no copyrighted ruleset content" constraint.
 **Main Screen (Combat View)**
 ```
 ┌─────────────────────────────────┐
-│  + Add combatant…      [Init] │  (inline placeholder row, top)
+│ ← Menu    [Session Name]   Add  │  (toolbar)
+│         Round N (centered)      │
 ├─────────────────────────────────┤
 │                                 │
 │  [P1: Initiative 20]            │
-│  [P2: Initiative 18] (current)  │  (list, sorted)
+│  [P2: Initiative 18] (current)  │  (list, sorted, swipe to remove)
 │  [P3: Initiative 15]            │
 │                                 │
 ├─────────────────────────────────┤
-│  [Back]          [Next Turn →]  │  (bottom)
+│  [← Previous]  [Log]  [Next →]  │  (bottom bar)
 └─────────────────────────────────┘
 ```
 
-**Buttons**
-- **Add combatant row** (top): Always-visible inline row; fill in name (and optional initiative) and submit to add, no modal
-- **Previous Turn** (bottom left): Reverts to the previous turn's full state (turn index, reactions, effects); disabled when there is no prior turn to return to
-- On iOS 26+, the Previous/Next Turn bar uses Liquid Glass (`GlassEffectContainer`,
-  `.glassProminent` on Next Turn as the primary action, `.glass` on Previous Turn) —
-  it's the one floating control bar in the app, the natural fit per Apple's glass
-  guidance (see `<agent-config>/skills/ios-hig/SKILL.md`). Falls back to the existing
-  themed bar below iOS 26. No other button in the app uses glass — see that skill
-  for the full reasoning on which buttons qualify
-- **Next Turn** (bottom right): Advance to next combatant, reset current's reaction to available
+**Toolbar**
+- **Menu** (leading): returns to the main menu, autosaves first
+- **Session name** (center): editable text field, blank input ignored
+- **Add** (trailing): opens the add-combatant modal (`AddCombatantSheet`) —
+  replaced an earlier top-of-list inline row and, before that, a bottom-of-list
+  placeholder row; both approaches turned out to want a dedicated modal (fiddly
+  small fields / accidental taps), so this is now the sole entry point
+- **Round N**: plain centered text above the list, not a button, not in the
+  toolbar (moved out of the toolbar to make room for Add)
+
+**Bottom bar**
+- **Previous Turn** (left): Reverts to the previous turn's full state (turn
+  index, reactions, effects, and log entries — see §9); disabled when there's
+  no prior turn to return to
+- **Log** (center, icon-only): opens a read-only feed of what's happened in
+  combat (§9)
+- **Next Turn** (right): Advance to next combatant, reset current's reaction
+  to available
+- On iOS 26+, this whole bar uses Liquid Glass (`GlassEffectContainer`,
+  `.glassProminent` on Next Turn as the primary action, `.glass` on Previous
+  Turn and Log) — it's the one floating control bar in the app, the natural
+  fit per Apple's glass guidance (see `<agent-config>/skills/ios-hig/SKILL.md`).
+  Falls back to the existing themed bar below iOS 26. No other button in the
+  app uses glass — see that skill for the full reasoning on which buttons
+  qualify
 
 **Combatant Detail** (tap a combatant row)
 - Shows full combatant info
@@ -349,6 +365,26 @@ toughness, described here in our own generic terms only:
 preset packs, per-preset default effects, manual preset creation outside the
 add-combatant flow — keep it to name + HP + initiative bonus until there's a
 concrete need for more.
+
+### 9. Combat Log
+
+Read-only feed of what's happened during the current session — opened from the
+**Log** button in the bottom bar (center, between Previous/Next Turn). Newest
+entries first.
+
+**What gets logged**: turn changes ("Alice's turn", "Round 2 began"), damage,
+healing, max-HP increases, deaths, combatants added/removed. Reaction toggles
+are deliberately *not* logged — too frequent/low-value to be worth the noise.
+
+**Revert-aware**: `Previous Turn` doesn't just revert combatant/turn state — it
+truncates the log back to exactly where it was before the turn being undone,
+using the same `history` snapshot stack already powering turn revert (each
+snapshot now also records the log's length at that point). Nothing shows in
+the log for a turn that's no longer considered to have happened.
+
+**Persisted** with the session (`SessionRecord.log`, optional for backward
+compatibility with sessions saved before this existed — decodes as an empty
+log). Cleared on `New Session`.
 
 ## UI/UX Principles
 

@@ -20,6 +20,7 @@
 		AC15E6D890576562FBA8CB4E /* PresetStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42AE26159E5715578B9FDABF /* PresetStore.swift */; };
 		B5FC3C6073488D73C6F11502 /* AddEffectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB9B65C9C807B3A6A012AA17 /* AddEffectView.swift */; };
 		C4BBC271D684B621D37FD85D /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB6BC3F48F491E46F929912B /* Theme.swift */; };
+		DECDE46B75167F3BD02E6A95 /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 975690EA6B82B235107880ED /* LogView.swift */; };
 		E62AEBA1E275012E4B58F9A0 /* ModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374032899B38F3EF7AFFA6BF /* ModelsTests.swift */; };
 		ED7A10670E88FF02C4D63E4B /* initiativeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F716A445CE95BB18ED0CB6 /* initiativeApp.swift */; };
 		F0C7A7A3261031E241E37B16 /* PresetStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30B9E5475117414963EC37F0 /* PresetStoreTests.swift */; };
@@ -49,6 +50,7 @@
 		5412411A50F66288F6CD7C3A /* SessionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionListView.swift; sourceTree = "<group>"; };
 		80D67B88DE5A97B7A5810591 /* AddCombatantSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCombatantSheet.swift; sourceTree = "<group>"; };
 		80F716A445CE95BB18ED0CB6 /* initiativeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = initiativeApp.swift; sourceTree = "<group>"; };
+		975690EA6B82B235107880ED /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
 		9CE0A7AB03C5B651842B5FFA /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		A11677D6B85D7CD883CF75E5 /* PresetListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetListView.swift; sourceTree = "<group>"; };
 		B3C86962B7A76FB8DC7C77EE /* MainMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuView.swift; sourceTree = "<group>"; };
@@ -76,6 +78,7 @@
 				DF167250F0ABBC42541CCBCC /* CombatantDetailView.swift */,
 				0C602D49912CF215015A47FE /* ContentView.swift */,
 				80F716A445CE95BB18ED0CB6 /* initiativeApp.swift */,
+				975690EA6B82B235107880ED /* LogView.swift */,
 				B3C86962B7A76FB8DC7C77EE /* MainMenuView.swift */,
 				460298ED464149EF70AC81E9 /* Models.swift */,
 				374032899B38F3EF7AFFA6BF /* ModelsTests.swift */,
@@ -185,6 +188,7 @@
 				B5FC3C6073488D73C6F11502 /* AddEffectView.swift in Sources */,
 				3A936CCFF9B534DAF1F809EF /* CombatantDetailView.swift in Sources */,
 				73B4B754E931AFDD980BA521 /* ContentView.swift in Sources */,
+				DECDE46B75167F3BD02E6A95 /* LogView.swift in Sources */,
 				08D80ECAA588E29A70FA71DF /* MainMenuView.swift in Sources */,
 				28A7C8C9661750E79B806092 /* Models.swift in Sources */,
 				F2F75BADD063F5989C54CF64 /* PresetListView.swift in Sources */,

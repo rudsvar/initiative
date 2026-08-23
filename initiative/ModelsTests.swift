@@ -315,6 +315,107 @@ final class CombatSessionTests: XCTestCase {
         XCTAssertEqual(session.combatants.count, 1)
     }
 
+    // MARK: - Combat Log
+
+    func testAddCombatantAppendsLogEntry() {
+        session.addCombatant(name: "Goblin", initiative: 10)
+        XCTAssertEqual(session.log.count, 1)
+        XCTAssertTrue(session.log[0].text.contains("Goblin"))
+    }
+
+    func testNextTurnLogsWhoseTurnAndRoundOnWrap() {
+        session.addCombatant(name: "P1", initiative: 20)
+        session.addCombatant(name: "P2", initiative: 10)
+        let countAfterAdds = session.log.count
+
+        session.nextTurn() // P1 -> P2, no wrap
+        XCTAssertEqual(session.log.count, countAfterAdds + 1, "only the turn-change entry, no round entry")
+
+        session.nextTurn() // P2 -> P1, wraps to round 2
+        XCTAssertEqual(session.log.count, countAfterAdds + 3, "round entry + turn entry")
+        XCTAssertTrue(session.log.contains { $0.text.contains("Round 2") })
+    }
+
+    func testPreviousTurnTruncatesLogToSnapshot() {
+        session.addCombatant(name: "P1", initiative: 20)
+        session.addCombatant(name: "P2", initiative: 10)
+        let countBeforeNextTurn = session.log.count
+
+        session.nextTurn()
+        XCTAssertGreaterThan(session.log.count, countBeforeNextTurn)
+
+        session.previousTurn()
+
+        XCTAssertEqual(session.log.count, countBeforeNextTurn)
+    }
+
+    func testPreviousTurnTruncatesMidTurnLogEntriesToo() {
+        session.addCombatant(name: "P1", initiative: 20, maxHP: 10)
+        session.addCombatant(name: "P2", initiative: 10)
+        let countBeforeNextTurn = session.log.count
+
+        session.nextTurn()
+        let id = session.combatants.first { $0.name == "P1" }!.id
+        session.applyDamage(to: id, amount: 3) // logged mid-"turn"
+
+        session.previousTurn()
+
+        XCTAssertEqual(session.log.count, countBeforeNextTurn, "damage logged after nextTurn() should be undone too")
+    }
+
+    func testApplyDamageLogsDeathSeparately() {
+        session.addCombatant(name: "Goblin", initiative: 10, maxHP: 5)
+        let id = session.combatants[0].id
+        let countBefore = session.log.count
+
+        session.applyDamage(to: id, amount: 5)
+
+        XCTAssertEqual(session.log.count, countBefore + 2, "damage entry + death entry")
+        XCTAssertTrue(session.log.last!.text.contains("died"))
+    }
+
+    func testIncreaseMaxHPLogsEntry() {
+        session.addCombatant(name: "Goblin", initiative: 10, maxHP: 10)
+        let id = session.combatants[0].id
+        let countBefore = session.log.count
+
+        session.increaseMaxHP(for: id, amount: 5)
+
+        XCTAssertEqual(session.log.count, countBefore + 1)
+        XCTAssertTrue(session.log.last!.text.contains("max HP increased"))
+    }
+
+    func testRemoveCombatantLogsEntry() {
+        session.addCombatant(name: "Goblin", initiative: 10)
+        let id = session.combatants[0].id
+        let countBefore = session.log.count
+
+        session.removeCombatant(id: id)
+
+        XCTAssertEqual(session.log.count, countBefore + 1)
+        XCTAssertTrue(session.log.last!.text.contains("removed"))
+    }
+
+    func testResetClearsLog() {
+        session.addCombatant(name: "Goblin", initiative: 10)
+        XCTAssertFalse(session.log.isEmpty)
+
+        session.reset()
+
+        XCTAssertTrue(session.log.isEmpty)
+    }
+
+    func testLogPersistsThroughSaveAndLoad() {
+        session.addCombatant(name: "Goblin", initiative: 10)
+        let record = session.makeRecord()
+
+        session.reset()
+        session.load(record)
+
+        XCTAssertEqual(session.log.count, 1)
+        XCTAssertTrue(session.log[0].text.contains("Goblin"))
+    }
+
     // MARK: - Initiative Bonus
 
     func testAddCombatantWithNilInitiativeAppliesBonusToRoll() {
