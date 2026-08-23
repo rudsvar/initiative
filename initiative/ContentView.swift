@@ -17,12 +17,20 @@ struct ContentView: View {
                     InlineAddParticipantRow(session: session)
 
                     ForEach(session.sortedParticipants) { participant in
-                        NavigationLink(destination: ParticipantDetailView(session: session, participantId: participant.id)) {
-                            ParticipantRow(
-                                participant: participant,
-                                isCurrent: session.currentParticipant?.id == participant.id
-                            )
-                        }
+                        ParticipantRow(
+                            participant: participant,
+                            isCurrent: session.currentParticipant?.id == participant.id
+                        )
+                        .contentShape(Rectangle())
+                        .background(
+                            NavigationLink(destination: ParticipantDetailView(session: session, participantId: participant.id)) {
+                                EmptyView()
+                            }
+                            .opacity(0)
+                        )
+                        .listRowSeparator(.hidden)
+                        .listRowInsets(EdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8))
+                        .listRowBackground(Color.clear)
                     }
                 }
                 .listStyle(.plain)
@@ -213,9 +221,6 @@ struct ParticipantRow: View {
         .padding(12)
         .background(isCurrent ? Theme.divider.opacity(0.3) : Color.clear)
         .cornerRadius(8)
-        .listRowSeparator(.hidden)
-        .listRowInsets(EdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8))
-        .listRowBackground(Color.clear)
     }
 }
 
