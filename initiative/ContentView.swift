@@ -26,8 +26,11 @@ struct ContentView: View {
 
                 HStack(spacing: 12) {
                     Button(action: { session.previousTurn() }) {
-                        Label("Back", systemImage: "chevron.left")
-                            .font(.system(size: 14, weight: .semibold))
+                        HStack(spacing: 4) {
+                            Image(systemName: "chevron.left")
+                            Text("Previous Turn")
+                        }
+                        .font(.system(size: 14, weight: .semibold))
                     }
                     .foregroundColor(Theme.accent)
                     .disabled(!session.canGoToPreviousTurn)
@@ -35,8 +38,11 @@ struct ContentView: View {
                     Spacer()
 
                     Button(action: { session.nextTurn() }) {
-                        Label("Next Turn", systemImage: "chevron.right")
-                            .font(.system(size: 14, weight: .semibold))
+                        HStack(spacing: 4) {
+                            Text("Next Turn")
+                            Image(systemName: "chevron.right")
+                        }
+                        .font(.system(size: 14, weight: .semibold))
                     }
                     .foregroundColor(Theme.accent)
                     .disabled(session.sortedParticipants.isEmpty)
@@ -62,25 +68,37 @@ struct InlineAddParticipantRow: View {
                 .foregroundColor(Theme.textPrimary)
                 .submitLabel(.done)
                 .onSubmit { addParticipant() }
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(Theme.background)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Theme.divider, lineWidth: 1)
+                )
 
             TextField("Init", text: $initiativeText)
                 .keyboardType(.numberPad)
                 .foregroundColor(Theme.accent)
                 .fontWeight(.semibold)
-                .multilineTextAlignment(.trailing)
-                .frame(width: 44)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 8)
+                .frame(width: 56)
+                .background(Theme.background)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 8)
+                        .stroke(Theme.divider, lineWidth: 1)
+                )
 
             Button(action: addParticipant) {
                 Image(systemName: "plus.circle.fill")
-                    .font(.system(size: 18))
+                    .font(.system(size: 28))
                     .foregroundColor(Theme.accent)
             }
+            .frame(width: 44, height: 44)
             .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
             .opacity(name.trimmingCharacters(in: .whitespaces).isEmpty ? 0.4 : 1)
         }
-        .padding(12)
-        .background(Theme.divider.opacity(0.15))
-        .cornerRadius(8)
         .listRowSeparator(.hidden)
         .listRowInsets(EdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8))
         .listRowBackground(Color.clear)

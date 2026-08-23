@@ -45,9 +45,11 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 
 **Add Participant**
 - Inline placeholder row pinned at the top of the participant list (no modal)
-- Fields: name and initiative, editable directly in the row
+- Name and initiative are separate bordered text boxes (each its own tappable
+  field, per iOS HIG — see `<agent-config>/skills/ios-hig/SKILL.md`), with the add
+  (+) button outside/after the initiative box, not touching it
 - Leaving initiative blank rolls random 1–20 on add
-- Submitting (return key or checkmark) adds the participant and clears the row, ready for the next entry
+- Submitting (return key or the + button) adds the participant and clears the row, ready for the next entry
 - Participants auto-sort by initiative (descending; ties maintain insertion order)
 
 **Participant Display**
@@ -131,7 +133,7 @@ An effect has:
 
 **Buttons**
 - **Add participant row** (top): Always-visible inline row; fill in name (and optional initiative) and submit to add, no modal
-- **Back** (bottom left): Reverts to the previous turn's full state (turn index, reactions, effects); disabled when there is no prior turn to return to
+- **Previous Turn** (bottom left): Reverts to the previous turn's full state (turn index, reactions, effects); disabled when there is no prior turn to return to
 - **Next Turn** (bottom right): Advance to next participant, reset current's reaction to available
 
 **Participant Detail** (tap a participant row)

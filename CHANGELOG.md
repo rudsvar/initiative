@@ -5,6 +5,11 @@ All notable changes to this project are documented here, newest first.
 ## [Unreleased]
 
 ### Changed
+- UI pass against Apple's Human Interface Guidelines (new `ios-hig` skill at
+  `<agent-config>/skills/ios-hig/SKILL.md`): name/initiative are now separate bordered
+  text boxes instead of borderless text floating in one row; add button moved
+  fully outside the initiative box with clear spacing; bottom bar relabeled
+  "Previous Turn"/"Next Turn" with chevrons on the correct (outer) sides
 - Replaced the "Add Participant" modal with an always-visible inline row pinned
   atop the participant list — name + initiative fields, add via return key or the
   plus button; random 1–20 initiative still applies when left blank
