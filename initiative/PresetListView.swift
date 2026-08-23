@@ -10,7 +10,9 @@ struct PresetListView: View {
     @State private var editingPreset: CreaturePreset?
 
     var body: some View {
-        Group {
+        ZStack {
+            Theme.background.ignoresSafeArea()
+
             if presets.isEmpty {
                 ContentUnavailableView(
                     "No Creatures Yet",
@@ -24,28 +26,29 @@ struct PresetListView: View {
                             HStack {
                                 Text(preset.name)
                                     .font(.headline)
+                                    .foregroundColor(Theme.textPrimary)
                                 Spacer()
                                 VStack(alignment: .trailing, spacing: 2) {
                                     if let maxHP = preset.maxHP {
                                         Text("\(maxHP) HP")
                                             .font(.subheadline)
-                                            .foregroundColor(.secondary)
+                                            .foregroundColor(Theme.textTertiary)
                                     }
                                     if let armorClass = preset.armorClass {
                                         Text("AC \(armorClass)")
                                             .font(.subheadline)
-                                            .foregroundColor(.secondary)
+                                            .foregroundColor(Theme.textTertiary)
                                     }
                                     if let bonus = preset.initiativeBonus {
                                         Text("Initiative Bonus \(bonus >= 0 ? "+" : "")\(bonus)")
                                             .font(.caption)
-                                            .foregroundColor(.secondary)
+                                            .foregroundColor(Theme.textTertiary)
                                     }
                                 }
                             }
                             .padding(.vertical, 4)
                         }
-                        .tint(.primary)
+                        .listRowBackground(Theme.background)
                         .swipeActions(edge: .trailing) {
                             // No extra confirmation dialog: swipe-to-reveal + tap
                             // Delete is already two deliberate actions.
@@ -58,6 +61,7 @@ struct PresetListView: View {
                         }
                     }
                 }
+                .scrollContentBackground(.hidden)
             }
         }
         .navigationTitle("Creatures")
@@ -102,22 +106,26 @@ private struct EditPresetView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Name") {
-                    TextField("Name", text: $name)
+            ZStack {
+                Theme.background.ignoresSafeArea()
+                Form {
+                    Section("Name") {
+                        TextField("Name", text: $name)
+                    }
+                    Section("Max HP") {
+                        TextField("Optional", text: $hpText)
+                            .keyboardType(.numberPad)
+                    }
+                    Section("Armor Class") {
+                        TextField("Optional", text: $acText)
+                            .keyboardType(.numberPad)
+                    }
+                    Section("Initiative Bonus") {
+                        TextField("Optional, added to random rolls", text: $bonusText)
+                            .keyboardType(.numbersAndPunctuation)
+                    }
                 }
-                Section("Max HP") {
-                    TextField("Optional", text: $hpText)
-                        .keyboardType(.numberPad)
-                }
-                Section("Armor Class") {
-                    TextField("Optional", text: $acText)
-                        .keyboardType(.numberPad)
-                }
-                Section("Initiative Bonus") {
-                    TextField("Optional, added to random rolls", text: $bonusText)
-                        .keyboardType(.numbersAndPunctuation)
-                }
+                .scrollContentBackground(.hidden)
             }
             .navigationTitle(preset.name.isEmpty ? "New Creature" : "Edit Creature")
             .navigationBarTitleDisplayMode(.inline)

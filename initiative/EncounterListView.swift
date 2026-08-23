@@ -12,7 +12,9 @@ struct EncounterListView: View {
     @State private var editingEncounter: Encounter?
 
     var body: some View {
-        Group {
+        ZStack {
+            Theme.background.ignoresSafeArea()
+
             if encounters.isEmpty {
                 ContentUnavailableView(
                     "No Encounters Yet",
@@ -26,13 +28,14 @@ struct EncounterListView: View {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(encounter.name)
                                     .font(.headline)
+                                    .foregroundColor(Theme.textPrimary)
                                 Text(summary(for: encounter))
                                     .font(.caption)
-                                    .foregroundColor(.secondary)
+                                    .foregroundColor(Theme.textTertiary)
                             }
                             .padding(.vertical, 4)
                         }
-                        .tint(.primary)
+                        .listRowBackground(Theme.background)
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) {
                                 encounterStore.delete(id: encounter.id)
@@ -43,6 +46,7 @@ struct EncounterListView: View {
                         }
                     }
                 }
+                .scrollContentBackground(.hidden)
             }
         }
         .navigationTitle("Encounters")
@@ -89,34 +93,38 @@ private struct EditEncounterView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Name") {
-                    TextField("Encounter name", text: $encounter.name)
-                }
+            ZStack {
+                Theme.background.ignoresSafeArea()
+                Form {
+                    Section("Name") {
+                        TextField("Encounter name", text: $encounter.name)
+                    }
 
-                Section("Creatures") {
-                    if encounter.entries.isEmpty {
-                        Text("No creatures added yet")
-                            .foregroundColor(.secondary)
-                    } else {
-                        ForEach(encounter.entries) { entry in
-                            HStack {
-                                Text(entry.count > 1 ? "\(entry.count)x \(entry.name)" : entry.name)
-                                Spacer()
-                                if let maxHP = entry.maxHP {
-                                    Text("\(maxHP) HP")
-                                        .font(.caption)
-                                        .foregroundColor(.secondary)
+                    Section("Creatures") {
+                        if encounter.entries.isEmpty {
+                            Text("No creatures added yet")
+                                .foregroundColor(Theme.textTertiary)
+                        } else {
+                            ForEach(encounter.entries) { entry in
+                                HStack {
+                                    Text(entry.count > 1 ? "\(entry.count)x \(entry.name)" : entry.name)
+                                    Spacer()
+                                    if let maxHP = entry.maxHP {
+                                        Text("\(maxHP) HP")
+                                            .font(.caption)
+                                            .foregroundColor(Theme.textTertiary)
+                                    }
                                 }
                             }
+                            .onDelete { encounter.entries.remove(atOffsets: $0) }
                         }
-                        .onDelete { encounter.entries.remove(atOffsets: $0) }
-                    }
 
-                    Button(action: { showAddEntry = true }) {
-                        Label("Add Creature", systemImage: "plus.circle.fill")
+                        Button(action: { showAddEntry = true }) {
+                            Label("Add Creature", systemImage: "plus.circle.fill")
+                        }
                     }
                 }
+                .scrollContentBackground(.hidden)
             }
             .navigationTitle("Edit Encounter")
             .navigationBarTitleDisplayMode(.inline)
@@ -160,42 +168,46 @@ private struct AddEncounterEntryView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                if !presets.isEmpty {
-                    Section("Creature") {
-                        Menu {
-                            ForEach(presets) { preset in
-                                Button(preset.name) { selectPreset(preset) }
-                            }
-                        } label: {
-                            HStack {
-                                Text("Choose Creature")
-                                Spacer()
-                                Text(name.isEmpty ? "None" : name)
-                                    .foregroundColor(.secondary)
+            ZStack {
+                Theme.background.ignoresSafeArea()
+                Form {
+                    if !presets.isEmpty {
+                        Section("Creature") {
+                            Menu {
+                                ForEach(presets) { preset in
+                                    Button(preset.name) { selectPreset(preset) }
+                                }
+                            } label: {
+                                HStack {
+                                    Text("Choose Creature")
+                                    Spacer()
+                                    Text(name.isEmpty ? "None" : name)
+                                        .foregroundColor(Theme.textTertiary)
+                                }
                             }
                         }
                     }
-                }
 
-                Section("Name") {
-                    TextField("Combatant name", text: $name)
-                        .onChange(of: name) { _, newValue in
-                            prefillFromPreset(named: newValue)
-                        }
+                    Section("Name") {
+                        TextField("Combatant name", text: $name)
+                            .onChange(of: name) { _, newValue in
+                                prefillFromPreset(named: newValue)
+                            }
+                    }
+                    Section("Max HP") {
+                        TextField("Optional", text: $hpText)
+                            .keyboardType(.numberPad)
+                    }
+                    Section("Armor Class") {
+                        TextField("Optional", text: $acText)
+                            .keyboardType(.numberPad)
+                    }
+                    Section("Count") {
+                        TextField("1", text: $countText)
+                            .keyboardType(.numberPad)
+                    }
                 }
-                Section("Max HP") {
-                    TextField("Optional", text: $hpText)
-                        .keyboardType(.numberPad)
-                }
-                Section("Armor Class") {
-                    TextField("Optional", text: $acText)
-                        .keyboardType(.numberPad)
-                }
-                Section("Count") {
-                    TextField("1", text: $countText)
-                        .keyboardType(.numberPad)
-                }
+                .scrollContentBackground(.hidden)
             }
             .navigationTitle("Add Creature")
             .navigationBarTitleDisplayMode(.inline)

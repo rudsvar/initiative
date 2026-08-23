@@ -40,6 +40,15 @@ struct RootView: View {
             }
         }
         .onAppear { presetStore.seedDefaultsIfEmpty() }
+        // Tavern Candlelight is a dark palette; forcing dark mode here makes every
+        // system-provided color (Form/List default backgrounds, .primary/.secondary
+        // text, placeholder text, native toolbar/nav bar chrome) follow suit
+        // automatically instead of clashing with our dark background whenever the
+        // device itself is in light mode. Screens still set Theme.background
+        // explicitly where they want the exact warm-brown tint rather than the
+        // system's neutral dark gray (see ContentView for the pattern).
+        .preferredColorScheme(.dark)
+        .tint(Theme.accent)
     }
 }
 

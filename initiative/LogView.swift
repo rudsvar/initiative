@@ -22,7 +22,9 @@ struct LogView: View {
 
     var body: some View {
         NavigationStack {
-            Group {
+            ZStack {
+                Theme.background.ignoresSafeArea()
+
                 if session.log.isEmpty {
                     ContentUnavailableView(
                         "No Events Yet",
@@ -38,12 +40,14 @@ struct LogView: View {
                                         VStack(alignment: .leading, spacing: 2) {
                                             Text(entry.text)
                                                 .font(.subheadline)
+                                                .foregroundColor(Theme.textPrimary)
                                             Text(entry.timestamp.formatted(date: .omitted, time: .shortened))
                                                 .font(.caption)
-                                                .foregroundStyle(.secondary)
+                                                .foregroundColor(Theme.textTertiary)
                                         }
                                         .padding(.vertical, 2)
                                         .id(entry.id)
+                                        .listRowBackground(Theme.background)
                                         .swipeActions(edge: .trailing) {
                                             if entry.isDeletable {
                                                 Button(role: .destructive) {
@@ -57,6 +61,7 @@ struct LogView: View {
                                 }
                             }
                         }
+                        .scrollContentBackground(.hidden)
                         .onAppear {
                             if let lastId = session.log.last?.id {
                                 proxy.scrollTo(lastId, anchor: .bottom)

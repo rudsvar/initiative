@@ -5,6 +5,16 @@ All notable changes to this project are documented here, newest first.
 ## [Unreleased]
 
 ### Changed
+- Every screen now uses `Theme` colors — Encounters, Creatures, Load
+  Session, Log, and every Add/Edit sheet were still using system-default
+  white `Form`/`List` backgrounds and `.secondary` text, unthemed. Added
+  `Theme.background` + `.scrollContentBackground(.hidden)` to each, and
+  swapped `.secondary`/system-default text colors for `Theme.textPrimary`/
+  `.textTertiary`. Also added `.preferredColorScheme(.dark)` + `.tint(Theme.accent)`
+  at the app root (`RootView.swift`) — Tavern Candlelight is a dark palette,
+  so this makes every remaining system-provided color (native toolbar chrome,
+  placeholder text, etc.) follow dark-mode automatically instead of
+  potentially clashing when the device itself is in light mode
 - **Theme finalized: Tavern Candlelight** — dark warm brown background, amber
   accent, cream text, replacing the earlier "old paper" rust-red-on-white
   look. `Theme.swift` is back to plain `static let` constants (the temporary

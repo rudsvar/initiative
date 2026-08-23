@@ -8,7 +8,9 @@ struct SessionListView: View {
     @State private var records: [SessionRecord] = []
 
     var body: some View {
-        Group {
+        ZStack {
+            Theme.background.ignoresSafeArea()
+
             if records.isEmpty {
                 ContentUnavailableView(
                     "No Saved Sessions",
@@ -22,13 +24,14 @@ struct SessionListView: View {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(record.name)
                                     .font(.headline)
+                                    .foregroundColor(Theme.textPrimary)
                                 Text("\(record.combatants.count) combatants · \(record.savedAt.formatted(date: .abbreviated, time: .shortened))")
                                     .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundColor(Theme.textTertiary)
                             }
                             .padding(.vertical, 4)
                         }
-                        .tint(.primary)
+                        .listRowBackground(Theme.background)
                         .swipeActions(edge: .trailing) {
                             // No extra confirmation dialog here: swipe-to-reveal + tap
                             // Delete is already two deliberate actions.
@@ -41,6 +44,7 @@ struct SessionListView: View {
                         }
                     }
                 }
+                .scrollContentBackground(.hidden)
             }
         }
         .navigationTitle("Load Session")

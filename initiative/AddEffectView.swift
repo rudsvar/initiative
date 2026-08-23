@@ -10,45 +10,49 @@ struct AddEffectView: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Condition") {
-                    Menu {
-                        ForEach(ConditionLibrary.all) { condition in
-                            Button {
-                                effectName = condition.name
-                            } label: {
-                                Label(condition.name, systemImage: condition.symbolName)
+            ZStack {
+                Theme.background.ignoresSafeArea()
+                Form {
+                    Section("Condition") {
+                        Menu {
+                            ForEach(ConditionLibrary.all) { condition in
+                                Button {
+                                    effectName = condition.name
+                                } label: {
+                                    Label(condition.name, systemImage: condition.symbolName)
+                                }
                             }
-                        }
-                    } label: {
-                        HStack {
-                            Text("Choose Condition")
-                            Spacer()
-                            if let matched = ConditionLibrary.matching(name: effectName) {
-                                Label(matched.name, systemImage: matched.symbolName)
-                                    .foregroundColor(matched.color)
-                            } else {
-                                Text("Custom")
-                                    .foregroundColor(.secondary)
+                        } label: {
+                            HStack {
+                                Text("Choose Condition")
+                                Spacer()
+                                if let matched = ConditionLibrary.matching(name: effectName) {
+                                    Label(matched.name, systemImage: matched.symbolName)
+                                        .foregroundColor(matched.color)
+                                } else {
+                                    Text("Custom")
+                                        .foregroundColor(Theme.textTertiary)
+                                }
                             }
                         }
                     }
-                }
 
-                Section("Effect Name") {
-                    TextField("e.g., Stunned, Poisoned", text: $effectName)
-                }
-
-                Section("Duration") {
-                    Picker("Duration", selection: $selectedDurationType) {
-                        Text("Until start of their turn").tag(DurationTypeSelection.untilStartOfTheirTurn)
-                        Text("Until end of their turn").tag(DurationTypeSelection.untilEndOfTheirTurn)
+                    Section("Effect Name") {
+                        TextField("e.g., Stunned, Poisoned", text: $effectName)
                     }
-                    .pickerStyle(.inline)
-                    .labelsHidden()
 
-                    Stepper("Turns: \(turnsCount)", value: $turnsCount, in: 1...20)
+                    Section("Duration") {
+                        Picker("Duration", selection: $selectedDurationType) {
+                            Text("Until start of their turn").tag(DurationTypeSelection.untilStartOfTheirTurn)
+                            Text("Until end of their turn").tag(DurationTypeSelection.untilEndOfTheirTurn)
+                        }
+                        .pickerStyle(.inline)
+                        .labelsHidden()
+
+                        Stepper("Turns: \(turnsCount)", value: $turnsCount, in: 1...20)
+                    }
                 }
+                .scrollContentBackground(.hidden)
             }
             .navigationTitle("Add Effect")
             .navigationBarTitleDisplayMode(.inline)

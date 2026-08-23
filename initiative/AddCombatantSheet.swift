@@ -19,63 +19,67 @@ struct AddCombatantSheet: View {
 
     var body: some View {
         NavigationStack {
-            Form {
-                if !presets.isEmpty {
-                    Section("Creature") {
-                        Menu {
-                            ForEach(presets) { preset in
-                                Button(preset.name) { selectPreset(preset) }
-                            }
-                        } label: {
-                            HStack {
-                                Text("Choose Creature")
-                                Spacer()
-                                Text(name.isEmpty ? "None" : name)
-                                    .foregroundColor(.secondary)
+            ZStack {
+                Theme.background.ignoresSafeArea()
+                Form {
+                    if !presets.isEmpty {
+                        Section("Creature") {
+                            Menu {
+                                ForEach(presets) { preset in
+                                    Button(preset.name) { selectPreset(preset) }
+                                }
+                            } label: {
+                                HStack {
+                                    Text("Choose Creature")
+                                    Spacer()
+                                    Text(name.isEmpty ? "None" : name)
+                                        .foregroundColor(Theme.textTertiary)
+                                }
                             }
                         }
                     }
-                }
 
-                Section("Name") {
-                    TextField("Combatant name", text: $name)
-                        .focused($nameFieldFocused)
-                        .onChange(of: name) { _, newValue in
-                            prefillFromPreset(named: newValue)
+                    Section("Name") {
+                        TextField("Combatant name", text: $name)
+                            .focused($nameFieldFocused)
+                            .onChange(of: name) { _, newValue in
+                                prefillFromPreset(named: newValue)
+                            }
+                    }
+
+                    Section("Max HP") {
+                        TextField("Optional", text: $hpText)
+                            .keyboardType(.numberPad)
+                    }
+
+                    Section("Armor Class") {
+                        TextField("Optional", text: $acText)
+                            .keyboardType(.numberPad)
+                    }
+
+                    Section("Count") {
+                        TextField("1", text: $countText)
+                            .keyboardType(.numberPad)
+                    }
+
+                    Section("Initiative") {
+                        TextField("Random 1–20 if left blank", text: $initiativeText)
+                            .keyboardType(.numberPad)
+                    }
+
+                    if (Int(countText) ?? 1) > 1 {
+                        Section {
+                            Text(
+                                initiativeText.isEmpty
+                                    ? "Each copy gets its own random initiative roll."
+                                    : "All copies get this same initiative."
+                            )
+                            .font(.caption)
+                            .foregroundColor(Theme.textTertiary)
                         }
-                }
-
-                Section("Max HP") {
-                    TextField("Optional", text: $hpText)
-                        .keyboardType(.numberPad)
-                }
-
-                Section("Armor Class") {
-                    TextField("Optional", text: $acText)
-                        .keyboardType(.numberPad)
-                }
-
-                Section("Count") {
-                    TextField("1", text: $countText)
-                        .keyboardType(.numberPad)
-                }
-
-                Section("Initiative") {
-                    TextField("Random 1–20 if left blank", text: $initiativeText)
-                        .keyboardType(.numberPad)
-                }
-
-                if (Int(countText) ?? 1) > 1 {
-                    Section {
-                        Text(
-                            initiativeText.isEmpty
-                                ? "Each copy gets its own random initiative roll."
-                                : "All copies get this same initiative."
-                        )
-                        .font(.caption)
-                        .foregroundColor(.secondary)
                     }
                 }
+                .scrollContentBackground(.hidden)
             }
             .navigationTitle("Add Combatant")
             .navigationBarTitleDisplayMode(.inline)
