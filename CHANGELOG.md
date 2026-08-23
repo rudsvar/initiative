@@ -4,6 +4,26 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Added
+- **Restore Defaults** button (top-left of Main Menu → Creatures,
+  `arrow.counterclockwise`) — `PresetStore.restoreMissingDefaults()` adds
+  back any default creature whose name isn't currently present, without
+  touching existing presets. Fixes defaults silently never appearing: the
+  first-launch seed only fires once on a truly empty store, so adding or
+  editing even one preset before that (or deleting a default later) lost
+  the rest permanently with no way back until now
+
+### Changed
+- Health section split into two rows — Current HP with its own Amount
+  field + Damage/Heal buttons, Max HP below with its own Amount field +
+  a blue heart-plus Increase-Max-HP button — instead of one shared Amount
+  field feeding all three actions, which put Increase Max HP oddly far
+  from the Max HP box it actually affects
+- Damage/Heal/Increase-Max-HP button colors desaturated: new
+  `Theme.statusInfo` (muted blue) added alongside reusing `Theme.statusBad`/
+  `.statusGood` (muted red/green), replacing raw SwiftUI `.red`/`.green`/
+  `.blue` which read as too saturated against the rest of the palette
+
 ### Fixed
 - FlowLayout status chips could still clip with enough statuses to wrap
   multiple lines — the previous fix (measuring width via a `GeometryReader`

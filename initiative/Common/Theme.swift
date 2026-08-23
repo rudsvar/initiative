@@ -24,6 +24,7 @@ enum Theme {
     static let statusWarn = Color(red: 0.87, green: 0.58, blue: 0.24)
     static let statusBad = Color(red: 0.78, green: 0.32, blue: 0.26)
     static let statusNeutral = Color(red: 0.55, green: 0.50, blue: 0.46)
+    static let statusInfo = Color(red: 0.42, green: 0.56, blue: 0.62)
 }
 
 /// Generic approximate-status bands shown in player view (DM's screen visible to

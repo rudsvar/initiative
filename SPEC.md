@@ -214,12 +214,15 @@ combatant" flow are unaffected by default.
 
 **Enabling & editing** (from the combatant detail screen, alongside Reaction/Effects)
 - "Track HP" action prompts for a max HP value, sets `currentHP = maxHP`
-- Once tracked: a single amount field feeds three actions, all in one row as
-  equal icon-only buttons next to the field (minus/plus/up-heart) rather than
-  a separate labeled-button row per action — **Damage** (subtracts, clamps
-  at 0), **Heal** (adds, clamps at current max), and **Increase Max HP**
-  (raises *both* max and current by the amount — a buff/level-up, not just a
-  higher ceiling with no immediate benefit)
+- Once tracked: **Current HP** and **Max HP** are separate rows, each with
+  its own inline Amount field and action button(s) right next to it, rather
+  than one shared amount field feeding all three actions — Current's row
+  has **Damage**/**Heal** buttons (subtracts/adds, clamped to `0...maxHP`);
+  Max's row has a single **Increase Max HP** button (blue heart-plus icon,
+  raises *both* max and current by the amount — a buff/level-up, not just a
+  higher ceiling with no immediate benefit). Keeps each action next to the
+  value it actually affects instead of Increase Max HP sitting oddly far
+  from the Max HP box
 - Direct numeric entry on the Current/Max HP fields themselves for exact
   corrections (e.g. after a spell effect)
 - `currentHP` clamps to `0...maxHP` for Damage/Heal — no negative HP, no
@@ -426,9 +429,19 @@ still happens once using the typed base name, not the numbered per-copy names
 **Editing lives in Main Menu → Creatures**, not in the add flow. That screen:
 list of presets (name + HP + AC + initiative bonus), tap to edit, swipe to
 delete (no confirmation dialog — swipe + tap is already two deliberate
-actions), and a top-right "+" to create one directly (name/HP/AC/initiative
+actions), a top-right "+" to create one directly (name/HP/AC/initiative
 bonus, same fields as editing) — presets don't have to originate from actually
-adding a combatant in a session; either path works.
+adding a combatant in a session; either path works — and a top-left "Restore
+Defaults" button (`arrow.counterclockwise`, `PresetStore.restoreMissingDefaults()`).
+
+**Why a separate restore action, distinct from the first-launch seed**:
+`seedDefaultsIfEmpty()` only ever fires once, on a genuinely empty store — if
+you add or edit even a single preset before ever opening this screen (or
+later delete a default you don't want), the rest of the defaults are gone
+for good with no way back. `restoreMissingDefaults()` adds back any default
+creature whose name isn't currently present, by name, case-insensitively,
+without touching or overwriting anything that already exists — including a
+preset that started as a default but was since customized.
 
 **Default presets** (shipped so the list isn't empty on first launch) — generic
 archetypes, common across fantasy tabletop games generally, not tied to any one
@@ -581,8 +594,11 @@ it. `EncounterStore` persists one JSON file per encounter, mirroring `SessionSto
 **Theme applies app-wide.** Every screen reads its colors from `Theme.swift` —
 the single source of truth (`Theme.background`, `.accent`, `.textPrimary`,
 `.textSecondary`, `.textTertiary`, `.divider`, plus semantic status colors
-`.statusGood`/`.statusWarn`/`.statusBad`/`.statusNeutral` for health/armor
-bands). No screen should fall back to system-default white/black — a `Form`/
+`.statusGood`/`.statusWarn`/`.statusBad`/`.statusNeutral`/`.statusInfo` for
+health/armor bands and the Damage/Heal/Increase-Max-HP buttons — muted/
+warm-toned versions of red/green/blue rather than raw SwiftUI `.red`/
+`.green`/`.blue`, which read as too saturated against the rest of the
+palette). No screen should fall back to system-default white/black — a `Form`/
 `List` is white by default and needs an explicit `Theme.background` +
 `.scrollContentBackground(.hidden)` to pick up the theme (see ContentView for
 the pattern). Native system *components* (`Form`/`Section`, `List`,

@@ -7,7 +7,8 @@ struct CombatantDetailView: View {
     @State private var showAddEffect = false
     @State private var showEnableHP = false
     @State private var newMaxHPText = ""
-    @State private var hpAdjustAmount = ""
+    @State private var damageHealAmount = ""
+    @State private var maxIncreaseAmount = ""
 
     var combatant: Combatant? {
         session.combatants.first { $0.id == combatantId }
@@ -146,97 +147,118 @@ struct CombatantDetailView: View {
                                     .foregroundColor(Theme.textPrimary)
 
                                 if combatant.maxHP != nil {
-                                    HStack(spacing: 12) {
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            Text("Current")
-                                                .font(.caption)
-                                                .foregroundColor(Theme.textTertiary)
-                                            TextField("HP", text: currentHPBinding)
-                                                .keyboardType(.numberPad)
-                                                .font(.title3)
-                                                .fontWeight(.bold)
-                                                .foregroundColor(combatant.isDead ? Theme.textTertiary : Theme.accent)
-                                                .multilineTextAlignment(.center)
-                                                .padding(.horizontal, 12)
-                                                .padding(.vertical, 8)
-                                                .frame(width: 72)
-                                                .background(Theme.inputBackground)
-                                                .overlay(
-                                                    RoundedRectangle(cornerRadius: 8)
-                                                        .stroke(Theme.divider, lineWidth: 1)
-                                                )
+                                    // Current above Max, each with its own inline
+                                    // Amount field + action button(s) right next to it
+                                    // — replaces a shared single Amount field feeding
+                                    // three buttons, which put Increase Max HP oddly
+                                    // far from the Max HP box it actually affects.
+                                    VStack(alignment: .leading, spacing: 16) {
+                                        HStack(alignment: .bottom, spacing: 10) {
+                                            VStack(alignment: .leading, spacing: 4) {
+                                                Text("Current")
+                                                    .font(.caption)
+                                                    .foregroundColor(Theme.textTertiary)
+                                                TextField("HP", text: currentHPBinding)
+                                                    .keyboardType(.numberPad)
+                                                    .font(.title3)
+                                                    .fontWeight(.bold)
+                                                    .foregroundColor(combatant.isDead ? Theme.textTertiary : Theme.accent)
+                                                    .multilineTextAlignment(.center)
+                                                    .padding(.horizontal, 12)
+                                                    .padding(.vertical, 8)
+                                                    .frame(width: 72)
+                                                    .background(Theme.inputBackground)
+                                                    .overlay(
+                                                        RoundedRectangle(cornerRadius: 8)
+                                                            .stroke(Theme.divider, lineWidth: 1)
+                                                    )
+                                            }
+
+                                            VStack(alignment: .leading, spacing: 4) {
+                                                Text("Amount")
+                                                    .font(.caption)
+                                                    .foregroundColor(Theme.textTertiary)
+                                                TextField("Amt", text: $damageHealAmount)
+                                                    .keyboardType(.numberPad)
+                                                    .font(.subheadline)
+                                                    .fontWeight(.semibold)
+                                                    .multilineTextAlignment(.center)
+                                                    .padding(.horizontal, 8)
+                                                    .padding(.vertical, 8)
+                                                    .frame(width: 60)
+                                                    .background(Theme.inputBackground)
+                                                    .overlay(
+                                                        RoundedRectangle(cornerRadius: 8)
+                                                            .stroke(Theme.divider, lineWidth: 1)
+                                                    )
+                                            }
+
+                                            Button(action: { applyDamage(to: combatant) }) {
+                                                Image(systemName: "minus.circle.fill")
+                                                    .font(.system(size: 28))
+                                            }
+                                            .foregroundColor(Theme.statusBad)
+                                            .disabled(Int(damageHealAmount) == nil)
+                                            .accessibilityLabel("Damage")
+
+                                            Button(action: { applyHealing(to: combatant) }) {
+                                                Image(systemName: "plus.circle.fill")
+                                                    .font(.system(size: 28))
+                                            }
+                                            .foregroundColor(Theme.statusGood)
+                                            .disabled(Int(damageHealAmount) == nil)
+                                            .accessibilityLabel("Heal")
                                         }
 
-                                        Text("/")
-                                            .font(.title3)
-                                            .foregroundColor(Theme.textTertiary)
+                                        HStack(alignment: .bottom, spacing: 10) {
+                                            VStack(alignment: .leading, spacing: 4) {
+                                                Text("Max")
+                                                    .font(.caption)
+                                                    .foregroundColor(Theme.textTertiary)
+                                                TextField("Max HP", text: maxHPBinding)
+                                                    .keyboardType(.numberPad)
+                                                    .font(.title3)
+                                                    .fontWeight(.bold)
+                                                    .foregroundColor(Theme.textPrimary)
+                                                    .multilineTextAlignment(.center)
+                                                    .padding(.horizontal, 12)
+                                                    .padding(.vertical, 8)
+                                                    .frame(width: 72)
+                                                    .background(Theme.inputBackground)
+                                                    .overlay(
+                                                        RoundedRectangle(cornerRadius: 8)
+                                                            .stroke(Theme.divider, lineWidth: 1)
+                                                    )
+                                            }
 
-                                        VStack(alignment: .leading, spacing: 4) {
-                                            Text("Max")
-                                                .font(.caption)
-                                                .foregroundColor(Theme.textTertiary)
-                                            TextField("Max HP", text: maxHPBinding)
-                                                .keyboardType(.numberPad)
-                                                .font(.title3)
-                                                .fontWeight(.bold)
-                                                .foregroundColor(Theme.textPrimary)
-                                                .multilineTextAlignment(.center)
-                                                .padding(.horizontal, 12)
-                                                .padding(.vertical, 8)
-                                                .frame(width: 72)
-                                                .background(Theme.inputBackground)
-                                                .overlay(
-                                                    RoundedRectangle(cornerRadius: 8)
-                                                        .stroke(Theme.divider, lineWidth: 1)
-                                                )
+                                            VStack(alignment: .leading, spacing: 4) {
+                                                Text("Amount")
+                                                    .font(.caption)
+                                                    .foregroundColor(Theme.textTertiary)
+                                                TextField("Amt", text: $maxIncreaseAmount)
+                                                    .keyboardType(.numberPad)
+                                                    .font(.subheadline)
+                                                    .fontWeight(.semibold)
+                                                    .multilineTextAlignment(.center)
+                                                    .padding(.horizontal, 8)
+                                                    .padding(.vertical, 8)
+                                                    .frame(width: 60)
+                                                    .background(Theme.inputBackground)
+                                                    .overlay(
+                                                        RoundedRectangle(cornerRadius: 8)
+                                                            .stroke(Theme.divider, lineWidth: 1)
+                                                    )
+                                            }
+
+                                            Button(action: { increaseMaxHP(for: combatant) }) {
+                                                Image(systemName: "arrow.up.heart.fill")
+                                                    .font(.system(size: 28))
+                                            }
+                                            .foregroundColor(Theme.statusInfo)
+                                            .disabled(Int(maxIncreaseAmount) == nil)
+                                            .accessibilityLabel("Increase Max HP")
                                         }
-
-                                        Spacer()
                                     }
-
-                                    // Single row: amount field + three equal icon-only
-                                    // buttons (damage/heal/increase-max) so every action
-                                    // on the amount is at a glance in one place.
-                                    HStack(spacing: 10) {
-                                        TextField("Amt", text: $hpAdjustAmount)
-                                            .keyboardType(.numberPad)
-                                            .font(.subheadline)
-                                            .fontWeight(.semibold)
-                                            .multilineTextAlignment(.center)
-                                            .padding(.horizontal, 8)
-                                            .padding(.vertical, 8)
-                                            .frame(width: 60)
-                                            .background(Theme.inputBackground)
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: 8)
-                                                    .stroke(Theme.divider, lineWidth: 1)
-                                            )
-
-                                        Button(action: { applyDamage(to: combatant) }) {
-                                            Image(systemName: "minus.circle.fill")
-                                                .font(.system(size: 28))
-                                        }
-                                        .foregroundColor(.red)
-                                        .disabled(Int(hpAdjustAmount) == nil)
-                                        .accessibilityLabel("Damage")
-
-                                        Button(action: { applyHealing(to: combatant) }) {
-                                            Image(systemName: "plus.circle.fill")
-                                                .font(.system(size: 28))
-                                        }
-                                        .foregroundColor(.green)
-                                        .disabled(Int(hpAdjustAmount) == nil)
-                                        .accessibilityLabel("Heal")
-
-                                        Button(action: { increaseMaxHP(for: combatant) }) {
-                                            Image(systemName: "arrow.up.heart.fill")
-                                                .font(.system(size: 26))
-                                        }
-                                        .foregroundColor(.blue)
-                                        .disabled(Int(hpAdjustAmount) == nil)
-                                        .accessibilityLabel("Increase Max HP")
-                                    }
-                                    .padding(.top, 4)
                                 } else {
                                     Button(action: { newMaxHPText = ""; showEnableHP = true }) {
                                         Label("Track HP", systemImage: "heart.fill")
@@ -327,21 +349,21 @@ struct CombatantDetailView: View {
     }
 
     private func applyDamage(to combatant: Combatant) {
-        guard let amount = Int(hpAdjustAmount) else { return }
+        guard let amount = Int(damageHealAmount) else { return }
         session.applyDamage(to: combatant.id, amount: amount)
-        hpAdjustAmount = ""
+        damageHealAmount = ""
     }
 
     private func applyHealing(to combatant: Combatant) {
-        guard let amount = Int(hpAdjustAmount) else { return }
+        guard let amount = Int(damageHealAmount) else { return }
         session.applyHealing(to: combatant.id, amount: amount)
-        hpAdjustAmount = ""
+        damageHealAmount = ""
     }
 
     private func increaseMaxHP(for combatant: Combatant) {
-        guard let amount = Int(hpAdjustAmount) else { return }
+        guard let amount = Int(maxIncreaseAmount) else { return }
         session.increaseMaxHP(for: combatant.id, amount: amount)
-        hpAdjustAmount = ""
+        maxIncreaseAmount = ""
     }
 
     private func toggleReaction(for combatant: Combatant) {

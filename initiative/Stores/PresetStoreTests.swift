@@ -103,4 +103,25 @@ final class PresetStoreTests: XCTestCase {
         XCTAssertEqual(presets.count, 1, "should not add defaults on top of existing presets")
         XCTAssertEqual(presets.first?.name, "Custom Creature")
     }
+
+    func testRestoreMissingDefaultsAddsBackMissingOnesWithoutTouchingExisting() {
+        store.upsert(name: "Custom Creature", maxHP: 20)
+        // Simulate a default that was already added and then customized —
+        // restoreMissingDefaults must not clobber it.
+        store.upsert(name: "Goblin", maxHP: 999)
+
+        store.restoreMissingDefaults()
+
+        let presets = store.listPresets()
+        XCTAssertEqual(presets.count, CreaturePreset.defaults.count + 1, "should add every missing default plus keep the custom one")
+        XCTAssertEqual(presets.first { $0.name == "Goblin" }?.maxHP, 999, "existing preset with a default's name must not be overwritten")
+        XCTAssertNotNil(presets.first { $0.name == "Skeleton" }, "a default that was never added should now be present")
+    }
+
+    func testRestoreMissingDefaultsIsIdempotent() {
+        store.restoreMissingDefaults()
+        store.restoreMissingDefaults()
+
+        XCTAssertEqual(store.listPresets().count, CreaturePreset.defaults.count, "running twice shouldn't duplicate defaults")
+    }
 }

@@ -93,6 +93,25 @@ class PresetStore {
             ))
         }
     }
+
+    /// Adds back any default creature whose name isn't currently present, without
+    /// touching existing presets (including ones that started as a default but were
+    /// since edited). Unlike `seedDefaultsIfEmpty`, runs regardless of store
+    /// contents — for the "Restore Defaults" button, since `seedDefaultsIfEmpty`
+    /// only ever fires once, on a truly empty store: adding or editing even one
+    /// preset before that first launch (or deleting a default later) permanently
+    /// loses the rest, with no way back short of this.
+    func restoreMissingDefaults() {
+        let existingNames = Set(listPresets().map { $0.name.lowercased() })
+        for defaultPreset in CreaturePreset.defaults where !existingNames.contains(defaultPreset.name.lowercased()) {
+            save(CreaturePreset(
+                name: defaultPreset.name,
+                maxHP: defaultPreset.maxHP,
+                armorClass: defaultPreset.armorClass,
+                initiativeBonus: defaultPreset.initiativeBonus
+            ))
+        }
+    }
 }
 
 extension CreaturePreset {

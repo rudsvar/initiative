@@ -67,6 +67,15 @@ struct PresetListView: View {
         .navigationTitle("Creatures")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: {
+                    presetStore.restoreMissingDefaults()
+                    presets = presetStore.listPresets()
+                }) {
+                    Image(systemName: "arrow.counterclockwise")
+                }
+                .accessibilityLabel("Restore Default Creatures")
+            }
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: { editingPreset = CreaturePreset(name: "") }) {
                     Image(systemName: "plus")
