@@ -1,105 +1,26 @@
 import SwiftUI
 
-/// A full set of colors for one look. `Theme` below always reflects whichever
-/// palette is currently selected in `ThemeManager`.
-struct ThemePalette: Identifiable, CaseIterable {
-    let id: String
-    let displayName: String
-    let background: Color
-    let accent: Color
-    let textPrimary: Color
-    let textSecondary: Color
-    let textTertiary: Color
-    let divider: Color
-
-    static let original = ThemePalette(
-        id: "original", displayName: "Rust & Paper (original)",
-        background: Color(red: 0.96, green: 0.94, blue: 0.93),
-        accent: Color(red: 0.78, green: 0.14, blue: 0.11),
-        textPrimary: Color(red: 0.17, green: 0.15, blue: 0.13),
-        textSecondary: Color(red: 0.43, green: 0.35, blue: 0.32),
-        textTertiary: Color(red: 0.60, green: 0.50, blue: 0.45),
-        divider: Color(red: 0.83, green: 0.76, blue: 0.72)
-    )
-
-    static let inkAndParchment = ThemePalette(
-        id: "inkAndParchment", displayName: "Ink & Parchment",
-        background: Color(red: 0.95, green: 0.91, blue: 0.84),
-        accent: Color(red: 0.18, green: 0.26, blue: 0.45),
-        textPrimary: Color(red: 0.12, green: 0.10, blue: 0.08),
-        textSecondary: Color(red: 0.35, green: 0.30, blue: 0.24),
-        textTertiary: Color(red: 0.55, green: 0.48, blue: 0.40),
-        divider: Color(red: 0.82, green: 0.74, blue: 0.62)
-    )
-
-    static let dungeonStone = ThemePalette(
-        id: "dungeonStone", displayName: "Dungeon Stone",
-        background: Color(red: 0.89, green: 0.89, blue: 0.89),
-        accent: Color(red: 0.12, green: 0.36, blue: 0.24),
-        textPrimary: Color(red: 0.15, green: 0.16, blue: 0.16),
-        textSecondary: Color(red: 0.35, green: 0.37, blue: 0.37),
-        textTertiary: Color(red: 0.55, green: 0.57, blue: 0.57),
-        divider: Color(red: 0.75, green: 0.76, blue: 0.76)
-    )
-
-    static let tavernCandlelight = ThemePalette(
-        id: "tavernCandlelight", displayName: "Tavern Candlelight",
-        background: Color(red: 0.23, green: 0.16, blue: 0.13),
-        accent: Color(red: 0.85, green: 0.64, blue: 0.25),
-        textPrimary: Color(red: 0.94, green: 0.90, blue: 0.85),
-        textSecondary: Color(red: 0.78, green: 0.70, blue: 0.60),
-        textTertiary: Color(red: 0.60, green: 0.52, blue: 0.44),
-        divider: Color(red: 0.40, green: 0.30, blue: 0.24)
-    )
-
-    static let oldMap = ThemePalette(
-        id: "oldMap", displayName: "Old Map",
-        background: Color(red: 0.91, green: 0.86, blue: 0.76),
-        accent: Color(red: 0.55, green: 0.23, blue: 0.23),
-        textPrimary: Color(red: 0.29, green: 0.22, blue: 0.16),
-        textSecondary: Color(red: 0.45, green: 0.37, blue: 0.28),
-        textTertiary: Color(red: 0.60, green: 0.52, blue: 0.42),
-        divider: Color(red: 0.78, green: 0.70, blue: 0.56)
-    )
-
-    static let allCases: [ThemePalette] = [.original, .inkAndParchment, .dungeonStone, .tavernCandlelight, .oldMap]
-}
-
-/// TEMPORARY: lets the theme be switched live from a menu button for side-by-side
-/// palette comparison. Remove `ThemeManager`/`ThemePicker` and hardcode back to a
-/// single chosen palette in `Theme` once a palette is picked.
-@Observable
-class ThemeManager {
-    static let shared = ThemeManager()
-    var palette: ThemePalette = .original
-}
-
-/// Shared color palette used across all views — always reflects whichever
-/// `ThemePalette` is currently selected via `ThemeManager.shared`.
+/// Shared color palette used across every screen — the single source of truth for
+/// this app's look. **Tavern Candlelight**, chosen after comparing 5 live options
+/// via a temporary in-app picker (now removed — see git history if palettes need
+/// revisiting). Every screen must read colors from here rather than relying on
+/// system defaults (`Form`/`List` are white by default and need an explicit
+/// `Theme.background` + `.scrollContentBackground(.hidden)`, see e.g. ContentView).
 enum Theme {
-    static var background: Color { ThemeManager.shared.palette.background }
-    static var accent: Color { ThemeManager.shared.palette.accent }
-    static var textPrimary: Color { ThemeManager.shared.palette.textPrimary }
-    static var textSecondary: Color { ThemeManager.shared.palette.textSecondary }
-    static var textTertiary: Color { ThemeManager.shared.palette.textTertiary }
-    static var divider: Color { ThemeManager.shared.palette.divider }
-}
+    static let background = Color(red: 0.23, green: 0.16, blue: 0.13)
+    static let accent = Color(red: 0.85, green: 0.64, blue: 0.25)
+    static let textPrimary = Color(red: 0.94, green: 0.90, blue: 0.85)
+    static let textSecondary = Color(red: 0.78, green: 0.70, blue: 0.60)
+    static let textTertiary = Color(red: 0.60, green: 0.52, blue: 0.44)
+    static let divider = Color(red: 0.40, green: 0.30, blue: 0.24)
 
-/// TEMPORARY: a menu button for switching palettes live to compare them. Drop this
-/// view (and its call site) once a final palette is chosen.
-struct ThemePicker: View {
-    var body: some View {
-        Menu {
-            ForEach(ThemePalette.allCases) { palette in
-                Button(palette.displayName) {
-                    ThemeManager.shared.palette = palette
-                }
-            }
-        } label: {
-            Image(systemName: "paintpalette.fill")
-        }
-        .accessibilityLabel("Switch Theme (temporary)")
-    }
+    // Semantic status colors (health/armor bands, etc.) — warm-toned to sit
+    // comfortably against the dark brown background instead of clashing
+    // primary red/green/blue, while still reading clearly as good/warn/bad.
+    static let statusGood = Color(red: 0.56, green: 0.68, blue: 0.38)
+    static let statusWarn = Color(red: 0.87, green: 0.58, blue: 0.24)
+    static let statusBad = Color(red: 0.78, green: 0.32, blue: 0.26)
+    static let statusNeutral = Color(red: 0.55, green: 0.50, blue: 0.46)
 }
 
 /// Generic approximate-status bands shown in player view (DM's screen visible to
@@ -108,17 +29,19 @@ struct ThemePicker: View {
 /// screen so both read the same bands.
 enum StatusBand {
     static func health(current: Int, max: Int) -> (label: String, color: Color) {
-        if current <= 0 { return ("Dead", .black) }
+        if current <= 0 { return ("Dead", Theme.statusNeutral) }
         let fraction = Double(current) / Double(max)
-        if fraction > 0.5 { return ("Healthy", .green) }
-        if fraction > 0.25 { return ("Wounded", .orange) }
-        return ("Critical", .red)
+        if fraction > 0.5 { return ("Healthy", Theme.statusGood) }
+        if fraction > 0.25 { return ("Wounded", Theme.statusWarn) }
+        return ("Critical", Theme.statusBad)
     }
 
+    /// Flavorful armor-coverage wording instead of raw "AC N" — reads like a
+    /// DM's shorthand for "how hard is this to hit" rather than a bare stat.
     static func armorClass(_ ac: Int) -> (label: String, color: Color) {
-        if ac >= 17 { return ("High AC", .blue) }
-        if ac >= 13 { return ("Average AC", .orange) }
-        return ("Low AC", .red)
+        if ac >= 17 { return ("Heavily Armored", Theme.statusGood) }
+        if ac >= 13 { return ("Lightly Armored", Theme.statusWarn) }
+        return ("Unarmored", Theme.statusBad)
     }
 }
 

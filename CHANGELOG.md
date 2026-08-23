@@ -5,6 +5,23 @@ All notable changes to this project are documented here, newest first.
 ## [Unreleased]
 
 ### Changed
+- **Theme finalized: Tavern Candlelight** — dark warm brown background, amber
+  accent, cream text, replacing the earlier "old paper" rust-red-on-white
+  look. `Theme.swift` is back to plain `static let` constants (the temporary
+  `ThemeManager`/`ThemePicker`/`ThemePalette` comparison tooling removed);
+  `CLAUDE.md` and `SPEC.md` updated to say theme applies app-wide now, not
+  selectively
+- Health/armor status bands recolored to warm-toned semantic colors
+  (`Theme.statusGood`/`.statusWarn`/`.statusBad`/`.statusNeutral`) instead of
+  raw `.green`/`.orange`/`.red`/`.blue`, so they don't clash with the warm
+  background. AC band labels changed from "Low/Average/High AC" to
+  "Unarmored"/"Lightly Armored"/"Heavily Armored"
+- Combatant list row layout reworked to use its full width: HP/AC moved from
+  a cramped caption line under the name to a right-aligned column near the
+  current-turn arrow, putting the row's previously-empty middle space to use
+- Session name/placeholder text in `SelectAllTextField` (the UIKit bridge
+  behind the session-name field) now follows the theme — it was silently
+  defaulting to UIKit's black text/gray placeholder regardless of palette
 - Reaction icon changed again, from `hand.tap`/`hand.tap.fill` to
   `arrow.triangle.2.circlepath` (a curved back-and-forth arrow — same glyph
   for both states, just recolored between accent/tertiary). List chip label

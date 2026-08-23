@@ -100,9 +100,12 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 - Combatants auto-sort by initiative (descending; ties maintain insertion order)
 
 **Combatant Display**
-- Initiative number is its own large, bold, far-left column (not a small
-  caption tucked under the name) — it's the value the whole list is sorted
-  by, so it reads as the primary at-a-glance number, not incidental detail
+- Row layout uses the full row width rather than stacking everything under
+  the name with empty space on the right: **initiative** is a large bold
+  far-left column (it's the value the list is sorted by, so it reads as the
+  primary at-a-glance number, not incidental detail); **name** sits next to
+  it; **HP/AC** (when set) is right-aligned near the current-turn arrow,
+  not crammed into a small caption line under the name
 - List shows: name, HP/AC (when set — exact in DM view,
   approximate bands in player view, see §12), and a wrapping row of small
   chips for active statuses (reaction used + active effects) — each status
@@ -568,35 +571,42 @@ it. `EncounterStore` persists one JSON file per encounter, mirroring `SessionSto
 
 ## Design & Theming
 
-**Current priority: native, modern iOS UI over the custom theme.** Screens should
-default to standard system components (`Form`/`Section`, `List`, `ContentUnavailableView`,
-system tint/materials, native swipe actions and confirmation dialogs) rather than
-hand-rolled custom-styled views. The rust-red/old-paper theme below is applied
-selectively (currently: the combat combatant list) rather than everywhere — see the
-"Styling & Colors" note in `CLAUDE.md` and the `ios-hig` skill
-(`<agent-config>/skills/ios-hig/SKILL.md`) before building a new screen.
+**Theme applies app-wide.** Every screen reads its colors from `Theme.swift` —
+the single source of truth (`Theme.background`, `.accent`, `.textPrimary`,
+`.textSecondary`, `.textTertiary`, `.divider`, plus semantic status colors
+`.statusGood`/`.statusWarn`/`.statusBad`/`.statusNeutral` for health/armor
+bands). No screen should fall back to system-default white/black — a `Form`/
+`List` is white by default and needs an explicit `Theme.background` +
+`.scrollContentBackground(.hidden)` to pick up the theme (see ContentView for
+the pattern). Native system *components* (`Form`/`Section`, `List`,
+`ContentUnavailableView`, native swipe actions/confirmation dialogs) are
+still preferred over hand-rolled containers — it's specifically *colors*
+that must come from `Theme`, not a mandate to reskin every control.
 
-**Color Palette** — old paper with a bold red accent, used selectively (see `Theme.swift`,
-the single source of truth for these colors where the theme is applied):
-- **Background**: Off-white / cream (#F5F1ED or similar)
-- **Primary text**: Dark brown/charcoal (#2B2520 or similar)
-- **Accent**: Saturated red (#C7241C or similar — deliberately more red than rust) for
-  highlights, active states, current turn
-- **Secondary accent**: Muted tan/beige (#D4C4B8) for subtle dividers, disabled states
-- **Borders**: Thin accent-red or dark brown lines for card/row separation
+**Current palette: Tavern Candlelight** — a warm, dark, cozy look (picked
+after comparing 5 live options via a temporary in-app picker, since removed):
+- **Background**: dark warm brown (`#3A2A22`-ish)
+- **Accent**: amber/gold (`#D9A441`-ish) — highlights, active states, current
+  turn, initiative numbers
+- **Primary text**: warm off-white/cream — deliberately light-on-dark, not
+  the dark-on-light of the earlier "old paper" look
+- **Secondary/tertiary text**: muted tan, for less prominent labels
+- **Divider**: dark muted brown, for card/row separation
+- **Status colors**: warm-toned good/warn/bad/neutral (olive green, amber,
+  muted red, gray) instead of raw primary red/green/blue, so health/armor
+  bands don't clash with the warm background
 
 **Typography**
-- Clean, readable serif or sans-serif (e.g., SF Pro or similar default iOS)
-- Combatant names: larger, bold
-- Initiative numbers: prominent, rust red
-- Effects: smaller, secondary text color
+- Clean, readable default iOS fonts (SF Pro); combatant names larger/bold
+- Initiative numbers: large, bold, accent-colored, own column (see §1)
+- Effects/status chips: smaller, secondary text color
 
 **Visual Elements**
-- Subtle texture or grain on background to evoke aged paper (optional, via pattern or asset)
-- Round corners on combatant cards/rows for softness
-- Rust red highlight or background for current turn combatant
-- Icons for reaction status (✓ or ✗ in rust red)
-- Effect badges with muted background, rust text
+- Round corners on combatant cards/rows and status chips for softness
+- Accent-colored highlight/background for the current-turn combatant
+- Status chips (reaction + effects) use semantic status/condition colors,
+  not the accent color, so they're visually distinct from "this is the
+  active turn"
 
 **Spacing**
 - Generous padding around interactive elements for easy tapping
@@ -623,15 +633,6 @@ the single source of truth for these colors where the theme is applied):
 - Smaller code surface for a personal app
 
 **Impact**: Every view should have a `#Preview` block; test UI visually during development.
-
-## Temporary Tooling
-
-**Theme picker** (`ThemeManager`/`ThemePicker`/`ThemePalette` in `Theme.swift`,
-paint-palette icon top-right of the main menu): lets the 5 color palettes be
-switched live for side-by-side comparison. Explicitly temporary — once a
-final palette is picked, hardcode its colors back into `Theme`'s plain
-`static let` constants and delete `ThemeManager`, `ThemePicker`,
-`ThemePalette.allCases`, and the menu button call site.
 
 ## Non-Goals
 

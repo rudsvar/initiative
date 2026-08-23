@@ -271,41 +271,39 @@ struct CombatantRow: View {
                     .foregroundColor(Theme.accent)
                     .frame(width: 40, alignment: .center)
 
-                VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: 6) {
-                        Text(combatant.name)
-                            .font(.headline)
-                            .foregroundColor(Theme.textPrimary)
-                            .strikethrough(combatant.isDead)
+                HStack(spacing: 6) {
+                    Text(combatant.name)
+                        .font(.headline)
+                        .foregroundColor(Theme.textPrimary)
+                        .strikethrough(combatant.isDead)
 
-                        if combatant.isDead {
-                            Image(systemName: "skull.fill")
-                                .font(.caption)
-                                .foregroundColor(.white)
-                                .padding(4)
-                                .background(Color.black.opacity(0.7))
-                                .clipShape(Circle())
-                        }
+                    if combatant.isDead {
+                        Image(systemName: "skull.fill")
+                            .font(.caption)
+                            .foregroundColor(.white)
+                            .padding(4)
+                            .background(Color.black.opacity(0.7))
+                            .clipShape(Circle())
                     }
-
-                    if hasStatusRow {
-                        HStack(spacing: 8) {
-                            healthText
-                            armorClassText
-                        }
-                        .font(.caption)
-                    }
-
                 }
 
                 Spacer()
 
-                if isCurrent {
-                    VStack(spacing: 4) {
-                        Image(systemName: "arrow.right.circle.fill")
-                            .font(.system(size: 20))
-                            .foregroundColor(Theme.accent)
+                // Right-aligned rather than crammed into a caption line under the
+                // name — puts the row's spare width (between name and the
+                // current-turn arrow) to use instead of leaving it empty.
+                if hasStatusRow {
+                    VStack(alignment: .trailing, spacing: 2) {
+                        healthText
+                        armorClassText
                     }
+                    .font(.caption)
+                }
+
+                if isCurrent {
+                    Image(systemName: "arrow.right.circle.fill")
+                        .font(.system(size: 20))
+                        .foregroundColor(Theme.accent)
                 }
             }
             .background(

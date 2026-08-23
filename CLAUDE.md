@@ -56,17 +56,18 @@ project.yml                    # XcodeGen configuration (regenerates .xcodeproj)
 - Use navigation containers (NavigationStack, TabView, etc.) for multi-screen navigation
 
 **Styling & Colors**:
-- **Prioritize native, modern iOS UI over the custom theme for now.** Prefer system
-  components (`Form`/`Section`, `List`, `ContentUnavailableView`, system tint/materials)
-  over hand-rolled `ZStack` + `Theme.background` + custom bordered fields. Reach for
-  `Theme.swift` (`~/git/initiative/initiative/Theme.swift`) only where a custom look is
-  actually wanted (e.g. the combat list's rust-red accents), not by default on every
-  new screen — `AddEffectView` was rewritten from a custom `VStack` to a native `Form`
-  for exactly this reason (it also fixed a real row-overlap bug for free, since `Form`
-  handles scrolling/safe-area itself instead of a hand-rolled `ScrollView`).
+- **Theme applies app-wide — every screen must use `Theme.swift` colors, no
+  exceptions.** (Direction changed from an earlier "native iOS colors, custom
+  theme only selectively" stance — that's no longer current.) Prefer native
+  system *components* (`Form`/`Section`, `List`, `ContentUnavailableView`,
+  native swipe actions/confirmation dialogs) over hand-rolled containers —
+  that part hasn't changed — but their *colors* must come from `Theme.swift`
+  (`~/git/initiative/initiative/Theme.swift`), not system defaults. A `Form`/
+  `List` is white by default; pair it with `Theme.background` +
+  `.scrollContentBackground(.hidden)` (see `ContentView.swift` for the
+  pattern) so it doesn't stand out as unthemed.
 - Consult the `ios-hig` skill (`<agent-config>/skills/ios-hig/SKILL.md`) before building new
   screens — practical Apple HIG checklist for this app.
-- Colors can be defined in Assets.xcassets for app-wide theming
 
 ## Important notes
 
