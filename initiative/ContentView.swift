@@ -41,10 +41,12 @@ struct ContentView: View {
                 } else {
                     List {
                         ForEach(session.sortedParticipants) { participant in
-                            ParticipantRow(
-                                participant: participant,
-                                isCurrent: session.currentParticipant?.id == participant.id
-                            )
+                            NavigationLink(destination: ParticipantDetailView(session: session, participantId: participant.id)) {
+                                ParticipantRow(
+                                    participant: participant,
+                                    isCurrent: session.currentParticipant?.id == participant.id
+                                )
+                            }
                         }
                     }
                     .listStyle(.plain)
