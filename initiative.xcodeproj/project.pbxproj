@@ -7,14 +7,18 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		28A7C8C9661750E79B806092 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 460298ED464149EF70AC81E9 /* Models.swift */; };
+		38695A715EF0360D9B867764 /* ViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 155E562E12403C00DE8A62AB /* ViewExtensions.swift */; };
 		73B4B754E931AFDD980BA521 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C602D49912CF215015A47FE /* ContentView.swift */; };
 		ED7A10670E88FF02C4D63E4B /* initiativeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F716A445CE95BB18ED0CB6 /* initiativeApp.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		0C602D49912CF215015A47FE /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		155E562E12403C00DE8A62AB /* ViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewExtensions.swift; sourceTree = "<group>"; };
+		460298ED464149EF70AC81E9 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		80F716A445CE95BB18ED0CB6 /* initiativeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = initiativeApp.swift; sourceTree = "<group>"; };
-		F7082DB36F1CEF76E4B26086 /* initiative.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = initiative.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F7082DB36F1CEF76E4B26086 /* initiative.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = initiative.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -31,6 +35,8 @@
 			children = (
 				0C602D49912CF215015A47FE /* ContentView.swift */,
 				80F716A445CE95BB18ED0CB6 /* initiativeApp.swift */,
+				460298ED464149EF70AC81E9 /* Models.swift */,
+				155E562E12403C00DE8A62AB /* ViewExtensions.swift */,
 			);
 			path = initiative;
 			sourceTree = "<group>";
@@ -70,7 +76,7 @@
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = YES;
-				LastUpgradeCheck = 2660;
+				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					4C6A86035534699E7F5ECAC9 = {
 						DevelopmentTeam = "";
@@ -103,6 +109,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				73B4B754E931AFDD980BA521 /* ContentView.swift in Sources */,
+				28A7C8C9661750E79B806092 /* Models.swift in Sources */,
+				38695A715EF0360D9B867764 /* ViewExtensions.swift in Sources */,
 				ED7A10670E88FF02C4D63E4B /* initiativeApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -147,7 +155,6 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -168,7 +175,6 @@
 				ONLY_ACTIVE_ARCH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -250,7 +256,6 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -264,7 +269,6 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = iphoneos;
-				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
 				SWIFT_VERSION = 5.0;
