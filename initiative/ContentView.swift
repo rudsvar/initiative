@@ -63,7 +63,7 @@ struct InlineAddParticipantRow: View {
 
     var body: some View {
         HStack(spacing: 12) {
-            TextField("Add participant…", text: $name)
+            TextField("Name", text: $name)
                 .focused($nameFieldFocused)
                 .foregroundColor(Theme.textPrimary)
                 .submitLabel(.done)
