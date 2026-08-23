@@ -657,6 +657,90 @@ after comparing 5 live options via a temporary in-app picker, since removed):
 
 **Impact**: Every view should have a `#Preview` block; test UI visually during development.
 
+## Researched Proposals (Not Yet Implemented)
+
+Findings from direct research requests — documented for a future decision,
+not implemented. Nothing here changes current behavior.
+
+### Caster-anchored durations, recharge timers, generic turn timer
+
+**Is a "target/caster" concept needed again?** A target-based duration
+(`.untilStartOfTargetTurn`/`.untilEndOfTargetTurn`) existed early on and was
+removed on the reasoning that "effects are always self-applied to the
+combatant they're on, so a target never made sense." That's still correct
+for the common case — "Stunned until the end of *this combatant's own* next
+turn" is exactly what today's `.untilStartOfTheirTurn`/`.untilEndOfTheirTurn`
+already models, since "their" = the combatant carrying the effect.
+
+But there's a real case that's genuinely different: some effects are
+anchored to a turn boundary that belongs to *a different* combatant than
+the one carrying the effect — most naturally, the caster. Example pattern:
+an effect placed on Target A that expires at the start/end of Caster B's
+next turn, not Target A's. The combatant whose turn matters isn't "the
+target" in the old removed sense (recipient of the effect) — it's an
+arbitrary *anchor combatant*, which happens to often be the caster.
+
+**Proposal**: generalize rather than reintroduce the old shape. Replace (or
+add alongside) today's owner-only duration with an anchor-combatant duration:
+`.untilStartOfCombatantTurn(anchorID: UUID, remainingTurns: Int)` /
+`.untilEndOfCombatantTurn(...)`, where the anchor defaults to the effect's
+own owner (today's behavior, unchanged for the common case) but can be set
+to any other combatant in `AddEffectView` when the effect's expiry is
+someone else's turn instead. This is a strict superset of both the old
+target-based type and today's owner-only type — one mechanism, not two.
+**Not implemented** — would need `AddEffectView`'s combatant picker back
+(removed with the old target-based type), `DurationType`'s manual Codable
+brought back to carry an anchor ID, and `removeExpiredEffects` to check
+against the anchor rather than assume owner.
+
+**Recharge timers (e.g. a dragon's breath weapon)**: no new mechanism
+needed — a recharge cooldown is already fully expressible as a normal
+named effect with a turn-count duration (e.g. an effect named "Breath
+Weapon Recharging" with `remainingTurns: 3` on the monster itself). The
+only piece that's genuinely missing is a *non-deterministic* recharge (5th-edition's
+"roll a d6, recharges on 5-6 at the start of each turn") — that would need
+either a manual "roll succeeded, remove effect" swipe (already possible
+today, no new feature) or an explicit dice-adjacent UI, which conflicts
+with the project's standing non-goal of "dice rolling or complex rules
+automation." Recommendation: don't build anything new here — the existing
+effect system already covers the common case, and true random-recharge
+support isn't worth the scope given the non-goal.
+
+**Generic turn timer**: everything above is still anchored to *some*
+combatant's turn. A standalone timer independent of any one combatant
+(e.g. "this lasts 3 full rounds regardless of whose turn it is") isn't
+expressible today. Could be modeled as a session-level construct keyed off
+`roundNumber` alone rather than any combatant's turn boundary. No concrete
+want expressed yet beyond "maybe" — low priority, flagged for later if a
+real use case shows up.
+
+### In-app reminders for save-based conditions
+
+**The gap**: today's `DurationType` is purely turn-count based
+(`remainingTurns`) — there's no way to express "lasts until the affected
+combatant succeeds on a saving throw," a common condition-duration pattern
+(e.g. a condition that allows a save at the end of each of the creature's
+turns). Nothing currently reminds the DM a save is due.
+
+**Proposal**: add a duration case that doesn't auto-expire by turn count —
+e.g. `DurationType.untilSaveSucceeds` — paired with a lightweight in-app
+reminder, not a system push notification. This is a single-device,
+foreground-only app (the DM is looking at the screen during their own
+session), so `UNUserNotificationCenter` local notifications would be the
+wrong tool — they need a permission prompt and are meant for when the app
+isn't in the foreground, neither of which applies here. Instead:
+`CombatSession.nextTurn()` would check the incoming current combatant's
+effects for any `.untilSaveSucceeds` entries and surface them (a transient
+banner or `.alert`, e.g. "Roll a save for Alice: Poisoned") with two
+actions — **Save Made** (removes the effect) or **Dismiss** (effect stays,
+no further reminder until their next turn). Removal stays a manual DM
+call either way (matches the project's "no automated rules" stance) — the
+addition is purely the reminder, not resolving the save itself.
+
+**Not implemented** — would need the new `DurationType` case (with the
+usual Codable back-compat handling), a way to mark it from `AddEffectView`,
+and a reminder-surfacing hook in `ContentView` around `nextTurn()`.
+
 ## Non-Goals
 
 - Cross-platform (Android, web)
