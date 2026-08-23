@@ -23,11 +23,6 @@ struct MainMenuView: View {
             Theme.background
                 .ignoresSafeArea()
 
-            // TEMPORARY: palette comparison, see Theme.swift's ThemePicker doc comment.
-            ThemePicker()
-                .foregroundColor(Theme.textTertiary)
-                .padding()
-
             GeometryReader { proxy in
                 ScrollView {
                     VStack(spacing: 32) {
@@ -71,6 +66,14 @@ struct MainMenuView: View {
                     .frame(minWidth: proxy.size.width, minHeight: proxy.size.height)
                 }
             }
+
+            // TEMPORARY: palette comparison, see Theme.swift's ThemePicker doc
+            // comment. Must be last in the ZStack (topmost) — the GeometryReader/
+            // ScrollView above fills the whole screen and would otherwise sit on
+            // top of it in z-order and swallow the tap.
+            ThemePicker()
+                .foregroundColor(Theme.textTertiary)
+                .padding()
         }
         .navigationBarHidden(true)
         .onAppear { canResume = sessionStore.resumableSession() != nil }
