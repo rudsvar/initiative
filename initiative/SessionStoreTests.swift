@@ -27,7 +27,7 @@ final class SessionStoreTests: XCTestCase {
     }
 
     func testSaveAndListSession() {
-        let record = SessionRecord(name: "Goblin Ambush", participants: [], currentTurnIndex: 0)
+        let record = SessionRecord(name: "Goblin Ambush", combatants: [], currentTurnIndex: 0)
         store.save(record)
 
         let listed = store.listSavedSessions()
@@ -36,7 +36,7 @@ final class SessionStoreTests: XCTestCase {
     }
 
     func testDeleteSession() {
-        let record = SessionRecord(name: "Ambush", participants: [], currentTurnIndex: 0)
+        let record = SessionRecord(name: "Ambush", combatants: [], currentTurnIndex: 0)
         store.save(record)
 
         store.delete(id: record.id)
@@ -49,17 +49,17 @@ final class SessionStoreTests: XCTestCase {
     }
 
     func testResumableSessionReturnsLastActive() {
-        let participant = Participant(name: "Hero", initiative: 15)
-        let record = SessionRecord(name: "In Progress", participants: [participant], currentTurnIndex: 0)
+        let combatant = Combatant(name: "Hero", initiative: 15)
+        let record = SessionRecord(name: "In Progress", combatants: [combatant], currentTurnIndex: 0)
         store.save(record)
         store.setLastActiveSessionID(record.id)
 
         let resumed = store.resumableSession()
-        XCTAssertEqual(resumed?.participants.first?.name, "Hero")
+        XCTAssertEqual(resumed?.combatants.first?.name, "Hero")
     }
 
     func testResumableSessionNilAfterDeletingLastActive() {
-        let record = SessionRecord(name: "In Progress", participants: [], currentTurnIndex: 0)
+        let record = SessionRecord(name: "In Progress", combatants: [], currentTurnIndex: 0)
         store.save(record)
         store.setLastActiveSessionID(record.id)
 
@@ -84,7 +84,7 @@ final class SessionStoreTests: XCTestCase {
     }
 
     func testClearLastActiveSessionID() {
-        let record = SessionRecord(name: "In Progress", participants: [], currentTurnIndex: 0)
+        let record = SessionRecord(name: "In Progress", combatants: [], currentTurnIndex: 0)
         store.save(record)
         store.setLastActiveSessionID(record.id)
 
@@ -94,8 +94,8 @@ final class SessionStoreTests: XCTestCase {
     }
 
     func testSessionsAreSortedNewestFirst() {
-        let older = SessionRecord(name: "Older", savedAt: Date(timeIntervalSince1970: 0), participants: [], currentTurnIndex: 0)
-        let newer = SessionRecord(name: "Newer", savedAt: Date(timeIntervalSince1970: 1000), participants: [], currentTurnIndex: 0)
+        let older = SessionRecord(name: "Older", savedAt: Date(timeIntervalSince1970: 0), combatants: [], currentTurnIndex: 0)
+        let newer = SessionRecord(name: "Newer", savedAt: Date(timeIntervalSince1970: 1000), combatants: [], currentTurnIndex: 0)
         store.save(older)
         store.save(newer)
 

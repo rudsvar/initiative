@@ -23,7 +23,7 @@ struct SessionListView: View {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(record.name)
                                     .font(.headline)
-                                Text("\(record.participants.count) participants · \(record.savedAt.formatted(date: .abbreviated, time: .shortened))")
+                                Text("\(record.combatants.count) combatants · \(record.savedAt.formatted(date: .abbreviated, time: .shortened))")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }

@@ -5,20 +5,20 @@ struct SessionRecord: Codable, Identifiable {
     let id: UUID
     var name: String
     var savedAt: Date
-    var participants: [Participant]
+    var combatants: [Combatant]
     var currentTurnIndex: Int
 
     init(
         id: UUID = UUID(),
         name: String,
         savedAt: Date = Date(),
-        participants: [Participant],
+        combatants: [Combatant],
         currentTurnIndex: Int
     ) {
         self.id = id
         self.name = name
         self.savedAt = savedAt
-        self.participants = participants
+        self.combatants = combatants
         self.currentTurnIndex = currentTurnIndex
     }
 }

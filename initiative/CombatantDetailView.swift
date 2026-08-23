@@ -1,13 +1,34 @@
 import SwiftUI
 
-struct ParticipantDetailView: View {
+struct CombatantDetailView: View {
     let session: CombatSession
-    let participantId: UUID
+    let combatantId: UUID
     @Environment(\.dismiss) var dismiss
     @State private var showAddEffect = false
 
-    var participant: Participant? {
-        session.participants.first { $0.id == participantId }
+    var combatant: Combatant? {
+        session.combatants.first { $0.id == combatantId }
+    }
+
+    private var nameBinding: Binding<String> {
+        Binding(
+            get: { combatant?.name ?? "" },
+            set: { newValue in
+                guard let index = session.combatants.firstIndex(where: { $0.id == combatantId }) else { return }
+                session.combatants[index].name = newValue
+            }
+        )
+    }
+
+    private var initiativeBinding: Binding<String> {
+        Binding(
+            get: { combatant.map { String($0.initiative) } ?? "" },
+            set: { newValue in
+                guard let index = session.combatants.firstIndex(where: { $0.id == combatantId }) else { return }
+                guard let value = Int(newValue) else { return }
+                session.combatants[index].initiative = value
+            }
+        )
     }
 
     var body: some View {
@@ -15,25 +36,44 @@ struct ParticipantDetailView: View {
             Theme.background
                 .ignoresSafeArea()
 
-            if let participant = participant {
+            if let combatant = combatant {
                 VStack(spacing: 0) {
                     ScrollView {
                         VStack(alignment: .leading, spacing: 20) {
-                            VStack(alignment: .leading, spacing: 12) {
-                                HStack {
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text(participant.name)
-                                            .font(.title2)
-                                            .fontWeight(.bold)
-                                            .foregroundColor(Theme.textPrimary)
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Name")
+                                    .font(.caption)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(Theme.textTertiary)
+                                TextField("Name", text: nameBinding)
+                                    .font(.title2)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(Theme.textPrimary)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
+                                    .background(Theme.background)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(Theme.divider, lineWidth: 1)
+                                    )
 
-                                        Text("Initiative \(participant.initiative)")
-                                            .font(.subheadline)
-                                            .foregroundColor(Theme.accent)
-                                            .fontWeight(.semibold)
-                                    }
-                                    Spacer()
-                                }
+                                Text("Initiative")
+                                    .font(.caption)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(Theme.textTertiary)
+                                TextField("Initiative", text: initiativeBinding)
+                                    .keyboardType(.numberPad)
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(Theme.accent)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
+                                    .frame(width: 88)
+                                    .background(Theme.background)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(Theme.divider, lineWidth: 1)
+                                    )
                             }
                             .padding(16)
                             .background(Theme.divider.opacity(0.2))
@@ -45,8 +85,8 @@ struct ParticipantDetailView: View {
                                     .foregroundColor(Theme.textPrimary)
 
                                 ReactionToggleView(
-                                    isUsed: participant.reactionUsed,
-                                    onToggle: { toggleReaction(for: participant) }
+                                    isUsed: combatant.reactionUsed,
+                                    onToggle: { toggleReaction(for: combatant) }
                                 )
                             }
 
@@ -65,7 +105,7 @@ struct ParticipantDetailView: View {
                                     }
                                 }
 
-                                if participant.effects.isEmpty {
+                                if combatant.effects.isEmpty {
                                     VStack(spacing: 8) {
                                         Image(systemName: "sparkles")
                                             .font(.system(size: 32))
@@ -78,10 +118,10 @@ struct ParticipantDetailView: View {
                                     .padding(20)
                                 } else {
                                     VStack(spacing: 8) {
-                                        ForEach(participant.effects) { effect in
+                                        ForEach(combatant.effects) { effect in
                                             EffectRowView(
                                                 effect: effect,
-                                                onRemove: { removeEffect(effect, from: participant) }
+                                                onRemove: { removeEffect(effect, from: combatant) }
                                             )
                                         }
                                     }
@@ -93,28 +133,28 @@ struct ParticipantDetailView: View {
                 }
             }
         }
-        .navigationTitle("Participant")
+        .navigationTitle("Combatant")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showAddEffect) {
-            if let participant = participant {
+            if let combatant = combatant {
                 AddEffectView(
                     session: session,
-                    participant: participant,
+                    combatant: combatant,
                     isPresented: $showAddEffect
                 )
             }
         }
     }
 
-    private func toggleReaction(for participant: Participant) {
-        if let index = session.participants.firstIndex(where: { $0.id == participant.id }) {
-            session.participants[index].reactionUsed.toggle()
+    private func toggleReaction(for combatant: Combatant) {
+        if let index = session.combatants.firstIndex(where: { $0.id == combatant.id }) {
+            session.combatants[index].reactionUsed.toggle()
         }
     }
 
-    private func removeEffect(_ effect: Effect, from participant: Participant) {
-        if let pIndex = session.participants.firstIndex(where: { $0.id == participant.id }) {
-            session.participants[pIndex].effects.removeAll { $0.id == effect.id }
+    private func removeEffect(_ effect: Effect, from combatant: Combatant) {
+        if let pIndex = session.combatants.firstIndex(where: { $0.id == combatant.id }) {
+            session.combatants[pIndex].effects.removeAll { $0.id == effect.id }
         }
     }
 }
@@ -187,13 +227,13 @@ struct EffectRowView: View {
 
 #Preview {
     NavigationStack {
-        ParticipantDetailView(
+        CombatantDetailView(
             session: {
                 let session = CombatSession()
-                session.addParticipant(name: "Goblin", initiative: 15)
+                session.addCombatant(name: "Goblin", initiative: 15)
                 return session
             }(),
-            participantId: UUID()
+            combatantId: UUID()
         )
     }
 }

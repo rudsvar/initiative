@@ -11,9 +11,9 @@
 		28A7C8C9661750E79B806092 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = 460298ED464149EF70AC81E9 /* Models.swift */; };
 		327B55AA697B7D40D45ED3B3 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 35D1A034AAC512E0A109CECB /* SessionStore.swift */; };
 		38695A715EF0360D9B867764 /* ViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 155E562E12403C00DE8A62AB /* ViewExtensions.swift */; };
+		3A936CCFF9B534DAF1F809EF /* CombatantDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DF167250F0ABBC42541CCBCC /* CombatantDetailView.swift */; };
 		3F5BAD9E699DD0D1F40F35A5 /* SessionStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34DB830AEA564807CB69560E /* SessionStoreTests.swift */; };
 		3FCEA094F2125786EB6F7B86 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CE0A7AB03C5B651842B5FFA /* RootView.swift */; };
-		57E43D881FDA3ACE96602F3D /* ParticipantDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BA786828925EBEB33514E25 /* ParticipantDetailView.swift */; };
 		73B4B754E931AFDD980BA521 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C602D49912CF215015A47FE /* ContentView.swift */; };
 		A2397285627F8EB88D02FAC7 /* SessionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5412411A50F66288F6CD7C3A /* SessionListView.swift */; };
 		B5FC3C6073488D73C6F11502 /* AddEffectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB9B65C9C807B3A6A012AA17 /* AddEffectView.swift */; };
@@ -42,10 +42,10 @@
 		460298ED464149EF70AC81E9 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		5412411A50F66288F6CD7C3A /* SessionListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionListView.swift; sourceTree = "<group>"; };
 		80F716A445CE95BB18ED0CB6 /* initiativeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = initiativeApp.swift; sourceTree = "<group>"; };
-		9BA786828925EBEB33514E25 /* ParticipantDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticipantDetailView.swift; sourceTree = "<group>"; };
 		9CE0A7AB03C5B651842B5FFA /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		B3C86962B7A76FB8DC7C77EE /* MainMenuView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainMenuView.swift; sourceTree = "<group>"; };
 		CB6BC3F48F491E46F929912B /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
+		DF167250F0ABBC42541CCBCC /* CombatantDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CombatantDetailView.swift; sourceTree = "<group>"; };
 		EB9B65C9C807B3A6A012AA17 /* AddEffectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEffectView.swift; sourceTree = "<group>"; };
 		F7082DB36F1CEF76E4B26086 /* initiative.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = initiative.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -64,12 +64,12 @@
 			isa = PBXGroup;
 			children = (
 				EB9B65C9C807B3A6A012AA17 /* AddEffectView.swift */,
+				DF167250F0ABBC42541CCBCC /* CombatantDetailView.swift */,
 				0C602D49912CF215015A47FE /* ContentView.swift */,
 				80F716A445CE95BB18ED0CB6 /* initiativeApp.swift */,
 				B3C86962B7A76FB8DC7C77EE /* MainMenuView.swift */,
 				460298ED464149EF70AC81E9 /* Models.swift */,
 				374032899B38F3EF7AFFA6BF /* ModelsTests.swift */,
-				9BA786828925EBEB33514E25 /* ParticipantDetailView.swift */,
 				9CE0A7AB03C5B651842B5FFA /* RootView.swift */,
 				5412411A50F66288F6CD7C3A /* SessionListView.swift */,
 				35D1A034AAC512E0A109CECB /* SessionStore.swift */,
@@ -170,10 +170,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				B5FC3C6073488D73C6F11502 /* AddEffectView.swift in Sources */,
+				3A936CCFF9B534DAF1F809EF /* CombatantDetailView.swift in Sources */,
 				73B4B754E931AFDD980BA521 /* ContentView.swift in Sources */,
 				08D80ECAA588E29A70FA71DF /* MainMenuView.swift in Sources */,
 				28A7C8C9661750E79B806092 /* Models.swift in Sources */,
-				57E43D881FDA3ACE96602F3D /* ParticipantDetailView.swift in Sources */,
 				3FCEA094F2125786EB6F7B86 /* RootView.swift in Sources */,
 				A2397285627F8EB88D02FAC7 /* SessionListView.swift in Sources */,
 				327B55AA697B7D40D45ED3B3 /* SessionStore.swift in Sources */,

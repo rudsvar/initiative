@@ -1,6 +1,6 @@
 import Foundation
 
-struct Participant: Identifiable, Codable {
+struct Combatant: Identifiable, Codable {
     let id: UUID
     var name: String
     var initiative: Int
@@ -86,7 +86,7 @@ enum DurationType: Equatable, Codable {
 
 @Observable
 class CombatSession {
-    var participants: [Participant] = []
+    var combatants: [Combatant] = []
     var currentTurnIndex: Int = 0
 
     /// Identity of this session's on-disk record — stable across autosaves so
@@ -94,7 +94,7 @@ class CombatSession {
     private(set) var id = UUID()
     private(set) var name = CombatSession.defaultName()
 
-    private var history: [(participants: [Participant], currentTurnIndex: Int)] = []
+    private var history: [(combatants: [Combatant], currentTurnIndex: Int)] = []
 
     private static func defaultName() -> String {
         let formatter = DateFormatter()
@@ -107,41 +107,41 @@ class CombatSession {
         !history.isEmpty
     }
 
-    var currentParticipant: Participant? {
-        guard participants.indices.contains(currentTurnIndex) else { return nil }
-        return participants[currentTurnIndex]
+    var currentCombatant: Combatant? {
+        guard combatants.indices.contains(currentTurnIndex) else { return nil }
+        return combatants[currentTurnIndex]
     }
 
-    var sortedParticipants: [Participant] {
-        participants.sorted { $0.initiative > $1.initiative }
+    var sortedCombatants: [Combatant] {
+        combatants.sorted { $0.initiative > $1.initiative }
     }
 
-    func addParticipant(name: String, initiative: Int) {
-        let participant = Participant(name: name, initiative: initiative)
-        participants.append(participant)
-        participants.sort { $0.initiative > $1.initiative }
+    func addCombatant(name: String, initiative: Int) {
+        let combatant = Combatant(name: name, initiative: initiative)
+        combatants.append(combatant)
+        combatants.sort { $0.initiative > $1.initiative }
     }
 
     func nextTurn() {
-        guard !participants.isEmpty else { return }
+        guard !combatants.isEmpty else { return }
 
-        history.append((participants: participants, currentTurnIndex: currentTurnIndex))
+        history.append((combatants: combatants, currentTurnIndex: currentTurnIndex))
 
-        let endingParticipantId = participants[currentTurnIndex].id
-        currentTurnIndex = (currentTurnIndex + 1) % participants.count
-        let startingParticipantId = participants[currentTurnIndex].id
+        let endingCombatantId = combatants[currentTurnIndex].id
+        currentTurnIndex = (currentTurnIndex + 1) % combatants.count
+        let startingCombatantId = combatants[currentTurnIndex].id
 
         removeExpiredEffects(
-            turnEndingParticipantId: endingParticipantId,
-            turnStartingParticipantId: startingParticipantId
+            turnEndingCombatantId: endingCombatantId,
+            turnStartingCombatantId: startingCombatantId
         )
 
-        participants[currentTurnIndex].reactionUsed = false
+        combatants[currentTurnIndex].reactionUsed = false
     }
 
     func previousTurn() {
         guard let previous = history.popLast() else { return }
-        participants = previous.participants
+        combatants = previous.combatants
         currentTurnIndex = previous.currentTurnIndex
     }
 
@@ -149,36 +149,36 @@ class CombatSession {
     func reset() {
         id = UUID()
         name = CombatSession.defaultName()
-        participants = []
+        combatants = []
         currentTurnIndex = 0
         history = []
     }
 
     func makeRecord() -> SessionRecord {
-        SessionRecord(id: id, name: name, participants: participants, currentTurnIndex: currentTurnIndex)
+        SessionRecord(id: id, name: name, combatants: combatants, currentTurnIndex: currentTurnIndex)
     }
 
     func load(_ record: SessionRecord) {
         id = record.id
         name = record.name
-        participants = record.participants
+        combatants = record.combatants
         currentTurnIndex = record.currentTurnIndex
         history = []
     }
 
-    private func removeExpiredEffects(turnEndingParticipantId: UUID, turnStartingParticipantId: UUID) {
-        for i in participants.indices {
-            let ownerId = participants[i].id
-            participants[i].effects.removeAll { effect in
+    private func removeExpiredEffects(turnEndingCombatantId: UUID, turnStartingCombatantId: UUID) {
+        for i in combatants.indices {
+            let ownerId = combatants[i].id
+            combatants[i].effects.removeAll { effect in
                 switch effect.durationType {
                 case .untilEndOfTheirTurn:
-                    return ownerId == turnEndingParticipantId
+                    return ownerId == turnEndingCombatantId
                 case .untilEndOfTargetTurn(let targetID):
-                    return targetID == turnEndingParticipantId
+                    return targetID == turnEndingCombatantId
                 case .untilStartOfTheirTurn:
-                    return ownerId == turnStartingParticipantId
+                    return ownerId == turnStartingCombatantId
                 case .untilStartOfTargetTurn(let targetID):
-                    return targetID == turnStartingParticipantId
+                    return targetID == turnStartingCombatantId
                 }
             }
         }

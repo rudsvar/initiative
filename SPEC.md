@@ -14,7 +14,7 @@
 
 ## Core Goals
 
-Build a clean, minimal initiative tracker for managing turn order and temporary effects in tabletop combat. The app maintains participant order, tracks reactions, and manages duration-based effects across multiple turn types.
+Build a clean, minimal initiative tracker for managing turn order and temporary effects in tabletop combat. The app maintains combatant order, tracks reactions, and manages duration-based effects across multiple turn types.
 
 ## Feature Roadmap
 
@@ -24,62 +24,62 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 - ⏳ MVP feature implementation
 
 ### Phase 1: MVP (Combat Tracking)
-- ✅ List view of participants sorted by initiative (descending)
-- ✅ Add participant with custom or random (1–20) initiative
+- ✅ List view of combatants sorted by initiative (descending)
+- ✅ Add combatant with custom or random (1–20) initiative
 - ✅ Next Turn button to advance turn order
-- ✅ Reaction tracking per participant (reset on their turn)
+- ✅ Reaction tracking per combatant (reset on their turn)
 - ✅ Temporary effects with multiple duration types
 - ✅ Effect target selection
 - ✅ Back button to return to prior state (undo stack of full session snapshots)
 
 ### Phase 2: Polish
 - ✅ Combat session persistence (save/load) + main menu (Resume / New / Load)
-- Remove/edit participant
+- Remove/edit combatant
 - Round counter display
 - Visual indicators for effects and reaction state
 - Haptic feedback on turn advance
 
 ### Phase 3: HP Tracking (planned, not yet implemented — see below)
-- Per-participant current/max HP, opt-in (not every participant needs it tracked)
+- Per-combatant current/max HP, opt-in (not every combatant needs it tracked)
 - Quick damage/heal adjustment
 - Clear "dead" indicator when HP reaches 0
 
 ## Core Features
 
-### 1. Participant Management
+### 1. Combatant Management
 
-**Add Participant**
-- Inline placeholder row pinned at the top of the participant list (no modal)
+**Add Combatant**
+- Inline placeholder row pinned at the top of the combatant list (no modal)
 - Name and initiative are separate bordered text boxes (each its own tappable
   field, per iOS HIG — see `<agent-config>/skills/ios-hig/SKILL.md`), with the add
   (+) button outside/after the initiative box, not touching it
 - Leaving initiative blank rolls random 1–20 on add
-- Submitting (return key or the + button) adds the participant and clears the row, ready for the next entry
-- Participants auto-sort by initiative (descending; ties maintain insertion order)
+- Submitting (return key or the + button) adds the combatant and clears the row, ready for the next entry
+- Combatants auto-sort by initiative (descending; ties maintain insertion order)
 
-**Participant Display**
+**Combatant Display**
 - List shows: name, initiative number, reaction status, active effects
 - List is always sorted highest to lowest initiative
-- Current participant (whose turn it is) is visually emphasized
+- Current combatant (whose turn it is) is visually emphasized
 
 ### 2. Initiative Order & Turn Advancement
 
 **Turn Tracking**
-- The app maintains a "current participant" pointer
-- "Next Turn" button (bottom right) advances to the next participant
-- After the last participant, wraps to the first
-- On turn start, that participant's reaction is reset to "available"
+- The app maintains a "current combatant" pointer
+- "Next Turn" button (bottom right) advances to the next combatant
+- After the last combatant, wraps to the first
+- On turn start, that combatant's reaction is reset to "available"
 
 **Current Turn Indicator**
-- The participant whose turn it is is highlighted or marked distinctly
+- The combatant whose turn it is is highlighted or marked distinctly
 - Useful for quick reference during play
 
 ### 3. Reaction Tracking
 
 **Reaction State**
-- Each participant has a boolean: reaction available (true) or used (false)
+- Each combatant has a boolean: reaction available (true) or used (false)
 - Default: true (available)
-- Clicking a participant reveals an option to "Use Reaction" or "Reset Reaction"
+- Clicking a combatant reveals an option to "Use Reaction" or "Reset Reaction"
 - "Use Reaction" sets their state to unavailable (used)
 - State persists until their next turn begins (at which point it auto-resets to available)
 - Visual indicator on the list shows reaction status (e.g., checkmark = available, X = used)
@@ -90,28 +90,28 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 An effect has:
 - Name (brief descriptor, e.g., "Stunned", "Poisoned")
 - Duration type (see below)
-- Optional target participant (required if duration references "target's turn")
-- Applied to: the participant being edited
+- Optional target combatant (required if duration references "target's turn")
+- Applied to: the combatant being edited
 
 **Duration Types**
-1. "Until start of their next turn" — expires when this participant's turn begins again
-2. "Until end of their next turn" — expires when this participant's turn ends
+1. "Until start of their next turn" — expires when this combatant's turn begins again
+2. "Until end of their next turn" — expires when this combatant's turn ends
 3. "Until start of target's next turn" — expires when the named target's turn begins
 4. "Until end of target's next turn" — expires when the named target's turn ends
 
-(Where "start" = turn begins, "end" = turn advances to next participant)
+(Where "start" = turn begins, "end" = turn advances to next combatant)
 
 **Adding an Effect**
-- Tap a participant to open their detail view
+- Tap a combatant to open their detail view
 - Button to "Add Effect"
 - Modal prompts for:
   - Effect name
   - Duration type
-  - If duration involves a target, show a picker of all other participants
-- Effect is added to the participant's active effects list
+  - If duration involves a target, show a picker of all other combatants
+- Effect is added to the combatant's active effects list
 
 **Effect Display**
-- On the main list, show active effects under each participant
+- On the main list, show active effects under each combatant
 - Visual distinction (e.g., colored badge or icon) for each effect
 - When duration expires, effect auto-removes
 
@@ -121,12 +121,12 @@ An effect has:
 
 ### 5. HP Tracking (planned — not yet implemented, awaiting confirmation before build)
 
-**Opt-in per participant.** Not every participant needs HP tracked (e.g. a
+**Opt-in per combatant.** Not every combatant needs HP tracked (e.g. a
 GM-controlled NPC that's narrative-only) — `maxHP`/`currentHP` are `nil` until
-explicitly enabled for that participant, so existing sessions and the "add
-participant" flow are unaffected by default.
+explicitly enabled for that combatant, so existing sessions and the "add
+combatant" flow are unaffected by default.
 
-**Enabling & editing** (from the participant detail screen, alongside Reaction/Effects)
+**Enabling & editing** (from the combatant detail screen, alongside Reaction/Effects)
 - "Track HP" action prompts for a max HP value, sets `currentHP = maxHP`
 - Once tracked: quick +/- damage/heal controls, plus direct numeric entry for
   exact values (e.g. correcting after a heal spell)
@@ -134,17 +134,17 @@ participant" flow are unaffected by default.
   now (temp HP / overheal is out of scope until there's a concrete need)
 
 **Dead indicator**
-- A participant is dead when `currentHP == 0` (only meaningful if HP is tracked)
-- Dead participants get an unambiguous visual marker — not just a color change —
+- A combatant is dead when `currentHP == 0` (only meaningful if HP is tracked)
+- Dead combatants get an unambiguous visual marker — not just a color change —
   on both the main list row and the detail screen (e.g. skull icon + dimmed/
   grayed row + "Dead" label), so it reads correctly even for colorblind users
   and at a glance during play
-- Dead participants **stay in turn order** (don't auto-remove) — narratively a
+- Dead combatants **stay in turn order** (don't auto-remove) — narratively a
   character can still be dead-and-present (death saves, corpse still "acts" as
   a turn placeholder in some systems); removal is a separate explicit action
-  under the existing Phase 2 "remove/edit participant" item, not automatic
+  under the existing Phase 2 "remove/edit combatant" item, not automatic
 - HP display in the list (e.g. "12/20") is colored by remaining-HP fraction so
-  a wounded participant is visible without opening the detail screen
+  a wounded combatant is visible without opening the detail screen
 
 **Explicitly out of scope for now**: temp HP, overheal, damage types/resistances,
 death saving throws, or any specific ruleset's dying mechanics — this tracks a
@@ -156,7 +156,7 @@ project's standing "no copyrighted ruleset content" constraint.
 **Main Screen (Combat View)**
 ```
 ┌─────────────────────────────────┐
-│  + Add participant…      [Init] │  (inline placeholder row, top)
+│  + Add combatant…      [Init] │  (inline placeholder row, top)
 ├─────────────────────────────────┤
 │                                 │
 │  [P1: Initiative 20]            │
@@ -169,33 +169,33 @@ project's standing "no copyrighted ruleset content" constraint.
 ```
 
 **Buttons**
-- **Add participant row** (top): Always-visible inline row; fill in name (and optional initiative) and submit to add, no modal
+- **Add combatant row** (top): Always-visible inline row; fill in name (and optional initiative) and submit to add, no modal
 - **Previous Turn** (bottom left): Reverts to the previous turn's full state (turn index, reactions, effects); disabled when there is no prior turn to return to
-- **Next Turn** (bottom right): Advance to next participant, reset current's reaction to available
+- **Next Turn** (bottom right): Advance to next combatant, reset current's reaction to available
 
-**Participant Detail** (tap a participant row)
-- Shows full participant info
+**Combatant Detail** (tap a combatant row)
+- Shows full combatant info
 - Current reaction status with toggle
 - List of active effects with removal option
 - Button to "Add Effect"
 - Close/back to main list
 
-**Add Effect Modal** (from participant detail)
+**Add Effect Modal** (from combatant detail)
 - Effect name input
 - Dropdown for duration type
-- If target-based duration: dropdown to select target participant
+- If target-based duration: dropdown to select target combatant
 - Confirm/Cancel
 
 ## Data Model
 
 ```
-struct Participant {
+struct Combatant {
     id: UUID
     name: String
     initiative: Int  // 1–20 (or higher)
     reactionUsed: Bool  // false = available, true = used
     effects: [Effect]
-    maxHP: Int?      // planned (Phase 3) — nil until HP tracking is enabled for this participant
+    maxHP: Int?      // planned (Phase 3) — nil until HP tracking is enabled for this combatant
     currentHP: Int?  // planned (Phase 3) — clamped 0...maxHP; 0 == dead
 }
 
@@ -203,7 +203,7 @@ struct Effect {
     id: UUID
     name: String
     durationType: DurationType
-    targetParticipantID: UUID?  // nil unless duration is target-based
+    targetCombatantID: UUID?  // nil unless duration is target-based
 }
 
 enum DurationType {
@@ -214,7 +214,7 @@ enum DurationType {
 }
 
 struct CombatSession {
-    participants: [Participant]  // ordered by initiative (desc)
+    combatants: [Combatant]  // ordered by initiative (desc)
     currentTurnIndex: Int  // 0-based index into sorted list
 }
 ```
@@ -245,9 +245,9 @@ persistence compatibility" section in `CLAUDE.md`. Not yet in force pre-publish.
 ## UI/UX Principles
 
 - **Minimal, clean design**: No unnecessary clutter; focus on reading turn order and state at a glance
-- **Fast interactions**: Add participant, use reaction, add effect should be quick taps
+- **Fast interactions**: Add combatant, use reaction, add effect should be quick taps
 - **Clear feedback**: Visual distinction for current turn, effect status, reaction availability
-- **Scalable**: Works with 2–20+ participants without performance degradation
+- **Scalable**: Works with 2–20+ combatants without performance degradation
 
 ## Design & Theming
 
@@ -255,7 +255,7 @@ persistence compatibility" section in `CLAUDE.md`. Not yet in force pre-publish.
 default to standard system components (`Form`/`Section`, `List`, `ContentUnavailableView`,
 system tint/materials, native swipe actions and confirmation dialogs) rather than
 hand-rolled custom-styled views. The rust-red/old-paper theme below is applied
-selectively (currently: the combat participant list) rather than everywhere — see the
+selectively (currently: the combat combatant list) rather than everywhere — see the
 "Styling & Colors" note in `CLAUDE.md` and the `ios-hig` skill
 (`<agent-config>/skills/ios-hig/SKILL.md`) before building a new screen.
 
@@ -270,20 +270,20 @@ the single source of truth for these colors where the theme is applied):
 
 **Typography**
 - Clean, readable serif or sans-serif (e.g., SF Pro or similar default iOS)
-- Participant names: larger, bold
+- Combatant names: larger, bold
 - Initiative numbers: prominent, rust red
 - Effects: smaller, secondary text color
 
 **Visual Elements**
 - Subtle texture or grain on background to evoke aged paper (optional, via pattern or asset)
-- Round corners on participant cards/rows for softness
-- Rust red highlight or background for current turn participant
+- Round corners on combatant cards/rows for softness
+- Rust red highlight or background for current turn combatant
 - Icons for reaction status (✓ or ✗ in rust red)
 - Effect badges with muted background, rust text
 
 **Spacing**
 - Generous padding around interactive elements for easy tapping
-- Clear visual hierarchy: title > participant > effect
+- Clear visual hierarchy: title > combatant > effect
 
 ## Architecture Decision Record (ADR)
 

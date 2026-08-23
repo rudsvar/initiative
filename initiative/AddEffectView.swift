@@ -2,7 +2,7 @@ import SwiftUI
 
 struct AddEffectView: View {
     let session: CombatSession
-    let participant: Participant
+    let combatant: Combatant
     @Binding var isPresented: Bool
     @State private var effectName = ""
     @State private var selectedDurationType: DurationTypeSelection = .untilStartOfTheirTurn
@@ -26,7 +26,7 @@ struct AddEffectView: View {
                     .labelsHidden()
                     .onChange(of: selectedDurationType) { _, newValue in
                         if newValue.isTargetBased, selectedTargetId == nil {
-                            selectedTargetId = session.participants.first(where: { $0.id != participant.id })?.id
+                            selectedTargetId = session.combatants.first(where: { $0.id != combatant.id })?.id
                         } else if !newValue.isTargetBased {
                             selectedTargetId = nil
                         }
@@ -37,7 +37,7 @@ struct AddEffectView: View {
                     Section("Target") {
                         Picker("Target", selection: $selectedTargetId) {
                             ForEach(
-                                session.participants.filter { $0.id != participant.id },
+                                session.combatants.filter { $0.id != combatant.id },
                                 id: \.id
                             ) { target in
                                 Text(target.name).tag(Optional(target.id))
@@ -88,8 +88,8 @@ struct AddEffectView: View {
 
         let effect = Effect(name: trimmedName, durationType: durationType)
 
-        if let index = session.participants.firstIndex(where: { $0.id == participant.id }) {
-            session.participants[index].effects.append(effect)
+        if let index = session.combatants.firstIndex(where: { $0.id == combatant.id }) {
+            session.combatants[index].effects.append(effect)
         }
     }
 }
@@ -112,12 +112,12 @@ enum DurationTypeSelection: Equatable, Hashable {
 
 #Preview {
     let session = CombatSession()
-    session.addParticipant(name: "Player", initiative: 20)
-    session.addParticipant(name: "Enemy", initiative: 15)
+    session.addCombatant(name: "Player", initiative: 20)
+    session.addCombatant(name: "Enemy", initiative: 15)
 
     return AddEffectView(
         session: session,
-        participant: session.participants.first!,
+        combatant: session.combatants.first!,
         isPresented: .constant(true)
     )
 }

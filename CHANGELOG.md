@@ -4,8 +4,16 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Changed
+- Renamed `Participant` → `Combatant` throughout the codebase (types, files, UI
+  copy, docs) — confirmed with user; `ParticipantDetailView.swift` is now
+  `CombatantDetailView.swift`
+- Combatant name and initiative are now editable from the detail screen (bordered
+  text fields bound directly to the session, matching the add-row style); the
+  list re-sorts automatically since sort order is always computed fresh
+
 ### Planned
-- HP tracking (opt-in per participant) + a clear "dead" indicator when HP hits 0 —
+- HP tracking (opt-in per combatant) + a clear "dead" indicator when HP hits 0 —
   design written up in `SPEC.md` §5 ("HP Tracking"); not yet implemented, awaiting
   confirmation on the design before building
 
@@ -44,7 +52,7 @@ All notable changes to this project are documented here, newest first.
   wired through a shared `NavigationStack` (`RootView.swift`)
 - Session persistence: `SessionStore` (JSON-on-disk, one file per session, keyed by
   the session's stable id), `SessionRecord`, `CombatSession.reset()/makeRecord()/load()`
-- `Participant`/`Effect`/`DurationType` are now `Codable` (`DurationType` has a
+- `Combatant`/`Effect`/`DurationType` are now `Codable` (`DurationType` has a
   hand-written implementation since its associated-value cases can't synthesize)
 - "Menu" button (top-left) on the combat screen; autosaves on leaving the screen or
   app backgrounding
@@ -55,7 +63,7 @@ All notable changes to this project are documented here, newest first.
 - `DEVELOPMENT_TEAM` in `project.yml` was blank, so every `xcodegen generate`
   silently stripped code signing and broke device builds — set to the correct
   personal team ID (`YOUR_TEAM_ID`, verified against Xcode's own account records)
-- `ParticipantDetailView` was reachable via `NavigationLink` from a `ContentView`
+- `CombatantDetailView` was reachable via `NavigationLink` from a `ContentView`
   that had no `NavigationStack` ancestor of its own — fixed as part of introducing
   `RootView`'s app-wide stack
 
@@ -65,8 +73,8 @@ All notable changes to this project are documented here, newest first.
   text boxes instead of borderless text floating in one row; add button moved
   fully outside the initiative box with clear spacing; bottom bar relabeled
   "Previous Turn"/"Next Turn" with chevrons on the correct (outer) sides
-- Replaced the "Add Participant" modal with an always-visible inline row pinned
-  atop the participant list — name + initiative fields, add via return key or the
+- Replaced the "Add Combatant" modal with an always-visible inline row pinned
+  atop the combatant list — name + initiative fields, add via return key or the
   plus button; random 1–20 initiative still applies when left blank
 - "Back" now reverts to the previous turn's full state (turn index, reactions,
   effects) via a session history stack, instead of just calling `nextTurn()` again
@@ -77,7 +85,7 @@ All notable changes to this project are documented here, newest first.
 - `CombatSession.previousTurn()` / `canGoToPreviousTurn`, backed by a snapshot
   history pushed on each `nextTurn()`
 - `Theme.swift` — single source of truth for the old-paper color palette
-- Participant detail view, reaction toggle, and custom effect management
+- Combatant detail view, reaction toggle, and custom effect management
   (add/remove, all four duration types, target picker)
 - `initiativeTests` XCTest target covering turn advancement, reaction reset,
   effect expiration, and turn-revert logic (23 tests)

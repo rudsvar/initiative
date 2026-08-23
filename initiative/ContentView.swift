@@ -14,16 +14,16 @@ struct ContentView: View {
 
             VStack(spacing: 0) {
                 List {
-                    InlineAddParticipantRow(session: session)
+                    InlineAddCombatantRow(session: session)
 
-                    ForEach(session.sortedParticipants) { participant in
-                        ParticipantRow(
-                            participant: participant,
-                            isCurrent: session.currentParticipant?.id == participant.id
+                    ForEach(session.sortedCombatants) { combatant in
+                        CombatantRow(
+                            combatant: combatant,
+                            isCurrent: session.currentCombatant?.id == combatant.id
                         )
                         .contentShape(Rectangle())
                         .background(
-                            NavigationLink(destination: ParticipantDetailView(session: session, participantId: participant.id)) {
+                            NavigationLink(destination: CombatantDetailView(session: session, combatantId: combatant.id)) {
                                 EmptyView()
                             }
                             .opacity(0)
@@ -57,7 +57,7 @@ struct ContentView: View {
                         .font(.system(size: 14, weight: .semibold))
                     }
                     .foregroundColor(Theme.accent)
-                    .disabled(session.sortedParticipants.isEmpty)
+                    .disabled(session.sortedCombatants.isEmpty)
                 }
                 .padding(16)
                 .background(Theme.background)
@@ -91,13 +91,13 @@ struct ContentView: View {
     }
 
     private func autosave() {
-        guard !session.participants.isEmpty else { return }
+        guard !session.combatants.isEmpty else { return }
         sessionStore.save(session.makeRecord())
         sessionStore.setLastActiveSessionID(session.id)
     }
 }
 
-struct InlineAddParticipantRow: View {
+struct InlineAddCombatantRow: View {
     let session: CombatSession
     @State private var name = ""
     @State private var initiativeText = ""
@@ -109,7 +109,7 @@ struct InlineAddParticipantRow: View {
                 .focused($nameFieldFocused)
                 .foregroundColor(Theme.textPrimary)
                 .submitLabel(.done)
-                .onSubmit { addParticipant() }
+                .onSubmit { addCombatant() }
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
                 .background(Theme.background)
@@ -132,7 +132,7 @@ struct InlineAddParticipantRow: View {
                         .stroke(Theme.divider, lineWidth: 1)
                 )
 
-            Button(action: addParticipant) {
+            Button(action: addCombatant) {
                 Image(systemName: "plus.circle.fill")
                     .font(.system(size: 28))
                     .foregroundColor(Theme.accent)
@@ -146,12 +146,12 @@ struct InlineAddParticipantRow: View {
         .listRowBackground(Color.clear)
     }
 
-    private func addParticipant() {
+    private func addCombatant() {
         let trimmedName = name.trimmingCharacters(in: .whitespaces)
         guard !trimmedName.isEmpty else { return }
 
         let initiative = Int(initiativeText) ?? Int.random(in: 1...20)
-        session.addParticipant(name: trimmedName, initiative: initiative)
+        session.addCombatant(name: trimmedName, initiative: initiative)
 
         name = ""
         initiativeText = ""
@@ -159,25 +159,25 @@ struct InlineAddParticipantRow: View {
     }
 }
 
-struct ParticipantRow: View {
-    let participant: Participant
+struct CombatantRow: View {
+    let combatant: Combatant
     let isCurrent: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(participant.name)
+                    Text(combatant.name)
                         .font(.headline)
                         .foregroundColor(Theme.textPrimary)
 
                     HStack(spacing: 8) {
-                        Text("Init \(participant.initiative)")
+                        Text("Init \(combatant.initiative)")
                             .font(.caption)
                             .foregroundColor(Theme.accent)
                             .fontWeight(.semibold)
 
-                        if participant.reactionUsed {
+                        if combatant.reactionUsed {
                             Label("Reaction used", systemImage: "xmark.circle.fill")
                                 .font(.caption)
                                 .foregroundColor(Theme.divider)
@@ -200,9 +200,9 @@ struct ParticipantRow: View {
                 }
             }
 
-            if !participant.effects.isEmpty {
+            if !combatant.effects.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
-                    ForEach(participant.effects) { effect in
+                    ForEach(combatant.effects) { effect in
                         HStack(spacing: 8) {
                             Image(systemName: "sparkles")
                                 .font(.caption)
