@@ -100,15 +100,15 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 - Combatants auto-sort by initiative (descending; ties maintain insertion order)
 
 **Combatant Display**
-- List shows: name, initiative number, HP (if tracked), reaction status,
-  active effects
-- Reaction status sits on its own row (not appended after Init/HP on the same
-  line) so it lands at the same horizontal position across every combatant
-  card, regardless of whether that combatant has HP tracked
+- List shows: name, initiative number, reaction status (only when used —
+  available is the default, implied by absence), active effects. HP/AC are
+  deliberately never shown here (see §12, DM/Player View)
+- Reaction status, when shown, sits on its own row (not appended after Init
+  on the same line) so it lands at a consistent position
 - Reaction indicator is a custom red "R" `LetterBadge` (`Theme.swift`) — a
-  `Circle` + `Text`, no image asset — filled red when available, outlined/
-  muted when used. Replaced the earlier SF Symbol checkmark/xmark, used
-  identically on the combatant detail screen's reaction toggle
+  `Circle` + `Text`, no image asset. Used identically on the combatant detail
+  screen's reaction toggle (which always shows both states, since that's the
+  actual control for changing it)
 - List is always sorted highest to lowest initiative
 - Current combatant (whose turn it is) is visually emphasized
 
@@ -140,8 +140,10 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 - Hidden from the user-facing effects list (`Combatant.visibleEffects` filters
   it out) — it has its own dedicated Reaction UI, so showing it a second time
   in "Active Effects" would be redundant
-- Visual indicator on the list is a custom red "R" `LetterBadge` (see §1's
-  "Combatant Display" note)
+- Visual indicator on the list is a custom red "R" `LetterBadge`, shown only
+  when used — not shown at all when available, matching how the effects list
+  only shows active effects rather than placeholders for every possible one
+  (see §1's "Combatant Display" note)
 
 ### 4. Temporary Effects
 
@@ -316,10 +318,15 @@ struct CombatSession {
 **No explicit save.** There's no "Save Session" button or naming dialog — every combat
 session is automatically saved under its own stable identity as you play. A session's
 name is auto-generated from when it was created (e.g. "Session — Aug 23, 2026 1:45 PM"),
-and is editable at any time via the combat screen's title (tap it, type a new name);
-blank/whitespace-only input is ignored rather than leaving the session unnamed.
+and is editable at any time — tap the name, centered at the top of the combat
+screen (`SelectAllTextField`, which selects all existing text on focus so typing
+immediately replaces it), type a new one; blank/whitespace-only input is ignored
+rather than leaving the session unnamed. Lives in the screen body, not the nav
+bar's `.principal` toolbar slot — that slot centers relative to leading/trailing
+button widths, not the true screen center, and got visibly skewed once a second
+trailing icon (the DM/player-view eye toggle) was added alongside "Add".
 
-**Round counter**: shown top-right of the combat screen ("Round N"), starts at 1 and
+**Round counter**: shown centered below the session name ("Round N"), starts at 1 and
 increments each time turn order wraps back to the first combatant. Reverts correctly
 via "Previous Turn" and resets to 1 on "New Session".
 

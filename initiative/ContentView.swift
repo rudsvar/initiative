@@ -21,12 +21,24 @@ struct ContentView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
+                // Deliberately in the body, not the toolbar's .principal slot: nav
+                // bar principal-item centering is relative to leading/trailing
+                // button widths, not the true screen center — with a leading "Menu"
+                // button and two trailing icons (eye + add), that skewed it off
+                // center the same way the bottom bar's Log button was skewed before
+                // (see that fix). A body-level .frame(maxWidth: .infinity) row is
+                // reliably centered regardless of toolbar contents.
+                SelectAllTextField(text: nameBinding, placeholder: "Session Name")
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .frame(height: 22)
+                    .padding(.top, 8)
+
                 Text("Round \(session.roundNumber)")
                     .font(.subheadline)
                     .fontWeight(.semibold)
                     .foregroundColor(Theme.accent)
                     .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.top, 8)
+                    .padding(.top, 4)
                     .padding(.bottom, 4)
                     .allowsHitTesting(false)
 
@@ -142,11 +154,6 @@ struct ContentView: View {
                 }
             }
 
-            ToolbarItem(placement: .principal) {
-                SelectAllTextField(text: nameBinding, placeholder: "Session Name")
-                    .frame(width: 200)
-            }
-
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: { session.playerViewEnabled.toggle() }) {
                     Image(systemName: session.playerViewEnabled ? "eye.slash.fill" : "eye.fill")
@@ -238,14 +245,18 @@ struct CombatantRow: View {
                         .foregroundColor(Theme.accent)
                         .fontWeight(.semibold)
 
-                    // On its own row (not appended after Init/HP) so it lands at the
-                    // same horizontal position across every row, regardless of
-                    // whether HP text is present for a given combatant.
-                    HStack(spacing: 6) {
-                        LetterBadge(letter: "R", isOn: !combatant.reactionUsed, size: 14)
-                        Text(combatant.reactionUsed ? "Reaction used" : "Reaction available")
-                            .font(.caption)
-                            .foregroundColor(combatant.reactionUsed ? Theme.divider : Theme.accent)
+                    // Only shown when used — available (the default) is implied by
+                    // absence, same convention as the effects list below (which only
+                    // shows active effects, not a placeholder for each possible one).
+                    // On its own row (not appended after Init/HP) so it still lands
+                    // at a consistent position when it does appear.
+                    if combatant.reactionUsed {
+                        HStack(spacing: 6) {
+                            LetterBadge(letter: "R", isOn: false, size: 14)
+                            Text("Reaction used")
+                                .font(.caption)
+                                .foregroundColor(Theme.divider)
+                        }
                     }
                 }
 

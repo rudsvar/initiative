@@ -4,6 +4,23 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Fixed
+- Session name field wasn't actually centered once the DM/player-view eye
+  icon was added as a second trailing toolbar button — same root cause as the
+  earlier off-center Log button: nav bar `.principal` centers relative to
+  leading/trailing button widths, not the true screen center. Moved the name
+  field out of the toolbar entirely into the screen body (centered via
+  `.frame(maxWidth: .infinity, alignment: .center)`, same reliable approach
+  used for the Log button fix), directly above the round counter
+
+### Changed
+- Combatant list row no longer shows "Reaction available" — only "Reaction
+  used" appears, and only when true. Available is now the implied default
+  (absence of the badge), matching how the effects list already only shows
+  active effects rather than a placeholder for every possible one. The
+  detail screen's reaction toggle is unchanged (it needs to show both states,
+  since that's the actual control)
+
 ### Added
 - **Armor Class**: opt-in per combatant (`Combatant.armorClass`,
   `CreaturePreset.armorClass`), editable everywhere HP already was. Confirmed
