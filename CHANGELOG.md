@@ -5,6 +5,33 @@ All notable changes to this project are documented here, newest first.
 ## [Unreleased]
 
 ### Added
+- **HP tracking**: opt-in per combatant (`maxHP`/`currentHP` on `Combatant`),
+  damage/heal controls and a "Track HP" prompt on the detail screen, HP shown
+  in the list row colored by remaining fraction, and a "Dead" badge/skull icon
+  + dimmed row when HP hits 0 (combatant stays in turn order, not auto-removed)
+- **Round counter**: `CombatSession.roundNumber`, increments when turn order
+  wraps to the first combatant, reverts correctly via Previous Turn, shown both
+  in the toolbar and as plain centered text above the combatant list
+- **Editable session name**: the combat screen's title is now a text field
+  bound to `session.name`; blank input is ignored. Default name shortened to a
+  short-form date (was overflowing the toolbar and squeezing out the round
+  counter)
+- **Remove combatant**: swipe left + confirm, matching the pattern already used
+  for sessions; adjusts `currentTurnIndex` correctly and clears turn-revert
+  history (a reverted-to snapshot could otherwise resurrect a removed combatant)
+- **Add-combatant modal**: replaced the inline card row (too easy to trigger by
+  an accidental tap outside it, and too fiddly to hit the small per-field
+  controls) with a plain "Add Combatant" tap target at the *bottom* of the list
+  that opens a native `Form` sheet — full-size rows for Name/Initiative/Max
+  HP/Count
+- **Creature presets**: adding a combatant auto-saves/updates a `CreaturePreset`
+  by name (`PresetStore`, no explicit save step) — typing a name that matches
+  an existing preset auto-fills its HP. Three generic starter presets ship on
+  first launch. Managed from a new Main Menu "Combatants" entry: edit name/HP,
+  swipe to delete with confirmation
+- Previous/Next Turn bar now uses Liquid Glass on iOS 26+ (`GlassEffectContainer`,
+  `.glassProminent` for Next Turn, `.glass` for Previous Turn), gated with
+  `#available(iOS 26.0, *)` and falling back to the existing themed bar below
 - Previous/Next Turn bar now uses Liquid Glass on iOS 26+ (`GlassEffectContainer`,
   `.glassProminent` for Next Turn, `.glass` for Previous Turn), gated with
   `#available(iOS 26.0, *)` and falling back to the existing themed bar below

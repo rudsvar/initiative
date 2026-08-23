@@ -3,6 +3,7 @@ import SwiftUI
 struct MainMenuView: View {
     let session: CombatSession
     let sessionStore: SessionStore
+    let presetStore: PresetStore
     @Binding var path: NavigationPath
 
     private var canResume: Bool {
@@ -41,6 +42,10 @@ struct MainMenuView: View {
 
                             MenuButton(title: "Load Session", systemImage: "folder.fill") {
                                 path.append(Route.sessionList)
+                            }
+
+                            MenuButton(title: "Combatants", systemImage: "person.3.fill") {
+                                path.append(Route.presetList)
                             }
                         }
                         .padding(.horizontal, 32)
@@ -92,6 +97,6 @@ private struct MenuButton: View {
 
 #Preview {
     NavigationStack {
-        MainMenuView(session: CombatSession(), sessionStore: SessionStore(), path: .constant(NavigationPath()))
+        MainMenuView(session: CombatSession(), sessionStore: SessionStore(), presetStore: PresetStore(), path: .constant(NavigationPath()))
     }
 }

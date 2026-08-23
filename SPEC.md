@@ -43,27 +43,42 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 
 ### Phase 2: Polish
 - ✅ Combat session persistence (save/load) + main menu (Resume / New / Load)
-- Remove/edit combatant
-- Round counter display
+- ✅ Remove combatant (swipe left + confirm)
+- ✅ Round counter display
 - Visual indicators for effects and reaction state
 - Haptic feedback on turn advance
 
-### Phase 3: HP Tracking (planned, not yet implemented — see below)
-- Per-combatant current/max HP, opt-in (not every combatant needs it tracked)
-- Quick damage/heal adjustment
-- Clear "dead" indicator when HP reaches 0
+### Phase 3: HP Tracking
+- ✅ Per-combatant current/max HP, opt-in (not every combatant needs it tracked)
+- ✅ Quick damage/heal adjustment
+- ✅ Clear "dead" indicator when HP reaches 0
+
+### Phase 4: Preset Creatures
+- Every combatant added auto-saves as a reusable preset by name — no explicit
+  "save as preset" step
+- A handful of built-in default presets to start from
+- Presets are viewed/edited/deleted from Main Menu → Combatants, not from the
+  add-combatant flow
 
 ## Core Features
 
 ### 1. Combatant Management
 
 **Add Combatant**
-- Inline placeholder row pinned at the top of the combatant list (no modal)
-- Name and initiative are separate bordered text boxes (each its own tappable
-  field, per iOS HIG — see `<agent-config>/skills/ios-hig/SKILL.md`), with the add
-  (+) button outside/after the initiative box, not touching it
+- A plain row at the *bottom* of the combatant list, centered placeholder text
+  ("Add Combatant") only — no visible fields, no icon. Tapping it opens a modal
+  (native `Form`) with Name, Initiative, Max HP, and Count fields, each a
+  full-size Form row (not small inline boxes) so they're easy to hit
+  precisely — this replaced an earlier inline-row design that was too easy to
+  trigger accidentally (tapping outside the row) and too fiddly to hit the
+  small per-field controls on-screen
 - Leaving initiative blank rolls random 1–20 on add
-- Submitting (return key or the + button) adds the combatant and clears the row, ready for the next entry
+- Count > 1 spawns that many copies with numbered names ("Goblin 1", "Goblin 2",
+  ...), each rolling its own independent random initiative (a shared explicit
+  initiative wouldn't make sense across multiple copies)
+- Adding a combatant auto-saves/updates a `CreaturePreset` by name (see §8) —
+  no separate save step; typing a name that matches an existing preset
+  auto-fills its saved HP into the HP field if HP is still empty
 - Combatants auto-sort by initiative (descending; ties maintain insertion order)
 
 **Combatant Display**
@@ -210,8 +225,8 @@ struct Combatant {
     initiative: Int  // 1–20 (or higher)
     reactionUsed: Bool  // false = available, true = used
     effects: [Effect]
-    maxHP: Int?      // planned (Phase 3) — nil until HP tracking is enabled for this combatant
-    currentHP: Int?  // planned (Phase 3) — clamped 0...maxHP; 0 == dead
+    maxHP: Int?      // nil until HP tracking is enabled for this combatant
+    currentHP: Int?  // clamped 0...maxHP; 0 == dead (isDead is derived, not stored)
 }
 
 struct Effect {
@@ -238,7 +253,13 @@ struct CombatSession {
 
 **No explicit save.** There's no "Save Session" button or naming dialog — every combat
 session is automatically saved under its own stable identity as you play. A session's
-name is auto-generated from when it was created (e.g. "Session — Aug 23, 2026 1:45 PM").
+name is auto-generated from when it was created (e.g. "Session — Aug 23, 2026 1:45 PM"),
+and is editable at any time via the combat screen's title (tap it, type a new name);
+blank/whitespace-only input is ignored rather than leaving the session unnamed.
+
+**Round counter**: shown top-right of the combat screen ("Round N"), starts at 1 and
+increments each time turn order wraps back to the first combatant. Reverts correctly
+via "Previous Turn" and resets to 1 on "New Session".
 
 **Main Menu** (app launch / navigating back)
 - **Resume**: loads whichever session was last active, if one still exists on disk —
@@ -256,6 +277,53 @@ name is auto-generated from when it was created (e.g. "Session — Aug 23, 2026 
 **Compatibility**: once this app is actually installed/published for real use, the
 on-disk `SessionRecord` format becomes a durable contract — see the "Session
 persistence compatibility" section in `CLAUDE.md`. Not yet in force pre-publish.
+
+### 8. Preset Creatures
+
+Every combatant you add is auto-remembered by name for reuse — no explicit "save
+as preset" step. Add a "Goblin" once, and adding another "Goblin" later auto-fills
+its saved HP. System-agnostic and generic throughout — **no naming, branding, or
+references to any specific tabletop ruleset anywhere in this feature, its code, or
+its UI copy.**
+
+**Data model**:
+```
+struct CreaturePreset: Identifiable, Codable {
+    let id: UUID
+    var name: String
+    var maxHP: Int?       // nil = no default HP, filled in per-spawn like today
+}
+```
+Stored the same way sessions are — one JSON file per preset under a
+`Presets/` directory, via a small `PresetStore` (same shape as `SessionStore`,
+without the "last active" pointer concept since presets aren't a session).
+
+**Auto-save on add**: whenever a combatant is added (from the add-combatant modal,
+§1), `PresetStore.upsert(name:maxHP:)` creates or updates (case-insensitive name
+match) a preset with that name and HP. For a count>1 spawn, this upserts once using
+the typed base name, not the numbered per-copy names ("Goblin 1", "Goblin 2", ...).
+
+**Editing lives in Main Menu → Combatants**, not in the add flow. That screen:
+list of presets (name + HP), tap to edit (rename / change HP), swipe to delete
+with confirmation. No manual "create new preset" entry point here — presets
+originate from actually adding a combatant in a session; this screen is for
+managing what's accumulated, not authoring from scratch. (Revisit if that turns
+out to be too restrictive in practice.)
+
+**Default presets** (shipped so the list isn't empty on first launch) — generic
+archetypes, common across fantasy tabletop games generally, not tied to any one
+ruleset. HP values are researched to feel like plausible low-level creature
+toughness, described here in our own generic terms only:
+| Preset | Rough HP | Notes |
+|---|---|---|
+| Goblin | 7 | small, fragile skirmisher archetype |
+| Skeleton | 13 | undead melee archetype, moderately tougher |
+| Thief | 11 | quick, lightly-armored humanoid archetype |
+
+**Explicitly out of scope for now**: preset categories/tags, importing/sharing
+preset packs, per-preset default effects, manual preset creation outside the
+add-combatant flow — keep it to name + HP until there's a
+concrete need for more.
 
 ## UI/UX Principles
 

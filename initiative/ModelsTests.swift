@@ -200,6 +200,240 @@ final class CombatSessionTests: XCTestCase {
         XCTAssertNotEqual(session.id, originalId)
     }
 
+    // MARK: - Round Tracking
+
+    func testRoundStartsAtOne() {
+        session.addCombatant(name: "P1", initiative: 10)
+        XCTAssertEqual(session.roundNumber, 1)
+    }
+
+    func testRoundIncrementsWhenTurnWrapsToFirstCombatant() {
+        session.addCombatant(name: "P1", initiative: 20)
+        session.addCombatant(name: "P2", initiative: 10)
+
+        session.nextTurn() // P1 -> P2, still round 1
+        XCTAssertEqual(session.roundNumber, 1)
+
+        session.nextTurn() // P2 -> P1 (wraps), round 2
+        XCTAssertEqual(session.roundNumber, 2)
+    }
+
+    func testPreviousTurnRevertsRoundNumber() {
+        session.addCombatant(name: "P1", initiative: 20)
+        session.addCombatant(name: "P2", initiative: 10)
+        session.nextTurn()
+        session.nextTurn() // now round 2
+
+        session.previousTurn()
+
+        XCTAssertEqual(session.roundNumber, 1)
+    }
+
+    func testResetRestartsRoundAtOne() {
+        session.addCombatant(name: "P1", initiative: 20)
+        session.nextTurn()
+        session.nextTurn()
+
+        session.reset()
+
+        XCTAssertEqual(session.roundNumber, 1)
+    }
+
+    func testRoundNumberPersistsThroughSaveAndLoad() {
+        session.addCombatant(name: "P1", initiative: 20)
+        session.addCombatant(name: "P2", initiative: 10)
+        session.nextTurn()
+        session.nextTurn() // round 2
+        let record = session.makeRecord()
+
+        session.reset()
+        session.load(record)
+
+        XCTAssertEqual(session.roundNumber, 2)
+    }
+
+    // MARK: - Session Rename
+
+    func testRenameSessionUpdatesName() {
+        session.name = "Goblin Ambush"
+        XCTAssertEqual(session.name, "Goblin Ambush")
+    }
+
+    func testRenameSessionTrimsWhitespace() {
+        session.name = "  Goblin Ambush  "
+        XCTAssertEqual(session.name, "Goblin Ambush")
+    }
+
+    func testRenameSessionIgnoresBlankName() {
+        let original = session.name
+        session.name = "   "
+        XCTAssertEqual(session.name, original)
+    }
+
+    // MARK: - Remove Combatant
+
+    func testRemoveCombatant() {
+        session.addCombatant(name: "P1", initiative: 20)
+        session.addCombatant(name: "P2", initiative: 10)
+        let idToRemove = session.combatants[1].id
+
+        session.removeCombatant(id: idToRemove)
+
+        XCTAssertEqual(session.combatants.count, 1)
+        XCTAssertEqual(session.combatants.first?.name, "P1")
+    }
+
+    func testRemoveCombatantBeforeCurrentTurnShiftsIndexBack() {
+        session.addCombatant(name: "P1", initiative: 20)
+        session.addCombatant(name: "P2", initiative: 10)
+        session.addCombatant(name: "P3", initiative: 5)
+        session.nextTurn() // current is now P2 (index 1)
+        let p2Id = session.combatants[1].id
+        XCTAssertEqual(session.currentCombatant?.id, p2Id)
+
+        let p1Id = session.combatants[0].id
+        session.removeCombatant(id: p1Id)
+
+        // P2 shifted to index 0; currentTurnIndex must follow it
+        XCTAssertEqual(session.currentCombatant?.id, p2Id)
+    }
+
+    func testRemoveCombatantClearsHistory() {
+        session.addCombatant(name: "P1", initiative: 20)
+        session.addCombatant(name: "P2", initiative: 10)
+        session.nextTurn()
+        XCTAssertTrue(session.canGoToPreviousTurn)
+
+        session.removeCombatant(id: session.combatants[0].id)
+
+        XCTAssertFalse(session.canGoToPreviousTurn)
+    }
+
+    func testRemoveNonexistentCombatantDoesNothing() {
+        session.addCombatant(name: "P1", initiative: 20)
+        session.removeCombatant(id: UUID())
+        XCTAssertEqual(session.combatants.count, 1)
+    }
+
+    // MARK: - HP Tracking
+
+    func testAddCombatantWithMaxHPSetsCurrentHPToMax() {
+        session.addCombatant(name: "Goblin", initiative: 10, maxHP: 7)
+        XCTAssertEqual(session.combatants[0].maxHP, 7)
+        XCTAssertEqual(session.combatants[0].currentHP, 7)
+    }
+
+    func testAddCombatantWithoutMaxHPLeavesHPUntracked() {
+        session.addCombatant(name: "Goblin", initiative: 10)
+        XCTAssertNil(session.combatants[0].maxHP)
+        XCTAssertNil(session.combatants[0].currentHP)
+        XCTAssertFalse(session.combatants[0].isDead)
+    }
+
+    func testEnableHPTrackingSetsMaxAndCurrent() {
+        session.addCombatant(name: "Goblin", initiative: 10)
+        let id = session.combatants[0].id
+
+        session.enableHPTracking(for: id, maxHP: 12)
+
+        XCTAssertEqual(session.combatants[0].maxHP, 12)
+        XCTAssertEqual(session.combatants[0].currentHP, 12)
+    }
+
+    func testEnableHPTrackingIgnoresNonPositiveMaxHP() {
+        session.addCombatant(name: "Goblin", initiative: 10)
+        let id = session.combatants[0].id
+
+        session.enableHPTracking(for: id, maxHP: 0)
+
+        XCTAssertNil(session.combatants[0].maxHP)
+    }
+
+    func testApplyDamageReducesCurrentHP() {
+        session.addCombatant(name: "Goblin", initiative: 10, maxHP: 10)
+        let id = session.combatants[0].id
+
+        session.applyDamage(to: id, amount: 4)
+
+        XCTAssertEqual(session.combatants[0].currentHP, 6)
+    }
+
+    func testApplyDamageClampsAtZero() {
+        session.addCombatant(name: "Goblin", initiative: 10, maxHP: 10)
+        let id = session.combatants[0].id
+
+        session.applyDamage(to: id, amount: 999)
+
+        XCTAssertEqual(session.combatants[0].currentHP, 0)
+        XCTAssertTrue(session.combatants[0].isDead)
+    }
+
+    func testApplyDamageOnUntrackedCombatantDoesNothing() {
+        session.addCombatant(name: "Goblin", initiative: 10)
+        let id = session.combatants[0].id
+
+        session.applyDamage(to: id, amount: 5)
+
+        XCTAssertNil(session.combatants[0].currentHP)
+    }
+
+    func testApplyHealingRestoresCurrentHP() {
+        session.addCombatant(name: "Goblin", initiative: 10, maxHP: 10)
+        let id = session.combatants[0].id
+        session.applyDamage(to: id, amount: 7)
+
+        session.applyHealing(to: id, amount: 3)
+
+        XCTAssertEqual(session.combatants[0].currentHP, 6)
+    }
+
+    func testApplyHealingClampsAtMaxHP() {
+        session.addCombatant(name: "Goblin", initiative: 10, maxHP: 10)
+        let id = session.combatants[0].id
+        session.applyDamage(to: id, amount: 2)
+
+        session.applyHealing(to: id, amount: 999)
+
+        XCTAssertEqual(session.combatants[0].currentHP, 10)
+    }
+
+    func testDeadCombatantRevivedByHealingIsNoLongerDead() {
+        session.addCombatant(name: "Goblin", initiative: 10, maxHP: 10)
+        let id = session.combatants[0].id
+        session.applyDamage(to: id, amount: 10)
+        XCTAssertTrue(session.combatants[0].isDead)
+
+        session.applyHealing(to: id, amount: 5)
+
+        XCTAssertFalse(session.combatants[0].isDead)
+        XCTAssertEqual(session.combatants[0].currentHP, 5)
+    }
+
+    func testAddCombatantsSpawnsCountWithNumberedNames() {
+        session.addCombatants(name: "Goblin", initiative: nil, maxHP: 5, count: 3)
+
+        let goblins = session.combatants.filter { $0.name.hasPrefix("Goblin") }
+        XCTAssertEqual(goblins.count, 3)
+        XCTAssertEqual(Set(goblins.map { $0.name }), ["Goblin 1", "Goblin 2", "Goblin 3"])
+        XCTAssertTrue(goblins.allSatisfy { $0.maxHP == 5 && $0.currentHP == 5 })
+    }
+
+    func testAddCombatantsWithCountGreaterThanOneIgnoresExplicitInitiative() {
+        // A shared initiative across multiple spawned copies wouldn't make sense --
+        // count > 1 always rolls independently per copy, even if a value was given.
+        session.addCombatants(name: "Goblin", initiative: 15, maxHP: nil, count: 5)
+
+        let initiatives = session.combatants.map { $0.initiative }
+        XCTAssertFalse(initiatives.allSatisfy { $0 == 15 }, "expected independent random rolls, not all 15")
+    }
+
+    func testAddCombatantsWithCountOneUsesUnsuffixedNameAndGivenInitiative() {
+        session.addCombatants(name: "Goblin", initiative: 15, maxHP: nil, count: 1)
+
+        XCTAssertEqual(session.combatants[0].name, "Goblin")
+        XCTAssertEqual(session.combatants[0].initiative, 15)
+    }
+
     // MARK: - Effect Management
 
     func testAddEffectToCombatant() {

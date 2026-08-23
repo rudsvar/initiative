@@ -3,9 +3,16 @@ import SwiftUI
 struct ContentView: View {
     let session: CombatSession
     let sessionStore: SessionStore
+    let presetStore: PresetStore
     @Binding var path: NavigationPath
 
     @Environment(\.scenePhase) private var scenePhase
+    @State private var pendingRemoveCombatant: Combatant?
+    @State private var showAddCombatant = false
+
+    private var nameBinding: Binding<String> {
+        Binding(get: { session.name }, set: { session.name = $0 })
+    }
 
     var body: some View {
         ZStack {
@@ -13,9 +20,16 @@ struct ContentView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                List {
-                    InlineAddCombatantRow(session: session)
+                Text("Round \(session.roundNumber)")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(Theme.accent)
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.top, 8)
+                    .padding(.bottom, 4)
+                    .allowsHitTesting(false)
 
+                List {
                     ForEach(session.sortedCombatants) { combatant in
                         CombatantRow(
                             combatant: combatant,
@@ -31,7 +45,16 @@ struct ContentView: View {
                         .listRowSeparator(.hidden)
                         .listRowInsets(EdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8))
                         .listRowBackground(Color.clear)
+                        .swipeActions(edge: .trailing) {
+                            Button(role: .destructive) {
+                                pendingRemoveCombatant = combatant
+                            } label: {
+                                Label("Remove", systemImage: "trash")
+                            }
+                        }
                     }
+
+                    AddCombatantRow(showAddCombatant: $showAddCombatant)
                 }
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
@@ -94,7 +117,6 @@ struct ContentView: View {
                 }
             }
         }
-        .navigationTitle("Initiative")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .toolbar {
@@ -106,12 +128,48 @@ struct ContentView: View {
                     }
                 }
             }
+
+            ToolbarItem(placement: .principal) {
+                TextField("Session Name", text: nameBinding)
+                    .font(.headline)
+                    .foregroundColor(Theme.textPrimary)
+                    .multilineTextAlignment(.center)
+                    .submitLabel(.done)
+            }
+
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Text("Round \(session.roundNumber)")
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(Theme.accent)
+            }
         }
         .onDisappear { autosave() }
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .background {
                 autosave()
             }
+        }
+        .confirmationDialog(
+            "Remove \(pendingRemoveCombatant?.name ?? "")?",
+            isPresented: Binding(
+                get: { pendingRemoveCombatant != nil },
+                set: { if !$0 { pendingRemoveCombatant = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            Button("Remove", role: .destructive) {
+                if let combatant = pendingRemoveCombatant {
+                    session.removeCombatant(id: combatant.id)
+                }
+                pendingRemoveCombatant = nil
+            }
+            Button("Cancel", role: .cancel) {
+                pendingRemoveCombatant = nil
+            }
+        }
+        .sheet(isPresented: $showAddCombatant) {
+            AddCombatantSheet(session: session, presetStore: presetStore, isPresented: $showAddCombatant)
         }
     }
 
@@ -127,65 +185,26 @@ struct ContentView: View {
     }
 }
 
-struct InlineAddCombatantRow: View {
-    let session: CombatSession
-    @State private var name = ""
-    @State private var initiativeText = ""
-    @FocusState private var nameFieldFocused: Bool
+/// Plain tap target at the bottom of the list — no visible fields, no icon, so it
+/// can't be triggered by an accidental tap the way the small inline fields/button
+/// used to be. Tapping opens AddCombatantSheet for the actual entry.
+struct AddCombatantRow: View {
+    @Binding var showAddCombatant: Bool
 
     var body: some View {
-        HStack(spacing: 12) {
-            TextField("Name", text: $name)
-                .focused($nameFieldFocused)
-                .foregroundColor(Theme.textPrimary)
-                .submitLabel(.done)
-                .onSubmit { addCombatant() }
-                .padding(.horizontal, 12)
-                .padding(.vertical, 8)
-                .background(Theme.background)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Theme.divider, lineWidth: 1)
-                )
-
-            TextField("Initiative", text: $initiativeText)
-                .keyboardType(.numberPad)
-                .foregroundColor(Theme.accent)
+        Button(action: { showAddCombatant = true }) {
+            Text("Add Combatant")
+                .font(.subheadline)
                 .fontWeight(.semibold)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 8)
-                .frame(width: 88)
-                .background(Theme.background)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Theme.divider, lineWidth: 1)
-                )
-
-            Button(action: addCombatant) {
-                Image(systemName: "plus.circle.fill")
-                    .font(.system(size: 28))
-                    .foregroundColor(Theme.accent)
-            }
-            .frame(width: 44, height: 44)
-            .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
-            .opacity(name.trimmingCharacters(in: .whitespaces).isEmpty ? 0.4 : 1)
+                .foregroundColor(Theme.textTertiary)
+                .frame(maxWidth: .infinity, alignment: .center)
         }
+        .padding(12)
+        .background(Theme.divider.opacity(0.12))
+        .cornerRadius(8)
         .listRowSeparator(.hidden)
         .listRowInsets(EdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8))
         .listRowBackground(Color.clear)
-    }
-
-    private func addCombatant() {
-        let trimmedName = name.trimmingCharacters(in: .whitespaces)
-        guard !trimmedName.isEmpty else { return }
-
-        let initiative = Int(initiativeText) ?? Int.random(in: 1...20)
-        session.addCombatant(name: trimmedName, initiative: initiative)
-
-        name = ""
-        initiativeText = ""
-        nameFieldFocused = true
     }
 }
 
@@ -193,19 +212,48 @@ struct CombatantRow: View {
     let combatant: Combatant
     let isCurrent: Bool
 
+    private var hpColor: Color {
+        guard let current = combatant.currentHP, let maxHP = combatant.maxHP, maxHP > 0 else {
+            return Theme.textTertiary
+        }
+        let fraction = Double(current) / Double(maxHP)
+        if fraction > 0.5 { return .green }
+        if fraction > 0.25 { return .orange }
+        return .red
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text(combatant.name)
-                        .font(.headline)
-                        .foregroundColor(Theme.textPrimary)
+                    HStack(spacing: 6) {
+                        Text(combatant.name)
+                            .font(.headline)
+                            .foregroundColor(Theme.textPrimary)
+                            .strikethrough(combatant.isDead)
+
+                        if combatant.isDead {
+                            Image(systemName: "skull.fill")
+                                .font(.caption)
+                                .foregroundColor(.white)
+                                .padding(4)
+                                .background(Color.black.opacity(0.7))
+                                .clipShape(Circle())
+                        }
+                    }
 
                     HStack(spacing: 8) {
                         Text("Init \(combatant.initiative)")
                             .font(.caption)
                             .foregroundColor(Theme.accent)
                             .fontWeight(.semibold)
+
+                        if let current = combatant.currentHP, let maxHP = combatant.maxHP {
+                            Text("HP \(current)/\(maxHP)")
+                                .font(.caption)
+                                .fontWeight(.semibold)
+                                .foregroundColor(hpColor)
+                        }
 
                         if combatant.reactionUsed {
                             Label("Reaction used", systemImage: "xmark.circle.fill")
@@ -251,11 +299,12 @@ struct CombatantRow: View {
         .padding(12)
         .background(isCurrent ? Theme.divider.opacity(0.3) : Color.clear)
         .cornerRadius(8)
+        .opacity(combatant.isDead ? 0.55 : 1)
     }
 }
 
 #Preview {
     NavigationStack {
-        ContentView(session: CombatSession(), sessionStore: SessionStore(), path: .constant(NavigationPath()))
+        ContentView(session: CombatSession(), sessionStore: SessionStore(), presetStore: PresetStore(), path: .constant(NavigationPath()))
     }
 }
