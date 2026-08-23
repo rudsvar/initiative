@@ -105,6 +105,28 @@ If that destination isn't available, list available simulators with
 `xcrun simctl list devices available` and substitute one, or use
 `-destination "platform=iOS Simulator,id=<UDID>"`.
 
+**After significant changes, also build, install, and launch on the real phone**
+("Umbra") if it's connected — catches device-only issues (letterboxing, signing,
+real-hardware behavior) that the simulator can't. Check connection first:
+
+```bash
+xcrun devicectl list devices
+```
+
+Then, with the device UDID from that output (`Identifier` column):
+
+```bash
+xcodebuild build -scheme initiative -destination "id=<device-UDID>"
+xcrun devicectl device install app --device <device-UDID> \
+  "$(find ~/Library/Developer/Xcode/DerivedData/initiative-*/Build/Products/Debug-iphoneos -maxdepth 1 -iname 'initiative.app')"
+xcrun devicectl device process launch --device <device-UDID> xyz.rudsvar.initiative
+```
+
+This installs and foregrounds the app on the phone with no manual Xcode steps —
+useful for catching things like the Info.plist letterboxing bug that only showed
+up on-device. Skip this for trivial/text-only changes; reserve it for changes that
+touch layout, signing/Info.plist, persistence, or navigation.
+
 `DEVELOPMENT_TEAM` in `project.yml` is set to `YOUR_TEAM_ID` (Rudi Svartveit's personal
 Apple Developer team). Do not blank this out or `xcodegen generate`
 will silently strip signing on every regen and break `xcodebuild build -destination
