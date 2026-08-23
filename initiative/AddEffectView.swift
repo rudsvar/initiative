@@ -6,7 +6,7 @@ struct AddEffectView: View {
     @Binding var isPresented: Bool
     @State private var effectName = ""
     @State private var selectedDurationType: DurationTypeSelection = .untilStartOfTheirTurn
-    @State private var selectedTargetId: UUID?
+    @State private var turnsCount = 1
 
     var body: some View {
         NavigationStack {
@@ -41,33 +41,13 @@ struct AddEffectView: View {
 
                 Section("Duration") {
                     Picker("Duration", selection: $selectedDurationType) {
-                        Text("Until start of their next turn").tag(DurationTypeSelection.untilStartOfTheirTurn)
-                        Text("Until end of their next turn").tag(DurationTypeSelection.untilEndOfTheirTurn)
-                        Text("Until start of target's next turn").tag(DurationTypeSelection.untilStartOfTargetTurn)
-                        Text("Until end of target's next turn").tag(DurationTypeSelection.untilEndOfTargetTurn)
+                        Text("Until start of their turn").tag(DurationTypeSelection.untilStartOfTheirTurn)
+                        Text("Until end of their turn").tag(DurationTypeSelection.untilEndOfTheirTurn)
                     }
                     .pickerStyle(.inline)
                     .labelsHidden()
-                    .onChange(of: selectedDurationType) { _, newValue in
-                        if newValue.isTargetBased, selectedTargetId == nil {
-                            selectedTargetId = session.combatants.first(where: { $0.id != combatant.id })?.id
-                        } else if !newValue.isTargetBased {
-                            selectedTargetId = nil
-                        }
-                    }
-                }
 
-                if selectedDurationType.isTargetBased {
-                    Section("Target") {
-                        Picker("Target", selection: $selectedTargetId) {
-                            ForEach(
-                                session.combatants.filter { $0.id != combatant.id },
-                                id: \.id
-                            ) { target in
-                                Text(target.name).tag(Optional(target.id))
-                            }
-                        }
-                    }
+                    Stepper("Turns: \(turnsCount)", value: $turnsCount, in: 1...20)
                 }
             }
             .navigationTitle("Add Effect")
@@ -85,8 +65,7 @@ struct AddEffectView: View {
                         isPresented = false
                     }
                     .fontWeight(.semibold)
-                    .disabled(effectName.trimmingCharacters(in: .whitespaces).isEmpty ||
-                              (selectedDurationType.isTargetBased && selectedTargetId == nil))
+                    .disabled(effectName.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
             }
         }
@@ -99,15 +78,9 @@ struct AddEffectView: View {
         let durationType: DurationType
         switch selectedDurationType {
         case .untilStartOfTheirTurn:
-            durationType = .untilStartOfTheirTurn
+            durationType = .untilStartOfTheirTurn(remainingTurns: turnsCount)
         case .untilEndOfTheirTurn:
-            durationType = .untilEndOfTheirTurn
-        case .untilStartOfTargetTurn:
-            guard let targetId = selectedTargetId else { return }
-            durationType = .untilStartOfTargetTurn(targetID: targetId)
-        case .untilEndOfTargetTurn:
-            guard let targetId = selectedTargetId else { return }
-            durationType = .untilEndOfTargetTurn(targetID: targetId)
+            durationType = .untilEndOfTheirTurn(remainingTurns: turnsCount)
         }
 
         let effect = Effect(name: trimmedName, durationType: durationType)
@@ -121,17 +94,6 @@ struct AddEffectView: View {
 enum DurationTypeSelection: Equatable, Hashable {
     case untilStartOfTheirTurn
     case untilEndOfTheirTurn
-    case untilStartOfTargetTurn
-    case untilEndOfTargetTurn
-
-    var isTargetBased: Bool {
-        switch self {
-        case .untilStartOfTargetTurn, .untilEndOfTargetTurn:
-            return true
-        default:
-            return false
-        }
-    }
 }
 
 #Preview {

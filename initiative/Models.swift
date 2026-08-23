@@ -96,60 +96,54 @@ struct LogEntry: Identifiable, Codable {
     }
 }
 
+/// Effects are always self-applied by the DM to a combatant (there's no "target's
+/// turn" concept — if you want it to expire on someone else's turn, put it on them),
+/// so duration is just start/end of the owner's own turn, optionally repeated across
+/// several of their turns via `remainingTurns`.
 enum DurationType: Equatable, Codable {
-    case untilStartOfTheirTurn
-    case untilEndOfTheirTurn
-    case untilStartOfTargetTurn(targetID: UUID)
-    case untilEndOfTargetTurn(targetID: UUID)
+    case untilStartOfTheirTurn(remainingTurns: Int)
+    case untilEndOfTheirTurn(remainingTurns: Int)
 
     var description: String {
         switch self {
-        case .untilStartOfTheirTurn:
-            return "Until start of their next turn"
-        case .untilEndOfTheirTurn:
-            return "Until end of their next turn"
-        case .untilStartOfTargetTurn:
-            return "Until start of target's next turn"
-        case .untilEndOfTargetTurn:
-            return "Until end of target's next turn"
+        case .untilStartOfTheirTurn(let remaining):
+            return remaining > 1 ? "Until start of their turn (\(remaining) turns)" : "Until start of their next turn"
+        case .untilEndOfTheirTurn(let remaining):
+            return remaining > 1 ? "Until end of their turn (\(remaining) turns)" : "Until end of their next turn"
         }
     }
 
     private enum Kind: String, Codable {
+        // untilStartOfTargetTurn/untilEndOfTargetTurn kept only so old saved sessions
+        // with target-based effects still decode — they collapse into the owner-turn
+        // equivalent since the target concept no longer exists.
         case untilStartOfTheirTurn, untilEndOfTheirTurn, untilStartOfTargetTurn, untilEndOfTargetTurn
     }
 
     private enum CodingKeys: String, CodingKey {
-        case kind, targetID
+        case kind, remainingTurns
     }
 
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
+        let remaining = try container.decodeIfPresent(Int.self, forKey: .remainingTurns) ?? 1
         switch try container.decode(Kind.self, forKey: .kind) {
-        case .untilStartOfTheirTurn:
-            self = .untilStartOfTheirTurn
-        case .untilEndOfTheirTurn:
-            self = .untilEndOfTheirTurn
-        case .untilStartOfTargetTurn:
-            self = .untilStartOfTargetTurn(targetID: try container.decode(UUID.self, forKey: .targetID))
-        case .untilEndOfTargetTurn:
-            self = .untilEndOfTargetTurn(targetID: try container.decode(UUID.self, forKey: .targetID))
+        case .untilStartOfTheirTurn, .untilStartOfTargetTurn:
+            self = .untilStartOfTheirTurn(remainingTurns: remaining)
+        case .untilEndOfTheirTurn, .untilEndOfTargetTurn:
+            self = .untilEndOfTheirTurn(remainingTurns: remaining)
         }
     }
 
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         switch self {
-        case .untilStartOfTheirTurn:
+        case .untilStartOfTheirTurn(let remaining):
             try container.encode(Kind.untilStartOfTheirTurn, forKey: .kind)
-        case .untilEndOfTheirTurn:
+            try container.encode(remaining, forKey: .remainingTurns)
+        case .untilEndOfTheirTurn(let remaining):
             try container.encode(Kind.untilEndOfTheirTurn, forKey: .kind)
-        case .untilStartOfTargetTurn(let targetID):
-            try container.encode(Kind.untilStartOfTargetTurn, forKey: .kind)
-            try container.encode(targetID, forKey: .targetID)
-        case .untilEndOfTargetTurn(let targetID):
-            try container.encode(Kind.untilEndOfTargetTurn, forKey: .kind)
-            try container.encode(targetID, forKey: .targetID)
+            try container.encode(remaining, forKey: .remainingTurns)
         }
     }
 }
@@ -350,7 +344,7 @@ class CombatSession {
     func useReaction(for id: UUID) {
         guard let index = combatants.firstIndex(where: { $0.id == id }), !combatants[index].reactionUsed else { return }
         combatants[index].effects.append(
-            Effect(name: Self.reactionEffectName, durationType: .untilStartOfTheirTurn, isReactionMarker: true)
+            Effect(name: Self.reactionEffectName, durationType: .untilStartOfTheirTurn(remainingTurns: 1), isReactionMarker: true)
         )
     }
 
@@ -442,18 +436,26 @@ class CombatSession {
     private func removeExpiredEffects(turnEndingCombatantId: UUID, turnStartingCombatantId: UUID) {
         for i in combatants.indices {
             let ownerId = combatants[i].id
-            combatants[i].effects.removeAll { effect in
+            combatants[i].effects = combatants[i].effects.compactMap { effect in
                 switch effect.durationType {
-                case .untilEndOfTheirTurn:
-                    return ownerId == turnEndingCombatantId
-                case .untilEndOfTargetTurn(let targetID):
-                    return targetID == turnEndingCombatantId
-                case .untilStartOfTheirTurn:
-                    return ownerId == turnStartingCombatantId
-                case .untilStartOfTargetTurn(let targetID):
-                    return targetID == turnStartingCombatantId
+                case .untilEndOfTheirTurn(let remaining):
+                    guard ownerId == turnEndingCombatantId else { return effect }
+                    return Self.tick(effect, remaining: remaining, makeDuration: DurationType.untilEndOfTheirTurn)
+                case .untilStartOfTheirTurn(let remaining):
+                    guard ownerId == turnStartingCombatantId else { return effect }
+                    return Self.tick(effect, remaining: remaining, makeDuration: DurationType.untilStartOfTheirTurn)
                 }
             }
         }
+    }
+
+    /// Counts one turn boundary off a duration's `remainingTurns`. Returns nil (drop
+    /// the effect) once the count reaches zero, otherwise the same effect with the
+    /// count decremented.
+    private static func tick(_ effect: Effect, remaining: Int, makeDuration: (Int) -> DurationType) -> Effect? {
+        if remaining <= 1 { return nil }
+        var updated = effect
+        updated.durationType = makeDuration(remaining - 1)
+        return updated
     }
 }

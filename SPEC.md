@@ -150,25 +150,27 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 **Effect Definition**
 An effect has:
 - Name (brief descriptor, e.g., "Stunned", "Poisoned")
-- Duration type (see below)
-- Optional target combatant (required if duration references "target's turn")
+- Duration type + a turn count (see below)
 - Applied to: the combatant being edited
 
 **Duration Types**
-1. "Until start of their next turn" — expires when this combatant's turn begins again
-2. "Until end of their next turn" — expires when this combatant's turn ends
-3. "Until start of target's next turn" — expires when the named target's turn begins
-4. "Until end of target's next turn" — expires when the named target's turn ends
+An effect is always self-applied by the DM to the combatant it's on — there's no
+"target's turn" concept (if it should expire on someone else's turn, put it on them
+instead). Duration is start/end of the owner's own turn, repeated across however
+many of their turns you specify:
+1. "Until start of their turn" — expires the Nth time this combatant's turn begins
+2. "Until end of their turn" — expires the Nth time this combatant's turn ends
 
-(Where "start" = turn begins, "end" = turn advances to next combatant)
+(Where "start" = turn begins, "end" = turn advances to next combatant; N = the turn
+count set when adding the effect, default 1)
 
 **Adding an Effect**
 - Tap a combatant to open their detail view
 - Button to "Add Effect"
 - Modal prompts for:
   - Effect name
-  - Duration type
-  - If duration involves a target, show a picker of all other combatants
+  - Duration type (start/end of their turn)
+  - Number of turns (stepper, default 1)
 - Effect is added to the combatant's active effects list
 
 **Effect Display**
@@ -231,7 +233,7 @@ project's standing "no copyrighted ruleset content" constraint.
 │  [P3: Initiative 15]            │
 │                                 │
 ├─────────────────────────────────┤
-│  [← Previous]  [Log]  [Next →]  │  (bottom bar)
+│  [← Previous] [Log][eye] [Next →]│  (bottom bar)
 └─────────────────────────────────┘
 ```
 
@@ -251,6 +253,8 @@ project's standing "no copyrighted ruleset content" constraint.
   no prior turn to return to
 - **Log** (center, icon-only): opens a read-only feed of what's happened in
   combat (§9)
+- **Eye icon** (center, next to Log, small): the sole DM/player-view toggle
+  (§12) — deliberately here rather than in the toolbar, see §7
 - **Next Turn** (right): Advance to next combatant, reset current's reaction
   to available
 - On iOS 26+, this whole bar uses Liquid Glass (`GlassEffectContainer`,
@@ -319,12 +323,14 @@ struct CombatSession {
 session is automatically saved under its own stable identity as you play. A session's
 name is auto-generated from when it was created (e.g. "Session — Aug 23, 2026 1:45 PM"),
 and is editable at any time — tap the name, centered at the top of the combat
-screen (`SelectAllTextField`, which selects all existing text on focus so typing
-immediately replaces it), type a new one; blank/whitespace-only input is ignored
-rather than leaving the session unnamed. Lives in the screen body, not the nav
-bar's `.principal` toolbar slot — that slot centers relative to leading/trailing
-button widths, not the true screen center, and got visibly skewed once a second
-trailing icon (the DM/player-view eye toggle) was added alongside "Add".
+screen in the nav bar's `.principal` toolbar slot (`SelectAllTextField`, which
+selects all existing text on focus so typing immediately replaces it), type a
+new one; blank/whitespace-only input is ignored rather than leaving the
+session unnamed. The toolbar carries only "Menu" (leading) and "Add"
+(trailing) — the DM/player-view eye toggle lives in the bottom bar next to
+Log instead (see §12), not as a second trailing toolbar icon, since two
+trailing icons of unequal width previously skewed `.principal` centering
+off the true screen center.
 
 **Round counter**: shown centered below the session name ("Round N"), starts at 1 and
 increments each time turn order wraps back to the first combatant. Reverts correctly
@@ -477,8 +483,8 @@ apply here).
   look up the effect's name against the library (case-insensitive) and show
   the matching icon/color; unrecognized/custom effect names fall back to a
   generic sparkle icon in the theme accent color
-- No new duration mechanism — conditions use the same four `DurationType`
-  cases (and auto-expiry) as any other effect
+- No new duration mechanism — conditions use the same `DurationType` cases
+  (and auto-expiry) as any other effect
 
 Explicitly excluded from this app: legendary/lair actions (tabletop RPG-specific
 mechanic, no generic equivalent worth building), held/delayed turns, private
@@ -486,22 +492,24 @@ per-combatant notes — all considered and declined on direct instruction.
 
 ### 12. DM / Player View
 
-A single eye-icon toggle (`CombatSession.playerViewEnabled`, not persisted —
-always starts in DM view on load/resume) controls whether HP/AC show exact
-numbers or an approximate read, for when the DM's screen is visible to players.
+A single small eye-icon toggle (`CombatSession.playerViewEnabled`, not
+persisted — always starts in DM view on load/resume) controls whether HP/AC
+show exact numbers or an approximate read, for when the DM's screen is
+visible to players. There is exactly one control for it, in the bottom bar
+next to the Log button — not duplicated per-screen — so it's unambiguous
+which state you're in no matter which screen you're looking at.
 
 - **Main combatant list never shows HP or AC at all**, regardless of the
   toggle — it only ever shows name, initiative, reaction status, and active
   effects. This isn't the player-view feature; it's a permanent decision to
   keep the main screen spoiler-free
-- **Combatant detail screen** has its own eye icon next to "Health": DM view
-  (default) shows editable exact Current/Max HP and Armor Class fields, plus
-  the damage/heal/increase-max-HP controls. Player view replaces all of that
-  with a single read-only health band — **Healthy** / **Wounded** / **Critical**
-  / **Dead** (deliberately generic wording, not tabletop RPG's "Bloodied") — and hides
-  Armor Class entirely. Toggling back to DM view restores full editing
-- The toolbar also carries the same toggle (affects `session.playerViewEnabled`
-  globally, so it's consistent whichever screen you toggle it from)
+- **Combatant detail screen**: DM view (default) shows editable exact
+  Current/Max HP and Armor Class fields, plus the damage/heal/increase-max-HP
+  controls. Player view replaces HP with a single read-only health band —
+  **Healthy** / **Wounded** / **Critical** / **Dead** (deliberately generic
+  wording, not tabletop RPG's "Bloodied") — and replaces Armor Class with a matching
+  band — **Low AC** / **Average AC** / **High AC**. Toggling back to DM view
+  restores full editing for both
 
 ### 13. Encounters
 

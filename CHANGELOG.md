@@ -5,15 +5,29 @@ All notable changes to this project are documented here, newest first.
 ## [Unreleased]
 
 ### Fixed
+- Armor Class was hidden entirely (not shown as an approximate, just gone) in
+  the combatant detail screen when player view was on — now shows a Low/
+  Average/High AC band, mirroring the existing HP health band, instead of
+  disappearing
 - Session name field wasn't actually centered once the DM/player-view eye
-  icon was added as a second trailing toolbar button — same root cause as the
-  earlier off-center Log button: nav bar `.principal` centers relative to
-  leading/trailing button widths, not the true screen center. Moved the name
-  field out of the toolbar entirely into the screen body (centered via
-  `.frame(maxWidth: .infinity, alignment: .center)`, same reliable approach
-  used for the Log button fix), directly above the round counter
+  icon was added as a second trailing toolbar button — root cause was nav bar
+  `.principal` centering relative to leading/trailing button widths, not the
+  true screen center. Fixed by removing the eye icon from the toolbar
+  entirely (see Changed below) rather than moving the name out — with only
+  "Menu" and "Add" left flanking it, `.principal` centers correctly again
 
 ### Changed
+- The DM/player-view eye toggle moved out of the toolbar (where it was a
+  second trailing icon competing with "Add" and skewing the session-name
+  centering) into a small icon in the bottom bar next to Log. There is now
+  exactly one control for it, not a duplicate copy on the combatant detail
+  screen's Health header — removed that one too
+- Effect durations simplified: dropped "until start/end of **target's**
+  next turn" entirely (effects are always self-applied to the combatant
+  they're on, so a "target" concept never made sense) and added an optional
+  turn count instead — durations are now "until start/end of their turn",
+  repeatable across N turns via a stepper (default 1) rather than a
+  one-off single-turn expiry only
 - Combatant list row no longer shows "Reaction available" — only "Reaction
   used" appears, and only when true. Available is now the implied default
   (absence of the badge), matching how the effects list already only shows

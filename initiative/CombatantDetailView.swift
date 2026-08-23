@@ -80,6 +80,14 @@ struct CombatantDetailView: View {
         return ("Critical", .red)
     }
 
+    /// Generic armor class band for player-view mode, mirroring healthBand — an
+    /// approximate read instead of the exact number.
+    private func armorClassBand(_ ac: Int) -> (label: String, color: Color) {
+        if ac >= 17 { return ("High AC", .blue) }
+        if ac >= 13 { return ("Average AC", .orange) }
+        return ("Low AC", .red)
+    }
+
     var body: some View {
         ZStack {
             Theme.background
@@ -124,11 +132,23 @@ struct CombatantDetailView: View {
                                             .stroke(Theme.divider, lineWidth: 1)
                                     )
 
-                                if !session.playerViewEnabled {
-                                    Text("Armor Class")
-                                        .font(.caption)
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(Theme.textTertiary)
+                                Text("Armor Class")
+                                    .font(.caption)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(Theme.textTertiary)
+                                if session.playerViewEnabled {
+                                    if let ac = combatant.armorClass {
+                                        let band = armorClassBand(ac)
+                                        Text(band.label)
+                                            .font(.subheadline)
+                                            .fontWeight(.semibold)
+                                            .foregroundColor(band.color)
+                                    } else {
+                                        Text("Not set")
+                                            .font(.subheadline)
+                                            .foregroundColor(Theme.textTertiary)
+                                    }
+                                } else {
                                     TextField("Optional", text: armorClassBinding)
                                         .keyboardType(.numberPad)
                                         .font(.subheadline)
@@ -153,16 +173,9 @@ struct CombatantDetailView: View {
                             .cornerRadius(8)
 
                             VStack(alignment: .leading, spacing: 12) {
-                                HStack {
-                                    Text("Health")
-                                        .font(.headline)
-                                        .foregroundColor(Theme.textPrimary)
-                                    Spacer()
-                                    Button(action: { session.playerViewEnabled.toggle() }) {
-                                        Image(systemName: session.playerViewEnabled ? "eye.slash.fill" : "eye.fill")
-                                            .foregroundColor(Theme.textTertiary)
-                                    }
-                                }
+                                Text("Health")
+                                    .font(.headline)
+                                    .foregroundColor(Theme.textPrimary)
 
                                 if session.playerViewEnabled {
                                     if let current = combatant.currentHP, let maxHP = combatant.maxHP {

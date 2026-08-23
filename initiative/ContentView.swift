@@ -21,18 +21,6 @@ struct ContentView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
-                // Deliberately in the body, not the toolbar's .principal slot: nav
-                // bar principal-item centering is relative to leading/trailing
-                // button widths, not the true screen center — with a leading "Menu"
-                // button and two trailing icons (eye + add), that skewed it off
-                // center the same way the bottom bar's Log button was skewed before
-                // (see that fix). A body-level .frame(maxWidth: .infinity) row is
-                // reliably centered regardless of toolbar contents.
-                SelectAllTextField(text: nameBinding, placeholder: "Session Name")
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .frame(height: 22)
-                    .padding(.top, 8)
-
                 Text("Round \(session.roundNumber)")
                     .font(.subheadline)
                     .fontWeight(.semibold)
@@ -84,11 +72,20 @@ struct ContentView: View {
                             .disabled(!session.canGoToPreviousTurn)
                             .frame(maxWidth: .infinity, alignment: .leading)
 
-                            Button(action: { showLog = true }) {
-                                Image(systemName: "list.bullet.clipboard")
-                                    .font(.system(size: 16, weight: .semibold))
+                            HStack(spacing: 8) {
+                                Button(action: { showLog = true }) {
+                                    Image(systemName: "list.bullet.clipboard")
+                                        .font(.system(size: 16, weight: .semibold))
+                                }
+                                .buttonStyle(.glass)
+
+                                Button(action: { session.playerViewEnabled.toggle() }) {
+                                    Image(systemName: session.playerViewEnabled ? "eye.slash.fill" : "eye.fill")
+                                        .font(.system(size: 13, weight: .semibold))
+                                }
+                                .buttonStyle(.glass)
+                                .accessibilityLabel(session.playerViewEnabled ? "Showing approximate status (player view)" : "Showing exact status (DM view)")
                             }
-                            .buttonStyle(.glass)
                             .frame(maxWidth: .infinity, alignment: .center)
 
                             Button(action: { session.nextTurn() }) {
@@ -118,11 +115,20 @@ struct ContentView: View {
                         .disabled(!session.canGoToPreviousTurn)
                         .frame(maxWidth: .infinity, alignment: .leading)
 
-                        Button(action: { showLog = true }) {
-                            Image(systemName: "list.bullet.clipboard")
-                                .font(.system(size: 16, weight: .semibold))
+                        HStack(spacing: 8) {
+                            Button(action: { showLog = true }) {
+                                Image(systemName: "list.bullet.clipboard")
+                                    .font(.system(size: 16, weight: .semibold))
+                            }
+                            .foregroundColor(Theme.accent)
+
+                            Button(action: { session.playerViewEnabled.toggle() }) {
+                                Image(systemName: session.playerViewEnabled ? "eye.slash.fill" : "eye.fill")
+                                    .font(.system(size: 13, weight: .semibold))
+                            }
+                            .foregroundColor(Theme.accent)
+                            .accessibilityLabel(session.playerViewEnabled ? "Showing approximate status (player view)" : "Showing exact status (DM view)")
                         }
-                        .foregroundColor(Theme.accent)
                         .frame(maxWidth: .infinity, alignment: .center)
 
                         Button(action: { session.nextTurn() }) {
@@ -154,11 +160,9 @@ struct ContentView: View {
                 }
             }
 
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: { session.playerViewEnabled.toggle() }) {
-                    Image(systemName: session.playerViewEnabled ? "eye.slash.fill" : "eye.fill")
-                }
-                .accessibilityLabel(session.playerViewEnabled ? "Showing approximate status (player view)" : "Showing exact status (DM view)")
+            ToolbarItem(placement: .principal) {
+                SelectAllTextField(text: nameBinding, placeholder: "Session Name")
+                    .frame(width: 200, height: 22)
             }
 
             ToolbarItem(placement: .navigationBarTrailing) {

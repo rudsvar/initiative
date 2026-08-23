@@ -120,7 +120,7 @@ final class CombatSessionTests: XCTestCase {
         session.addCombatant(name: "P1", initiative: 20)
         let id = session.combatants[0].id
         session.useReaction(for: id)
-        session.combatants[0].effects.append(Effect(name: "Stunned", durationType: .untilStartOfTheirTurn))
+        session.combatants[0].effects.append(Effect(name: "Stunned", durationType: .untilStartOfTheirTurn(remainingTurns: 1)))
 
         XCTAssertEqual(session.combatants[0].effects.count, 2, "reaction marker + user effect both stored")
         XCTAssertEqual(session.combatants[0].visibleEffects.count, 1, "only the user effect should be user-visible")
@@ -189,7 +189,7 @@ final class CombatSessionTests: XCTestCase {
         session.addCombatant(name: "P1", initiative: 20)
         session.addCombatant(name: "P2", initiative: 10)
 
-        let effect = Effect(name: "Poisoned", durationType: .untilEndOfTheirTurn)
+        let effect = Effect(name: "Poisoned", durationType: .untilEndOfTheirTurn(remainingTurns: 1))
         session.combatants[0].effects.append(effect)
 
         session.nextTurn() // effect expires
@@ -778,7 +778,7 @@ final class CombatSessionTests: XCTestCase {
 
     func testAddEffectToCombatant() {
         session.addCombatant(name: "Mage", initiative: 15)
-        let effect = Effect(name: "Stunned", durationType: .untilStartOfTheirTurn)
+        let effect = Effect(name: "Stunned", durationType: .untilStartOfTheirTurn(remainingTurns: 1))
 
         session.combatants[0].effects.append(effect)
 
@@ -790,7 +790,7 @@ final class CombatSessionTests: XCTestCase {
         session.addCombatant(name: "P1", initiative: 20)
         session.addCombatant(name: "P2", initiative: 10)
 
-        let effect = Effect(name: "Stunned", durationType: .untilStartOfTheirTurn)
+        let effect = Effect(name: "Stunned", durationType: .untilStartOfTheirTurn(remainingTurns: 1))
         session.combatants[0].effects.append(effect)
 
         XCTAssertEqual(session.combatants[0].effects.count, 1)
@@ -809,7 +809,7 @@ final class CombatSessionTests: XCTestCase {
         session.addCombatant(name: "P1", initiative: 20)
         session.addCombatant(name: "P2", initiative: 10)
 
-        let effect = Effect(name: "Poisoned", durationType: .untilEndOfTheirTurn)
+        let effect = Effect(name: "Poisoned", durationType: .untilEndOfTheirTurn(remainingTurns: 1))
         session.combatants[0].effects.append(effect)
 
         // P1's turn ends (the trigger condition), P2's begins
@@ -819,47 +819,26 @@ final class CombatSessionTests: XCTestCase {
         XCTAssertEqual(session.combatants[0].effects.count, 0)
     }
 
-    func testEffectUntilStartOfTargetTurn() {
+    func testEffectWithMultipleRemainingTurnsDecrementsInsteadOfExpiring() {
         session.addCombatant(name: "P1", initiative: 20)
         session.addCombatant(name: "P2", initiative: 10)
 
-        let p2Id = session.combatants[1].id
-        let effect = Effect(
-            name: "Marked",
-            durationType: .untilStartOfTargetTurn(targetID: p2Id)
-        )
-        session.combatants[0].effects.append(effect)
-
-        XCTAssertEqual(session.combatants[0].effects.count, 1)
-
-        // P1's turn ends, P2's begins
-        session.nextTurn()
-
-        // Effect should be removed (expired at start of P2's turn)
-        XCTAssertEqual(session.combatants[0].effects.count, 0)
-    }
-
-    func testEffectUntilEndOfTargetTurn() {
-        session.addCombatant(name: "P1", initiative: 20)
-        session.addCombatant(name: "P2", initiative: 10)
-
-        let p2Id = session.combatants[1].id
-        let effect = Effect(
-            name: "Blessed",
-            durationType: .untilEndOfTargetTurn(targetID: p2Id)
-        )
+        let effect = Effect(name: "Stunned", durationType: .untilStartOfTheirTurn(remainingTurns: 2))
         session.combatants[0].effects.append(effect)
 
         // P1's turn ends, P2's begins
         session.nextTurn()
-
-        // Effect still active (expires at end of P2's turn, not start)
-        XCTAssertEqual(session.combatants[0].effects.count, 1)
-
-        // P2's turn ends, back to P1
+        // P2's turn ends, P1's begins (1st time the "start of P1's turn" trigger fires)
         session.nextTurn()
 
-        // Effect now expired
+        // First trigger only decrements remainingTurns from 2 to 1, doesn't remove yet
+        XCTAssertEqual(session.combatants[0].effects.count, 1)
+        XCTAssertEqual(session.combatants[0].effects.first?.durationType, .untilStartOfTheirTurn(remainingTurns: 1))
+
+        session.nextTurn()
+        session.nextTurn()
+
+        // Second trigger removes it
         XCTAssertEqual(session.combatants[0].effects.count, 0)
     }
 
@@ -867,19 +846,16 @@ final class CombatSessionTests: XCTestCase {
         session.addCombatant(name: "P1", initiative: 20)
         session.addCombatant(name: "P2", initiative: 10)
 
-        let p2Id = session.combatants[1].id
+        let effect1 = Effect(name: "E1", durationType: .untilStartOfTheirTurn(remainingTurns: 1))
+        let effect2 = Effect(name: "E2", durationType: .untilEndOfTheirTurn(remainingTurns: 1))
 
-        let effect1 = Effect(name: "E1", durationType: .untilStartOfTheirTurn)
-        let effect2 = Effect(name: "E2", durationType: .untilEndOfTheirTurn)
-        let effect3 = Effect(name: "E3", durationType: .untilStartOfTargetTurn(targetID: p2Id))
+        session.combatants[0].effects.append(contentsOf: [effect1, effect2])
+        XCTAssertEqual(session.combatants[0].effects.count, 2)
 
-        session.combatants[0].effects.append(contentsOf: [effect1, effect2, effect3])
-        XCTAssertEqual(session.combatants[0].effects.count, 3)
-
-        // Advance turns: P1's turn ends (triggers E2), P2's turn starts (triggers E3)
+        // P1's turn ends (triggers E2)
         session.nextTurn()
 
-        // E2 (end of P1's turn) and E3 (start of target P2's turn) expire; E1 (start of P1's turn) remains
+        // E2 (end of P1's turn) expires; E1 (start of P1's turn) remains
         XCTAssertEqual(session.combatants[0].effects.count, 1)
         XCTAssertEqual(session.combatants[0].effects.first?.name, "E1")
     }
@@ -905,28 +881,28 @@ final class CombatantTests: XCTestCase {
 
 final class EffectTests: XCTestCase {
     func testEffectInitialization() {
-        let effect = Effect(name: "Stunned", durationType: .untilStartOfTheirTurn)
+        let effect = Effect(name: "Stunned", durationType: .untilStartOfTheirTurn(remainingTurns: 1))
 
         XCTAssertEqual(effect.name, "Stunned")
-        XCTAssertEqual(effect.durationType, .untilStartOfTheirTurn)
+        XCTAssertEqual(effect.durationType, .untilStartOfTheirTurn(remainingTurns: 1))
     }
 
     func testDurationTypeDescription() {
         XCTAssertEqual(
-            DurationType.untilStartOfTheirTurn.description,
+            DurationType.untilStartOfTheirTurn(remainingTurns: 1).description,
             "Until start of their next turn"
         )
         XCTAssertEqual(
-            DurationType.untilEndOfTheirTurn.description,
+            DurationType.untilEndOfTheirTurn(remainingTurns: 1).description,
             "Until end of their next turn"
         )
         XCTAssertEqual(
-            DurationType.untilStartOfTargetTurn(targetID: UUID()).description,
-            "Until start of target's next turn"
+            DurationType.untilStartOfTheirTurn(remainingTurns: 3).description,
+            "Until start of their turn (3 turns)"
         )
         XCTAssertEqual(
-            DurationType.untilEndOfTargetTurn(targetID: UUID()).description,
-            "Until end of target's next turn"
+            DurationType.untilEndOfTheirTurn(remainingTurns: 3).description,
+            "Until end of their turn (3 turns)"
         )
     }
 }
