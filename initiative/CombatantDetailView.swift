@@ -118,33 +118,19 @@ struct CombatantDetailView: View {
                                     .font(.caption)
                                     .fontWeight(.semibold)
                                     .foregroundColor(Theme.textTertiary)
-                                if session.playerViewEnabled {
-                                    if let ac = combatant.armorClass {
-                                        let band = StatusBand.armorClass(ac)
-                                        Text(band.label)
-                                            .font(.subheadline)
-                                            .fontWeight(.semibold)
-                                            .foregroundColor(band.color)
-                                    } else {
-                                        Text("Not set")
-                                            .font(.subheadline)
-                                            .foregroundColor(Theme.textTertiary)
-                                    }
-                                } else {
-                                    TextField("Optional", text: armorClassBinding)
-                                        .keyboardType(.numberPad)
-                                        .font(.subheadline)
-                                        .fontWeight(.semibold)
-                                        .foregroundColor(Theme.accent)
-                                        .padding(.horizontal, 12)
-                                        .padding(.vertical, 8)
-                                        .frame(width: 88)
-                                        .background(Theme.background)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 8)
-                                                .stroke(Theme.divider, lineWidth: 1)
-                                        )
-                                }
+                                TextField("Optional", text: armorClassBinding)
+                                    .keyboardType(.numberPad)
+                                    .font(.subheadline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(Theme.accent)
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 8)
+                                    .frame(width: 88)
+                                    .background(Theme.background)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 8)
+                                            .stroke(Theme.divider, lineWidth: 1)
+                                    )
 
                                 if combatant.isDead {
                                     DeadBadge()
@@ -159,19 +145,7 @@ struct CombatantDetailView: View {
                                     .font(.headline)
                                     .foregroundColor(Theme.textPrimary)
 
-                                if session.playerViewEnabled {
-                                    if let current = combatant.currentHP, let maxHP = combatant.maxHP {
-                                        let band = StatusBand.health(current: current, max: maxHP)
-                                        Text(band.label)
-                                            .font(.title3)
-                                            .fontWeight(.bold)
-                                            .foregroundColor(band.color)
-                                    } else {
-                                        Text("Not tracked")
-                                            .font(.subheadline)
-                                            .foregroundColor(Theme.textTertiary)
-                                    }
-                                } else if combatant.maxHP != nil {
+                                if combatant.maxHP != nil {
                                     HStack(spacing: 12) {
                                         VStack(alignment: .leading, spacing: 4) {
                                             Text("Current")

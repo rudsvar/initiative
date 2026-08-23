@@ -511,13 +511,11 @@ which state you're in no matter which screen you're looking at.
   exact numbers ("14/20 HP", "AC 15") in DM view, the same approximate bands
   as the detail screen in player view. Omitted entirely for a combatant with
   neither set
-- **Combatant detail screen**: DM view (default) shows editable exact
-  Current/Max HP and Armor Class fields, plus the damage/heal/increase-max-HP
-  controls. Player view replaces HP with a single read-only health band —
-  **Healthy** / **Wounded** / **Critical** / **Dead** (deliberately generic
-  wording, not tabletop RPG's "Bloodied") — and replaces Armor Class with a matching
-  band — **Low AC** / **Average AC** / **High AC**. Toggling back to DM view
-  restores full editing for both
+- **Combatant detail screen always shows exact editable HP/AC**, regardless
+  of the toggle — tapping into a creature is a deliberate DM action, not
+  something a player glances at over their shoulder the way the main list
+  might be, so there's no approximate mode here. The toggle only affects the
+  main list (below)
 
 ### 13. Encounters
 

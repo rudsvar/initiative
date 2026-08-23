@@ -4,6 +4,14 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Changed
+- Combatant detail screen no longer hides exact HP/AC in player view — it
+  always shows editable exact numbers now, regardless of the toggle.
+  Tapping into a creature is a deliberate DM action, not something a player
+  glances at over their shoulder the way the main list might be, so an
+  approximate mode there added friction without protecting anything. The
+  player-view toggle now only affects the main combatant list
+
 ### Fixed
 - Session name still wasn't centered to the true phone-screen center after
   the eye-icon toolbar fix — `.principal` centers relative to leading/
