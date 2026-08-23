@@ -70,16 +70,14 @@ struct ContentView: View {
                             }
                             .buttonStyle(.glass)
                             .disabled(!session.canGoToPreviousTurn)
-
-                            Spacer()
+                            .frame(maxWidth: .infinity, alignment: .leading)
 
                             Button(action: { showLog = true }) {
                                 Image(systemName: "list.bullet.clipboard")
                                     .font(.system(size: 16, weight: .semibold))
                             }
                             .buttonStyle(.glass)
-
-                            Spacer()
+                            .frame(maxWidth: .infinity, alignment: .center)
 
                             Button(action: { session.nextTurn() }) {
                                 HStack(spacing: 4) {
@@ -91,6 +89,7 @@ struct ContentView: View {
                             .buttonStyle(.glassProminent)
                             .tint(Theme.accent)
                             .disabled(session.sortedCombatants.isEmpty)
+                            .frame(maxWidth: .infinity, alignment: .trailing)
                         }
                         .padding(16)
                     }
@@ -105,16 +104,14 @@ struct ContentView: View {
                         }
                         .foregroundColor(Theme.accent)
                         .disabled(!session.canGoToPreviousTurn)
-
-                        Spacer()
+                        .frame(maxWidth: .infinity, alignment: .leading)
 
                         Button(action: { showLog = true }) {
                             Image(systemName: "list.bullet.clipboard")
                                 .font(.system(size: 16, weight: .semibold))
                         }
                         .foregroundColor(Theme.accent)
-
-                        Spacer()
+                        .frame(maxWidth: .infinity, alignment: .center)
 
                         Button(action: { session.nextTurn() }) {
                             HStack(spacing: 4) {
@@ -124,6 +121,7 @@ struct ContentView: View {
                             .font(.system(size: 14, weight: .semibold))
                         }
                         .foregroundColor(Theme.accent)
+                        .frame(maxWidth: .infinity, alignment: .trailing)
                         .disabled(session.sortedCombatants.isEmpty)
                     }
                     .padding(16)

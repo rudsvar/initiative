@@ -13,11 +13,29 @@ struct AddCombatantSheet: View {
     @State private var hpText = ""
     @State private var countText = ""
     @State private var matchedPresetBonus: Int?
+    @State private var presets: [CreaturePreset] = []
     @FocusState private var nameFieldFocused: Bool
 
     var body: some View {
         NavigationStack {
             Form {
+                if !presets.isEmpty {
+                    Section("Creature") {
+                        Menu {
+                            ForEach(presets) { preset in
+                                Button(preset.name) { selectPreset(preset) }
+                            }
+                        } label: {
+                            HStack {
+                                Text("Choose Creature")
+                                Spacer()
+                                Text(name.isEmpty ? "None" : name)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                }
+
                 Section("Name") {
                     TextField("Combatant name", text: $name)
                         .focused($nameFieldFocused)
@@ -61,8 +79,17 @@ struct AddCombatantSheet: View {
                         .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
             }
-            .onAppear { nameFieldFocused = true }
+            .onAppear {
+                presets = presetStore.listPresets()
+                nameFieldFocused = true
+            }
         }
+    }
+
+    private func selectPreset(_ preset: CreaturePreset) {
+        name = preset.name
+        hpText = preset.maxHP.map(String.init) ?? ""
+        matchedPresetBonus = preset.initiativeBonus
     }
 
     private func prefillFromPreset(named newName: String) {

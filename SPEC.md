@@ -76,6 +76,9 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 - Count > 1 spawns that many copies with numbered names ("Goblin 1", "Goblin 2",
   ...), each rolling its own independent random initiative (a shared explicit
   initiative wouldn't make sense across multiple copies)
+- A "Choose Creature" menu (shown only when at least one preset exists) lists
+  saved presets by name — picking one fills Name + Max HP directly (overwrites
+  HP, unlike the passive typing-based match below, since this is an explicit choice)
 - Adding a combatant auto-saves/updates a `CreaturePreset` by name (see §8) —
   no separate save step; typing a name that matches an existing preset
   auto-fills its saved HP into the HP field if HP is still empty

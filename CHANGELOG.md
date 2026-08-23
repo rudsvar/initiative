@@ -4,7 +4,17 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Fixed
+- Bottom bar's Log button wasn't actually centered — the two-`Spacer()` layout
+  only balances the gaps around it, not the true bar center, when the side
+  buttons ("Previous Turn" vs "Next Turn") have unequal widths. Fixed with
+  three equal-width flexible columns instead
+
 ### Added
+- Add-combatant modal now has a "Choose Creature" menu listing saved presets
+  by name — picking one fills Name + Max HP directly (an explicit full
+  overwrite, unlike the passive typing-based auto-fill which only fills HP if
+  still empty)
 - **Combat log**: `CombatSession.log` ([LogEntry]), appended on turn changes,
   damage/heal/max-HP-increase, deaths, and combatant add/remove. New "Log"
   button in the bottom bar (center, between Previous/Next Turn) opens a
