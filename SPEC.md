@@ -198,10 +198,12 @@ combatant" flow are unaffected by default.
 
 **Enabling & editing** (from the combatant detail screen, alongside Reaction/Effects)
 - "Track HP" action prompts for a max HP value, sets `currentHP = maxHP`
-- Once tracked: a single amount field feeds three actions —
-  **Damage** (subtracts, clamps at 0), **Heal** (adds, clamps at current max),
-  and **Increase Max HP** (raises *both* max and current by the amount — a
-  buff/level-up, not just a higher ceiling with no immediate benefit)
+- Once tracked: a single amount field feeds three actions, all in one row as
+  equal icon-only buttons next to the field (minus/plus/up-heart) rather than
+  a separate labeled-button row per action — **Damage** (subtracts, clamps
+  at 0), **Heal** (adds, clamps at current max), and **Increase Max HP**
+  (raises *both* max and current by the amount — a buff/level-up, not just a
+  higher ceiling with no immediate benefit)
 - Direct numeric entry on the Current/Max HP fields themselves for exact
   corrections (e.g. after a spell effect)
 - `currentHP` clamps to `0...maxHP` for Damage/Heal — no negative HP, no

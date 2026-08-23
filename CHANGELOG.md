@@ -5,6 +5,11 @@ All notable changes to this project are documented here, newest first.
 ## [Unreleased]
 
 ### Changed
+- Damage/Heal/Increase-Max-HP controls consolidated into one row: the amount
+  field plus three equal icon-only buttons (minus/plus/up-heart) next to it,
+  replacing the old layout (amount field, then a two-button Damage/Heal row,
+  then a separate full-width "Increase Max HP" row below) that felt like the
+  actions were "placed a bit everywhere" per feedback
 - Combatant list's status row reworked into wrapping chips: each active
   status (reaction used, each effect) now gets its own small darker rounded
   box with an icon + short label (e.g. "Stunned", "Used"), laid out via a

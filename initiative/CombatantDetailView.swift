@@ -194,45 +194,49 @@ struct CombatantDetailView: View {
                                         Spacer()
                                     }
 
-                                    VStack(alignment: .leading, spacing: 8) {
+                                    // Single row: amount field + three equal icon-only
+                                    // buttons (damage/heal/increase-max), instead of the
+                                    // old amount field + two-button row + a separate
+                                    // full-width "Increase Max HP" row below it — that
+                                    // layout felt scattered (buttons "placed a bit
+                                    // everywhere" per feedback); this keeps every action
+                                    // on the amount at a glance in one place.
+                                    HStack(spacing: 10) {
                                         TextField("Amount", text: $hpAdjustAmount)
                                             .keyboardType(.numberPad)
                                             .font(.subheadline)
                                             .fontWeight(.semibold)
                                             .padding(.horizontal, 12)
                                             .padding(.vertical, 8)
-                                            .frame(maxWidth: .infinity)
                                             .background(Theme.background)
                                             .overlay(
                                                 RoundedRectangle(cornerRadius: 8)
                                                     .stroke(Theme.divider, lineWidth: 1)
                                             )
 
-                                        HStack(spacing: 12) {
-                                            Button(action: { applyDamage(to: combatant) }) {
-                                                Label("Damage", systemImage: "minus.circle.fill")
-                                                    .font(.system(size: 14, weight: .semibold))
-                                                    .frame(maxWidth: .infinity)
-                                            }
-                                            .foregroundColor(.red)
-                                            .disabled(Int(hpAdjustAmount) == nil)
-
-                                            Button(action: { applyHealing(to: combatant) }) {
-                                                Label("Heal", systemImage: "plus.circle.fill")
-                                                    .font(.system(size: 14, weight: .semibold))
-                                                    .frame(maxWidth: .infinity)
-                                            }
-                                            .foregroundColor(.green)
-                                            .disabled(Int(hpAdjustAmount) == nil)
+                                        Button(action: { applyDamage(to: combatant) }) {
+                                            Image(systemName: "minus.circle.fill")
+                                                .font(.system(size: 28))
                                         }
+                                        .foregroundColor(.red)
+                                        .disabled(Int(hpAdjustAmount) == nil)
+                                        .accessibilityLabel("Damage")
+
+                                        Button(action: { applyHealing(to: combatant) }) {
+                                            Image(systemName: "plus.circle.fill")
+                                                .font(.system(size: 28))
+                                        }
+                                        .foregroundColor(.green)
+                                        .disabled(Int(hpAdjustAmount) == nil)
+                                        .accessibilityLabel("Heal")
 
                                         Button(action: { increaseMaxHP(for: combatant) }) {
-                                            Label("Increase Max HP", systemImage: "arrow.up.heart.fill")
-                                                .font(.system(size: 14, weight: .semibold))
-                                                .frame(maxWidth: .infinity)
+                                            Image(systemName: "arrow.up.heart.fill")
+                                                .font(.system(size: 26))
                                         }
                                         .foregroundColor(.blue)
                                         .disabled(Int(hpAdjustAmount) == nil)
+                                        .accessibilityLabel("Increase Max HP")
                                     }
                                     .padding(.top, 4)
                                 } else {
