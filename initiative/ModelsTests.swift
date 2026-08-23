@@ -150,6 +150,47 @@ final class CombatSessionTests: XCTestCase {
         XCTAssertEqual(session.currentTurnIndex, 0)
     }
 
+    // MARK: - Reset & Records
+
+    func testResetClearsParticipantsAndHistory() {
+        session.addParticipant(name: "P1", initiative: 20)
+        session.addParticipant(name: "P2", initiative: 10)
+        session.nextTurn()
+
+        session.reset()
+
+        XCTAssertTrue(session.participants.isEmpty)
+        XCTAssertEqual(session.currentTurnIndex, 0)
+        XCTAssertFalse(session.canGoToPreviousTurn)
+    }
+
+    func testMakeRecordCapturesState() {
+        session.addParticipant(name: "P1", initiative: 20)
+        session.nextTurn()
+
+        let record = session.makeRecord(name: "My Fight")
+
+        XCTAssertEqual(record.name, "My Fight")
+        XCTAssertEqual(record.participants.count, 1)
+        XCTAssertEqual(record.currentTurnIndex, session.currentTurnIndex)
+    }
+
+    func testLoadRecordRestoresStateAndClearsHistory() {
+        session.addParticipant(name: "P1", initiative: 20)
+        session.addParticipant(name: "P2", initiative: 10)
+        session.nextTurn()
+        let record = session.makeRecord(name: "Saved")
+
+        session.reset()
+        session.addParticipant(name: "Other", initiative: 5)
+
+        session.load(record)
+
+        XCTAssertEqual(session.participants.count, 2)
+        XCTAssertEqual(session.currentTurnIndex, record.currentTurnIndex)
+        XCTAssertFalse(session.canGoToPreviousTurn)
+    }
+
     // MARK: - Effect Management
 
     func testAddEffectToParticipant() {

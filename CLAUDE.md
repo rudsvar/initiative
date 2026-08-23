@@ -96,8 +96,21 @@ If that destination isn't available, list available simulators with
 `xcrun simctl list devices available` and substitute one, or use
 `-destination "platform=iOS Simulator,id=<UDID>"`.
 
-Note: `xcodebuild build -destination generic/platform=iOS` (device build) will fail
-locally with a code-signing error since no dev team is set in `project.yml` — that's
-expected; only Xcode's GUI (with your signed-in Apple ID) can build for the physical
-device. The simulator test command above is the correct way to verify changes from
-the CLI.
+`DEVELOPMENT_TEAM` in `project.yml` is set to `YOUR_TEAM_ID` (Rudi Svartveit's personal
+Apple Developer team). Do not blank this out or `xcodegen generate`
+will silently strip signing on every regen and break `xcodebuild build -destination
+generic/platform=iOS` (device build) with "requires a development team". If Xcode ever
+reassigns a different team ID, check `~/Library/Preferences/com.apple.dt.Xcode.plist`
+(`IDEProvisioningTeamByIdentifier`) or a device build's `project.pbxproj` for the
+current value and update `project.yml` to match — don't leave it blank.
+
+## Session persistence compatibility
+
+**Not yet published — no compatibility constraint currently applies.** Once this app
+ships to a device as a "real" install the user relies on day-to-day, `SessionRecord`
+(in `SessionStore.swift`) and its `Codable` encoding become a durable on-disk format:
+saved sessions and the autosave slot must keep decoding across app updates, or a
+person's in-progress combat gets silently wiped. At that point: only add fields with
+defaults (never remove/rename existing `CodingKeys` without a migration), and treat
+`DurationType`'s manual `Codable` implementation as equally frozen. Revisit this note
+and make it a hard rule once the app is actually installed/published somewhere real.

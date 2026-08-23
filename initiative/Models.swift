@@ -1,6 +1,6 @@
 import Foundation
 
-struct Participant: Identifiable {
+struct Participant: Identifiable, Codable {
     let id: UUID
     var name: String
     var initiative: Int
@@ -14,7 +14,7 @@ struct Participant: Identifiable {
     }
 }
 
-struct Effect: Identifiable {
+struct Effect: Identifiable, Codable {
     let id: UUID
     var name: String
     var durationType: DurationType
@@ -26,7 +26,7 @@ struct Effect: Identifiable {
     }
 }
 
-enum DurationType: Equatable {
+enum DurationType: Equatable, Codable {
     case untilStartOfTheirTurn
     case untilEndOfTheirTurn
     case untilStartOfTargetTurn(targetID: UUID)
@@ -42,6 +42,44 @@ enum DurationType: Equatable {
             return "Until start of target's next turn"
         case .untilEndOfTargetTurn:
             return "Until end of target's next turn"
+        }
+    }
+
+    private enum Kind: String, Codable {
+        case untilStartOfTheirTurn, untilEndOfTheirTurn, untilStartOfTargetTurn, untilEndOfTargetTurn
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case kind, targetID
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        switch try container.decode(Kind.self, forKey: .kind) {
+        case .untilStartOfTheirTurn:
+            self = .untilStartOfTheirTurn
+        case .untilEndOfTheirTurn:
+            self = .untilEndOfTheirTurn
+        case .untilStartOfTargetTurn:
+            self = .untilStartOfTargetTurn(targetID: try container.decode(UUID.self, forKey: .targetID))
+        case .untilEndOfTargetTurn:
+            self = .untilEndOfTargetTurn(targetID: try container.decode(UUID.self, forKey: .targetID))
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case .untilStartOfTheirTurn:
+            try container.encode(Kind.untilStartOfTheirTurn, forKey: .kind)
+        case .untilEndOfTheirTurn:
+            try container.encode(Kind.untilEndOfTheirTurn, forKey: .kind)
+        case .untilStartOfTargetTurn(let targetID):
+            try container.encode(Kind.untilStartOfTargetTurn, forKey: .kind)
+            try container.encode(targetID, forKey: .targetID)
+        case .untilEndOfTargetTurn(let targetID):
+            try container.encode(Kind.untilEndOfTargetTurn, forKey: .kind)
+            try container.encode(targetID, forKey: .targetID)
         }
     }
 }
@@ -93,6 +131,23 @@ class CombatSession {
         guard let previous = history.popLast() else { return }
         participants = previous.participants
         currentTurnIndex = previous.currentTurnIndex
+    }
+
+    /// Clears all combat state, for starting a brand-new session.
+    func reset() {
+        participants = []
+        currentTurnIndex = 0
+        history = []
+    }
+
+    func makeRecord(name: String) -> SessionRecord {
+        SessionRecord(name: name, participants: participants, currentTurnIndex: currentTurnIndex)
+    }
+
+    func load(_ record: SessionRecord) {
+        participants = record.participants
+        currentTurnIndex = record.currentTurnIndex
+        history = []
     }
 
     private func removeExpiredEffects(turnEndingParticipantId: UUID, turnStartingParticipantId: UUID) {

@@ -1,7 +1,13 @@
 import SwiftUI
 
 struct ContentView: View {
-    @State private var session = CombatSession()
+    let session: CombatSession
+    let sessionStore: SessionStore
+    @Binding var path: NavigationPath
+
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var showSaveAlert = false
+    @State private var saveName = ""
 
     var body: some View {
         ZStack {
@@ -52,6 +58,55 @@ struct ContentView: View {
                 .borderTop(Theme.divider)
             }
         }
+        .navigationTitle("Initiative")
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button(action: backToMenu) {
+                    HStack(spacing: 4) {
+                        Image(systemName: "chevron.left")
+                        Text("Menu")
+                    }
+                }
+                .foregroundColor(Theme.accent)
+            }
+
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: { saveName = ""; showSaveAlert = true }) {
+                    Image(systemName: "square.and.arrow.down")
+                }
+                .foregroundColor(Theme.accent)
+                .disabled(session.participants.isEmpty)
+            }
+        }
+        .alert("Save Session", isPresented: $showSaveAlert) {
+            TextField("Session name", text: $saveName)
+            Button("Save") {
+                let name = saveName.trimmingCharacters(in: .whitespaces)
+                sessionStore.save(session.makeRecord(name: name.isEmpty ? "Untitled" : name))
+            }
+            Button("Cancel", role: .cancel) {}
+        }
+        .onDisappear { autosave() }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .background {
+                autosave()
+            }
+        }
+    }
+
+    private func backToMenu() {
+        autosave()
+        path.removeLast(path.count)
+    }
+
+    private func autosave() {
+        guard !session.participants.isEmpty else {
+            sessionStore.clearAutosave()
+            return
+        }
+        sessionStore.saveAutosave(session.makeRecord(name: "In Progress"))
     }
 }
 
@@ -186,5 +241,7 @@ struct ParticipantRow: View {
 }
 
 #Preview {
-    ContentView()
+    NavigationStack {
+        ContentView(session: CombatSession(), sessionStore: SessionStore(), path: .constant(NavigationPath()))
+    }
 }

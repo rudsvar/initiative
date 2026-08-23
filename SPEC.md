@@ -33,7 +33,7 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 - ✅ Back button to return to prior state (undo stack of full session snapshots)
 
 ### Phase 2: Polish
-- Combat session persistence (save/load)
+- ✅ Combat session persistence (save/load) + main menu (Resume / New / Load)
 - Remove/edit participant
 - Round counter display
 - Visual indicators for effects and reaction state
@@ -179,6 +179,25 @@ struct CombatSession {
     currentTurnIndex: Int  // 0-based index into sorted list
 }
 ```
+
+### 6. Main Menu & Session Persistence
+
+**Main Menu** (app launch / navigating back)
+- **Resume**: loads the autosaved in-progress session, if one exists (disabled otherwise)
+- **New Session**: clears all combat state and starts fresh
+- **Load Session**: browse explicitly-named saved sessions, tap to load, swipe to delete
+
+**Combat screen persistence**
+- Top-left "Menu" button returns to the main menu (autosaves first)
+- Top-right save icon prompts for a name and writes a named `SessionRecord` that
+  appears under "Load Session" going forward
+- Autosave happens on leaving the combat screen or the app backgrounding — not on
+  every micro-mutation (reaction toggle, effect add) — this is an intentional
+  scope tradeoff, not a bug
+
+**Compatibility**: once this app is actually installed/published for real use, the
+on-disk `SessionRecord` format becomes a durable contract — see the "Session
+persistence compatibility" section in `CLAUDE.md`. Not yet in force pre-publish.
 
 ## UI/UX Principles
 
