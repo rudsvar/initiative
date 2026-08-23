@@ -1,0 +1,87 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project overview
+
+**initiative** is a personal iOS app built with SwiftUI, targeting iOS 17+. It's a single-window app with automatic code signing enabled.
+
+## Development commands
+
+**Open project in Xcode**
+```bash
+open initiative.xcodeproj
+```
+
+**Build & run on connected phone**
+- Select your phone as the target device (top-left device selector in Xcode)
+- Press ⌘R to build and run
+- First run prompts for Apple ID code signing
+
+**Add new Swift file**
+XcodeGen automatically discovers all `.swift` files in the `initiative/` directory. Add a new `.swift` file there, then regenerate the project:
+```bash
+xcodegen generate
+```
+
+**Preview a view during development**
+SwiftUI Preview is the standard way to iterate on UI. Every view should have a `#Preview` block:
+```swift
+#Preview {
+    MyView()
+}
+```
+Open the Canvas (⌥⌘↩) to see live previews while editing.
+
+## Project structure
+
+```
+initiative/
+├── initiativeApp.swift        # @main entry point, defines WindowGroup scene
+├── ContentView.swift          # Main root view
+├── Assets.xcassets/           # Images, colors, app icon
+project.yml                    # XcodeGen configuration (regenerates .xcodeproj)
+.gitignore                     # Excludes Xcode build artifacts, .DS_Store, etc.
+```
+
+## Architecture
+
+**App entry point** (`initiativeApp.swift`):
+- Uses `@main` macro to bootstrap the app
+- Defines a `WindowGroup` scene containing the root view
+
+**View hierarchy**:
+- `ContentView` is the root view
+- Add new screens/views as separate `.swift` files in the `initiative/` directory
+- Use navigation containers (NavigationStack, TabView, etc.) for multi-screen navigation
+
+**Styling & Colors**:
+- Use SwiftUI's built-in semantic colors (`.tint`, `.background`, etc.) for theme consistency
+- Colors can be defined in Assets.xcassets for app-wide theming
+
+## Important notes
+
+**XcodeGen workflow**:
+The `.xcodeproj` is *generated* from `project.yml`, not hand-edited. Always modify `project.yml` and regenerate:
+```bash
+xcodegen generate
+```
+This keeps the project structure reproducible and diffable (the generated `.pbxproj` is large XML, so diffs are hard to read).
+
+**Code organization**:
+- One view per file (standard SwiftUI convention)
+- Keep view files focused on a single screen or reusable component
+- Use the `Preview` macro for all views
+
+**Dependencies**:
+- Currently no external packages; SwiftUI is built-in
+- If you add a package dependency, add it to `project.yml` under the target's `dependencies` section
+
+## Testing
+
+Xcode supports XCTest. To add unit or UI tests:
+1. Create a test target in `project.yml` under `targets:`
+2. Add test files ending in `Tests.swift`
+3. Run via ⌘U in Xcode
+
+Currently no tests are configured—add as needed.
