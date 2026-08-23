@@ -4,6 +4,14 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Fixed
+- Session name still wasn't centered to the true phone-screen center after
+  the eye-icon toolbar fix — `.principal` centers relative to leading/
+  trailing button widths, not the true center, and "Menu" (icon+text) vs
+  "Add" (icon-only) are unequal widths. Moved the name back into the body
+  as its own centered row (same fix already used for the bottom bar's Log
+  button) instead of the toolbar
+
 ### Changed
 - Main combatant list now shows HP/AC again (when set) — exact numbers in DM
   view, the same approximate bands as the detail screen in player view.

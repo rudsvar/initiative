@@ -21,6 +21,19 @@ struct ContentView: View {
                 .ignoresSafeArea()
 
             VStack(spacing: 0) {
+                // Deliberately in the body, not the toolbar's .principal slot: nav
+                // bar principal-item centering is relative to leading/trailing
+                // button widths, not the true screen center — with a leading "Menu"
+                // (icon+text) and a trailing "Add" (icon-only) of unequal width,
+                // that visibly skews it off the true phone-screen center. A
+                // body-level .frame(maxWidth: .infinity) row is reliably centered
+                // regardless of toolbar contents (same fix used for the bottom
+                // bar's Log button).
+                SelectAllTextField(text: nameBinding, placeholder: "Session Name")
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .frame(height: 22)
+                    .padding(.top, 8)
+
                 Text("Round \(session.roundNumber)")
                     .font(.subheadline)
                     .fontWeight(.semibold)
@@ -159,11 +172,6 @@ struct ContentView: View {
                         Text("Menu")
                     }
                 }
-            }
-
-            ToolbarItem(placement: .principal) {
-                SelectAllTextField(text: nameBinding, placeholder: "Session Name")
-                    .frame(width: 200, height: 22)
             }
 
             ToolbarItem(placement: .navigationBarTrailing) {

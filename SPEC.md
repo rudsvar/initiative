@@ -224,7 +224,8 @@ project's standing "no copyrighted ruleset content" constraint.
 **Main Screen (Combat View)**
 ```
 ┌─────────────────────────────────┐
-│ ← Menu    [Session Name]   Add  │  (toolbar)
+│ ← Menu                     Add  │  (toolbar)
+│      [Session Name] (centered)  │  (body, not toolbar — true screen center)
 │         Round N (centered)      │
 ├─────────────────────────────────┤
 │                                 │
@@ -239,13 +240,17 @@ project's standing "no copyrighted ruleset content" constraint.
 
 **Toolbar**
 - **Menu** (leading): returns to the main menu, autosaves first
-- **Session name** (center): editable text field, blank input ignored
 - **Add** (trailing): opens the add-combatant modal (`AddCombatantSheet`) —
   replaced an earlier top-of-list inline row and, before that, a bottom-of-list
   placeholder row; both approaches turned out to want a dedicated modal (fiddly
   small fields / accidental taps), so this is now the sole entry point
-- **Round N**: plain centered text above the list, not a button, not in the
-  toolbar (moved out of the toolbar to make room for Add)
+
+**Body (above the list)**
+- **Session name**: editable text field, centered to the true phone-screen
+  center (not the toolbar's `.principal` slot — see §7 for why), blank input
+  ignored
+- **Round N**: plain centered text below the name, not a button, not in the
+  toolbar
 
 **Bottom bar**
 - **Previous Turn** (left): Reverts to the previous turn's full state (turn
@@ -323,14 +328,17 @@ struct CombatSession {
 session is automatically saved under its own stable identity as you play. A session's
 name is auto-generated from when it was created (e.g. "Session — Aug 23, 2026 1:45 PM"),
 and is editable at any time — tap the name, centered at the top of the combat
-screen in the nav bar's `.principal` toolbar slot (`SelectAllTextField`, which
-selects all existing text on focus so typing immediately replaces it), type a
-new one; blank/whitespace-only input is ignored rather than leaving the
-session unnamed. The toolbar carries only "Menu" (leading) and "Add"
-(trailing) — the DM/player-view eye toggle lives in the bottom bar next to
-Log instead (see §12), not as a second trailing toolbar icon, since two
-trailing icons of unequal width previously skewed `.principal` centering
-off the true screen center.
+screen (`SelectAllTextField`, which selects all existing text on focus so
+typing immediately replaces it), type a new one; blank/whitespace-only input
+is ignored rather than leaving the session unnamed. Lives in the screen body
+(`.frame(maxWidth: .infinity, alignment: .center)`), not the nav bar's
+`.principal` toolbar slot — that slot centers relative to leading/trailing
+button widths, not the true phone-screen center, and visibly skews once
+leading ("Menu", icon+text) and trailing ("Add", icon-only) have unequal
+widths. Tried putting it back in `.principal` once already (after the eye
+icon moved out of the toolbar) and it was still off — a body-level row is
+the only fix that reliably lands on the true center regardless of toolbar
+contents, same approach used for the bottom bar's Log button.
 
 **Round counter**: shown centered below the session name ("Round N"), starts at 1 and
 increments each time turn order wraps back to the first combatant. Reverts correctly
