@@ -30,7 +30,7 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 - ✅ Reaction tracking per participant (reset on their turn)
 - ✅ Temporary effects with multiple duration types
 - ✅ Effect target selection
-- ✅ Back button to return to prior state (optional: undo stack)
+- ✅ Back button to return to prior state (undo stack of full session snapshots)
 
 ### Phase 2: Polish
 - Combat session persistence (save/load)
@@ -44,10 +44,10 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 ### 1. Participant Management
 
 **Add Participant**
-- Button on top of the main screen
-- Modal/form with fields:
-  - Name (required)
-  - Initiative value (optional; random 1–20 if not entered)
+- Inline placeholder row pinned at the top of the participant list (no modal)
+- Fields: name and initiative, editable directly in the row
+- Leaving initiative blank rolls random 1–20 on add
+- Submitting (return key or checkmark) adds the participant and clears the row, ready for the next entry
 - Participants auto-sort by initiative (descending; ties maintain insertion order)
 
 **Participant Display**
@@ -117,7 +117,7 @@ An effect has:
 **Main Screen (Combat View)**
 ```
 ┌─────────────────────────────────┐
-│  + Add Participant              │  (top left)
+│  + Add participant…      [Init] │  (inline placeholder row, top)
 ├─────────────────────────────────┤
 │                                 │
 │  [P1: Initiative 20]            │
@@ -130,8 +130,8 @@ An effect has:
 ```
 
 **Buttons**
-- **Add Participant** (top): Opens add participant modal
-- **Back** (bottom left): Undo last turn advance or navigate back (optional: stack-based navigation)
+- **Add participant row** (top): Always-visible inline row; fill in name (and optional initiative) and submit to add, no modal
+- **Back** (bottom left): Reverts to the previous turn's full state (turn index, reactions, effects); disabled when there is no prior turn to return to
 - **Next Turn** (bottom right): Advance to next participant, reset current's reaction to available
 
 **Participant Detail** (tap a participant row)
@@ -187,12 +187,14 @@ struct CombatSession {
 
 ## Design & Theming
 
-**Color Palette** — old paper with rust accents:
+**Color Palette** — old paper with a bold red accent (see `Theme.swift`, the single source
+of truth for these colors — all views reference `Theme.*`, never raw color literals):
 - **Background**: Off-white / cream (#F5F1ED or similar)
 - **Primary text**: Dark brown/charcoal (#2B2520 or similar)
-- **Accent**: Rust red (#A64D3E or similar) for highlights, active states, current turn
+- **Accent**: Saturated red (#C7241C or similar — deliberately more red than rust) for
+  highlights, active states, current turn
 - **Secondary accent**: Muted tan/beige (#D4C4B8) for subtle dividers, disabled states
-- **Borders**: Thin rust red or dark brown lines for card/row separation
+- **Borders**: Thin accent-red or dark brown lines for card/row separation
 
 **Typography**
 - Clean, readable serif or sans-serif (e.g., SF Pro or similar default iOS)

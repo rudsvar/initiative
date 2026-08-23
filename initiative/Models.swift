@@ -51,6 +51,12 @@ class CombatSession {
     var participants: [Participant] = []
     var currentTurnIndex: Int = 0
 
+    private var history: [(participants: [Participant], currentTurnIndex: Int)] = []
+
+    var canGoToPreviousTurn: Bool {
+        !history.isEmpty
+    }
+
     var currentParticipant: Participant? {
         guard participants.indices.contains(currentTurnIndex) else { return nil }
         return participants[currentTurnIndex]
@@ -69,6 +75,8 @@ class CombatSession {
     func nextTurn() {
         guard !participants.isEmpty else { return }
 
+        history.append((participants: participants, currentTurnIndex: currentTurnIndex))
+
         let endingParticipantId = participants[currentTurnIndex].id
         currentTurnIndex = (currentTurnIndex + 1) % participants.count
         let startingParticipantId = participants[currentTurnIndex].id
@@ -79,6 +87,12 @@ class CombatSession {
         )
 
         participants[currentTurnIndex].reactionUsed = false
+    }
+
+    func previousTurn() {
+        guard let previous = history.popLast() else { return }
+        participants = previous.participants
+        currentTurnIndex = previous.currentTurnIndex
     }
 
     private func removeExpiredEffects(turnEndingParticipantId: UUID, turnStartingParticipantId: UUID) {

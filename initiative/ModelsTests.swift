@@ -99,6 +99,57 @@ final class CombatSessionTests: XCTestCase {
         XCTAssertEqual(session.currentTurnIndex, 0)
     }
 
+    // MARK: - Previous Turn
+
+    func testCanGoToPreviousTurnInitiallyFalse() {
+        session.addParticipant(name: "P1", initiative: 20)
+        XCTAssertFalse(session.canGoToPreviousTurn)
+    }
+
+    func testPreviousTurnRevertsIndex() {
+        session.addParticipant(name: "P1", initiative: 20)
+        session.addParticipant(name: "P2", initiative: 10)
+
+        session.nextTurn() // 0 -> 1
+        XCTAssertTrue(session.canGoToPreviousTurn)
+
+        session.previousTurn() // 1 -> 0
+        XCTAssertEqual(session.currentTurnIndex, 0)
+        XCTAssertFalse(session.canGoToPreviousTurn)
+    }
+
+    func testPreviousTurnRevertsReactionState() {
+        session.addParticipant(name: "P1", initiative: 20)
+        session.addParticipant(name: "P2", initiative: 10)
+
+        session.participants[0].reactionUsed = true
+        session.nextTurn() // resets P2's reaction, P1's stays used
+
+        session.previousTurn()
+
+        XCTAssertTrue(session.participants[0].reactionUsed)
+    }
+
+    func testPreviousTurnRevertsExpiredEffects() {
+        session.addParticipant(name: "P1", initiative: 20)
+        session.addParticipant(name: "P2", initiative: 10)
+
+        let effect = Effect(name: "Poisoned", durationType: .untilEndOfTheirTurn)
+        session.participants[0].effects.append(effect)
+
+        session.nextTurn() // effect expires
+        XCTAssertEqual(session.participants[0].effects.count, 0)
+
+        session.previousTurn()
+        XCTAssertEqual(session.participants[0].effects.count, 1)
+    }
+
+    func testPreviousTurnWithNoHistoryDoesNothing() {
+        session.addParticipant(name: "P1", initiative: 20)
+        session.previousTurn()
+        XCTAssertEqual(session.currentTurnIndex, 0)
+    }
+
     // MARK: - Effect Management
 
     func testAddEffectToParticipant() {

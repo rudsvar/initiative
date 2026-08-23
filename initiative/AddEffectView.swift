@@ -11,7 +11,7 @@ struct AddEffectView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Color(red: 0.96, green: 0.94, blue: 0.93)
+                Theme.background
                     .ignoresSafeArea()
 
                 VStack(spacing: 20) {
@@ -19,7 +19,7 @@ struct AddEffectView: View {
                         Text("Effect Name")
                             .font(.subheadline)
                             .fontWeight(.semibold)
-                            .foregroundColor(Color(red: 0.43, green: 0.35, blue: 0.32))
+                            .foregroundColor(Theme.textSecondary)
                         TextField("e.g., Stunned, Poisoned", text: $effectName)
                             .textFieldStyle(.roundedBorder)
                             .padding(.horizontal, 4)
@@ -29,7 +29,7 @@ struct AddEffectView: View {
                         Text("Duration")
                             .font(.subheadline)
                             .fontWeight(.semibold)
-                            .foregroundColor(Color(red: 0.43, green: 0.35, blue: 0.32))
+                            .foregroundColor(Theme.textSecondary)
 
                         VStack(spacing: 8) {
                             DurationTypeButton(
@@ -83,7 +83,7 @@ struct AddEffectView: View {
                             Text("Target")
                                 .font(.subheadline)
                                 .fontWeight(.semibold)
-                                .foregroundColor(Color(red: 0.43, green: 0.35, blue: 0.32))
+                                .foregroundColor(Theme.textSecondary)
 
                             Picker("Select target", selection: $selectedTargetId) {
                                 ForEach(
@@ -94,7 +94,7 @@ struct AddEffectView: View {
                                 }
                             }
                             .pickerStyle(.menu)
-                            .foregroundColor(Color(red: 0.17, green: 0.15, blue: 0.13))
+                            .foregroundColor(Theme.textPrimary)
                         }
                     }
 
@@ -109,7 +109,7 @@ struct AddEffectView: View {
                     Button("Cancel") {
                         isPresented = false
                     }
-                    .foregroundColor(Color(red: 0.65, green: 0.30, blue: 0.24))
+                    .foregroundColor(Theme.accent)
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
@@ -117,7 +117,7 @@ struct AddEffectView: View {
                         addEffect()
                         isPresented = false
                     }
-                    .foregroundColor(Color(red: 0.65, green: 0.30, blue: 0.24))
+                    .foregroundColor(Theme.accent)
                     .fontWeight(.semibold)
                     .disabled(effectName.trimmingCharacters(in: .whitespaces).isEmpty ||
                               (selectedDurationType.isTargetBased && selectedTargetId == nil))
@@ -162,16 +162,16 @@ struct DurationTypeButton: View {
             HStack(spacing: 12) {
                 Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                     .font(.system(size: 18))
-                    .foregroundColor(Color(red: 0.65, green: 0.30, blue: 0.24))
+                    .foregroundColor(Theme.accent)
 
                 Text(title)
                     .font(.subheadline)
-                    .foregroundColor(Color(red: 0.17, green: 0.15, blue: 0.13))
+                    .foregroundColor(Theme.textPrimary)
 
                 Spacer()
             }
             .padding(12)
-            .background(isSelected ? Color(red: 0.65, green: 0.30, blue: 0.24).opacity(0.1) : Color.clear)
+            .background(isSelected ? Theme.accent.opacity(0.1) : Color.clear)
             .cornerRadius(8)
         }
     }

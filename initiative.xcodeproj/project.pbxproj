@@ -12,6 +12,7 @@
 		57E43D881FDA3ACE96602F3D /* ParticipantDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9BA786828925EBEB33514E25 /* ParticipantDetailView.swift */; };
 		73B4B754E931AFDD980BA521 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C602D49912CF215015A47FE /* ContentView.swift */; };
 		B5FC3C6073488D73C6F11502 /* AddEffectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB9B65C9C807B3A6A012AA17 /* AddEffectView.swift */; };
+		C4BBC271D684B621D37FD85D /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB6BC3F48F491E46F929912B /* Theme.swift */; };
 		E62AEBA1E275012E4B58F9A0 /* ModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 374032899B38F3EF7AFFA6BF /* ModelsTests.swift */; };
 		ED7A10670E88FF02C4D63E4B /* initiativeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80F716A445CE95BB18ED0CB6 /* initiativeApp.swift */; };
 /* End PBXBuildFile section */
@@ -34,6 +35,7 @@
 		460298ED464149EF70AC81E9 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 		80F716A445CE95BB18ED0CB6 /* initiativeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = initiativeApp.swift; sourceTree = "<group>"; };
 		9BA786828925EBEB33514E25 /* ParticipantDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParticipantDetailView.swift; sourceTree = "<group>"; };
+		CB6BC3F48F491E46F929912B /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
 		EB9B65C9C807B3A6A012AA17 /* AddEffectView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddEffectView.swift; sourceTree = "<group>"; };
 		F7082DB36F1CEF76E4B26086 /* initiative.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = initiative.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -57,6 +59,7 @@
 				460298ED464149EF70AC81E9 /* Models.swift */,
 				374032899B38F3EF7AFFA6BF /* ModelsTests.swift */,
 				9BA786828925EBEB33514E25 /* ParticipantDetailView.swift */,
+				CB6BC3F48F491E46F929912B /* Theme.swift */,
 				155E562E12403C00DE8A62AB /* ViewExtensions.swift */,
 			);
 			path = initiative;
@@ -155,6 +158,7 @@
 				73B4B754E931AFDD980BA521 /* ContentView.swift in Sources */,
 				28A7C8C9661750E79B806092 /* Models.swift in Sources */,
 				57E43D881FDA3ACE96602F3D /* ParticipantDetailView.swift in Sources */,
+				C4BBC271D684B621D37FD85D /* Theme.swift in Sources */,
 				38695A715EF0360D9B867764 /* ViewExtensions.swift in Sources */,
 				ED7A10670E88FF02C4D63E4B /* initiativeApp.swift in Sources */,
 			);

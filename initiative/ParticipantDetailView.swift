@@ -12,7 +12,7 @@ struct ParticipantDetailView: View {
 
     var body: some View {
         ZStack {
-            Color(red: 0.96, green: 0.94, blue: 0.93)
+            Theme.background
                 .ignoresSafeArea()
 
             if let participant = participant {
@@ -25,24 +25,24 @@ struct ParticipantDetailView: View {
                                         Text(participant.name)
                                             .font(.title2)
                                             .fontWeight(.bold)
-                                            .foregroundColor(Color(red: 0.17, green: 0.15, blue: 0.13))
+                                            .foregroundColor(Theme.textPrimary)
 
                                         Text("Initiative \(participant.initiative)")
                                             .font(.subheadline)
-                                            .foregroundColor(Color(red: 0.65, green: 0.30, blue: 0.24))
+                                            .foregroundColor(Theme.accent)
                                             .fontWeight(.semibold)
                                     }
                                     Spacer()
                                 }
                             }
                             .padding(16)
-                            .background(Color(red: 0.83, green: 0.76, blue: 0.72).opacity(0.2))
+                            .background(Theme.divider.opacity(0.2))
                             .cornerRadius(8)
 
                             VStack(alignment: .leading, spacing: 12) {
                                 Text("Reaction")
                                     .font(.headline)
-                                    .foregroundColor(Color(red: 0.17, green: 0.15, blue: 0.13))
+                                    .foregroundColor(Theme.textPrimary)
 
                                 ReactionToggleView(
                                     isUsed: participant.reactionUsed,
@@ -54,14 +54,14 @@ struct ParticipantDetailView: View {
                                 HStack {
                                     Text("Active Effects")
                                         .font(.headline)
-                                        .foregroundColor(Color(red: 0.17, green: 0.15, blue: 0.13))
+                                        .foregroundColor(Theme.textPrimary)
 
                                     Spacer()
 
                                     Button(action: { showAddEffect = true }) {
                                         Label("Add", systemImage: "plus.circle.fill")
                                             .font(.system(size: 14, weight: .semibold))
-                                            .foregroundColor(Color(red: 0.65, green: 0.30, blue: 0.24))
+                                            .foregroundColor(Theme.accent)
                                     }
                                 }
 
@@ -69,10 +69,10 @@ struct ParticipantDetailView: View {
                                     VStack(spacing: 8) {
                                         Image(systemName: "sparkles")
                                             .font(.system(size: 32))
-                                            .foregroundColor(Color(red: 0.83, green: 0.76, blue: 0.72))
+                                            .foregroundColor(Theme.divider)
                                         Text("No active effects")
                                             .font(.subheadline)
-                                            .foregroundColor(Color(red: 0.60, green: 0.50, blue: 0.45))
+                                            .foregroundColor(Theme.textTertiary)
                                     }
                                     .frame(maxWidth: .infinity, alignment: .center)
                                     .padding(20)
@@ -128,27 +128,27 @@ struct ReactionToggleView: View {
             HStack(spacing: 12) {
                 Image(systemName: isUsed ? "xmark.circle.fill" : "checkmark.circle.fill")
                     .font(.system(size: 20))
-                    .foregroundColor(Color(red: 0.65, green: 0.30, blue: 0.24))
+                    .foregroundColor(Theme.accent)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(isUsed ? "Reaction Used" : "Reaction Available")
                         .font(.subheadline)
                         .fontWeight(.semibold)
-                        .foregroundColor(Color(red: 0.17, green: 0.15, blue: 0.13))
+                        .foregroundColor(Theme.textPrimary)
 
                     Text(isUsed ? "Mark as available" : "Mark as used")
                         .font(.caption)
-                        .foregroundColor(Color(red: 0.60, green: 0.50, blue: 0.45))
+                        .foregroundColor(Theme.textTertiary)
                 }
 
                 Spacer()
 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(Color(red: 0.83, green: 0.76, blue: 0.72))
+                    .foregroundColor(Theme.divider)
             }
             .padding(12)
-            .background(isUsed ? Color(red: 0.83, green: 0.76, blue: 0.72).opacity(0.2) : Color(red: 0.65, green: 0.30, blue: 0.24).opacity(0.1))
+            .background(isUsed ? Theme.divider.opacity(0.2) : Theme.accent.opacity(0.1))
             .cornerRadius(8)
         }
     }
@@ -164,11 +164,11 @@ struct EffectRowView: View {
                 Text(effect.name)
                     .font(.subheadline)
                     .fontWeight(.semibold)
-                    .foregroundColor(Color(red: 0.17, green: 0.15, blue: 0.13))
+                    .foregroundColor(Theme.textPrimary)
 
                 Text(effect.durationType.description)
                     .font(.caption)
-                    .foregroundColor(Color(red: 0.60, green: 0.50, blue: 0.45))
+                    .foregroundColor(Theme.textTertiary)
             }
 
             Spacer()
@@ -176,11 +176,11 @@ struct EffectRowView: View {
             Button(action: onRemove) {
                 Image(systemName: "xmark.circle.fill")
                     .font(.system(size: 16))
-                    .foregroundColor(Color(red: 0.83, green: 0.76, blue: 0.72))
+                    .foregroundColor(Theme.divider)
             }
         }
         .padding(12)
-        .background(Color(red: 0.83, green: 0.76, blue: 0.72).opacity(0.2))
+        .background(Theme.divider.opacity(0.2))
         .cornerRadius(8)
     }
 }
