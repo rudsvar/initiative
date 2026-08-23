@@ -433,8 +433,10 @@ concrete need for more.
 
 Feed of what's happened during the current session — opened from the **Log**
 button in the bottom bar (center, between Previous/Next Turn). Grouped into
-sections by round number, newest round first; entries within a round are
-newest-first too.
+sections by round number, oldest round first; entries within a round are
+chronological too — reads top-to-bottom like a chat log. Opens scrolled to
+the bottom (most recent entry) via `ScrollViewReader`, since that's almost
+always what you want to see first.
 
 **What gets logged**: turn changes ("Alice's turn", "Round 2 began"), damage,
 healing, max-HP increases (including the implicit baseline set when HP

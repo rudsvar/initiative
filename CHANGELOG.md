@@ -5,6 +5,10 @@ All notable changes to this project are documented here, newest first.
 ## [Unreleased]
 
 ### Changed
+- Combat Log now reads chronologically (oldest round/entry first, like a
+  chat log) instead of newest-first, and opens scrolled to the bottom
+  (most recent entry) via `ScrollViewReader` — that's almost always what
+  you want to see first anyway
 - Reaction-used is no longer specially called out with its own text row on
   the main combatant list — it's just another symbol (the red "R"
   `LetterBadge`) alongside the effect condition icons. And that whole status
