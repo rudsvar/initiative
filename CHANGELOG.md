@@ -4,6 +4,36 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Fixed
+- **Main menu "Resume" could show stale, wrong state** (e.g. still red/enabled
+  right after deleting the session it pointed at). Root cause: `canResume` was
+  a computed property calling `SessionStore.resumableSession()`, which reads
+  UserDefaults/disk — state `@Observable` doesn't track. `MainMenuView` is also
+  the `NavigationStack`'s persistent root, so popping back to it doesn't force
+  a re-render on its own; the button kept showing whatever it last rendered.
+  Fixed by making it a real `@State` var refreshed in `.onAppear`. Documented
+  the general pattern in the `ios-hig` skill.
+- Damage/heal amount field on the combatant detail screen was cramped next to
+  the Damage/Heal buttons on narrow widths — amount field now gets its own
+  full-width row, buttons on the row below
+
+### Changed
+- Renamed the "Combatants" preset-management menu entry/screen to **Creatures**
+  — it manages reusable creature templates, not the actual combatants in a
+  session, and shared the same word as the real thing was confusing. Icon
+  changed from `person.3.fill` (implies literal humans) to `pawprint.fill`
+  (reads as "creature" generically — goblins, skeletons, wolves, whatever)
+- Creature presets now also carry an **Initiative Bonus** (flat modifier added
+  to random 1–20 rolls only, never on top of an explicit value) — edited from
+  Main Menu → Creatures, applied silently when adding a combatant whose name
+  matches a preset. `CombatSession.addCombatant`/`addCombatants` both take an
+  `initiativeBonus: Int = 0` parameter now
+- Four more generic starter creatures: Orc, Wolf, Zombie, Guard (alongside the
+  existing Goblin/Skeleton/Thief), each with HP + initiative bonus researched
+  for realism, described only in our own generic terms
+- Load Session: removed the extra confirmation dialog on delete — swipe-to-
+  reveal + tap Delete is already two deliberate actions
+
 ### Added
 - **HP tracking**: opt-in per combatant (`maxHP`/`currentHP` on `Combatant`),
   damage/heal controls and a "Track HP" prompt on the detail screen, HP shown
@@ -27,11 +57,8 @@ All notable changes to this project are documented here, newest first.
 - **Creature presets**: adding a combatant auto-saves/updates a `CreaturePreset`
   by name (`PresetStore`, no explicit save step) — typing a name that matches
   an existing preset auto-fills its HP. Three generic starter presets ship on
-  first launch. Managed from a new Main Menu "Combatants" entry: edit name/HP,
+  first launch. Managed from a new Main Menu "Creatures" entry: edit name/HP,
   swipe to delete with confirmation
-- Previous/Next Turn bar now uses Liquid Glass on iOS 26+ (`GlassEffectContainer`,
-  `.glassProminent` for Next Turn, `.glass` for Previous Turn), gated with
-  `#available(iOS 26.0, *)` and falling back to the existing themed bar below
 - Previous/Next Turn bar now uses Liquid Glass on iOS 26+ (`GlassEffectContainer`,
   `.glassProminent` for Next Turn, `.glass` for Previous Turn), gated with
   `#available(iOS 26.0, *)` and falling back to the existing themed bar below

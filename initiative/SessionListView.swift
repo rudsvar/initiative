@@ -6,7 +6,6 @@ struct SessionListView: View {
     @Binding var path: NavigationPath
 
     @State private var records: [SessionRecord] = []
-    @State private var pendingDeleteRecord: SessionRecord?
 
     var body: some View {
         Group {
@@ -31,8 +30,11 @@ struct SessionListView: View {
                         }
                         .tint(.primary)
                         .swipeActions(edge: .trailing) {
+                            // No extra confirmation dialog here: swipe-to-reveal + tap
+                            // Delete is already two deliberate actions.
                             Button(role: .destructive) {
-                                pendingDeleteRecord = record
+                                sessionStore.delete(id: record.id)
+                                records = sessionStore.listSavedSessions()
                             } label: {
                                 Label("Delete", systemImage: "trash")
                             }
@@ -44,25 +46,6 @@ struct SessionListView: View {
         .navigationTitle("Load Session")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { records = sessionStore.listSavedSessions() }
-        .confirmationDialog(
-            "Delete \"\(pendingDeleteRecord?.name ?? "")\"?",
-            isPresented: Binding(
-                get: { pendingDeleteRecord != nil },
-                set: { if !$0 { pendingDeleteRecord = nil } }
-            ),
-            titleVisibility: .visible
-        ) {
-            Button("Delete", role: .destructive) {
-                if let record = pendingDeleteRecord {
-                    sessionStore.delete(id: record.id)
-                    records = sessionStore.listSavedSessions()
-                }
-                pendingDeleteRecord = nil
-            }
-            Button("Cancel", role: .cancel) {
-                pendingDeleteRecord = nil
-            }
-        }
     }
 
     private func load(_ record: SessionRecord) {

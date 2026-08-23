@@ -166,34 +166,37 @@ struct CombatantDetailView: View {
                                         Spacer()
                                     }
 
-                                    HStack(spacing: 12) {
+                                    VStack(alignment: .leading, spacing: 8) {
                                         TextField("Amount", text: $hpAdjustAmount)
                                             .keyboardType(.numberPad)
                                             .font(.subheadline)
                                             .fontWeight(.semibold)
-                                            .multilineTextAlignment(.center)
                                             .padding(.horizontal, 12)
                                             .padding(.vertical, 8)
-                                            .frame(width: 72)
+                                            .frame(maxWidth: .infinity)
                                             .background(Theme.background)
                                             .overlay(
                                                 RoundedRectangle(cornerRadius: 8)
                                                     .stroke(Theme.divider, lineWidth: 1)
                                             )
 
-                                        Button(action: { applyDamage(to: combatant) }) {
-                                            Label("Damage", systemImage: "minus.circle.fill")
-                                                .font(.system(size: 14, weight: .semibold))
-                                        }
-                                        .foregroundColor(.red)
-                                        .disabled(Int(hpAdjustAmount) == nil)
+                                        HStack(spacing: 12) {
+                                            Button(action: { applyDamage(to: combatant) }) {
+                                                Label("Damage", systemImage: "minus.circle.fill")
+                                                    .font(.system(size: 14, weight: .semibold))
+                                                    .frame(maxWidth: .infinity)
+                                            }
+                                            .foregroundColor(.red)
+                                            .disabled(Int(hpAdjustAmount) == nil)
 
-                                        Button(action: { applyHealing(to: combatant) }) {
-                                            Label("Heal", systemImage: "plus.circle.fill")
-                                                .font(.system(size: 14, weight: .semibold))
+                                            Button(action: { applyHealing(to: combatant) }) {
+                                                Label("Heal", systemImage: "plus.circle.fill")
+                                                    .font(.system(size: 14, weight: .semibold))
+                                                    .frame(maxWidth: .infinity)
+                                            }
+                                            .foregroundColor(.green)
+                                            .disabled(Int(hpAdjustAmount) == nil)
                                         }
-                                        .foregroundColor(.green)
-                                        .disabled(Int(hpAdjustAmount) == nil)
                                     }
                                     .padding(.top, 4)
                                 } else {

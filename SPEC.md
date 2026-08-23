@@ -57,7 +57,7 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 - Every combatant added auto-saves as a reusable preset by name — no explicit
   "save as preset" step
 - A handful of built-in default presets to start from
-- Presets are viewed/edited/deleted from Main Menu → Combatants, not from the
+- Presets are viewed/edited/deleted from Main Menu → Creatures, not from the
   add-combatant flow
 
 ## Core Features
@@ -291,38 +291,54 @@ its UI copy.**
 struct CreaturePreset: Identifiable, Codable {
     let id: UUID
     var name: String
-    var maxHP: Int?       // nil = no default HP, filled in per-spawn like today
+    var maxHP: Int?             // nil = no default HP, filled in per-spawn like today
+    var initiativeBonus: Int?   // nil = no bonus; flat modifier added to random rolls only
 }
 ```
 Stored the same way sessions are — one JSON file per preset under a
 `Presets/` directory, via a small `PresetStore` (same shape as `SessionStore`,
 without the "last active" pointer concept since presets aren't a session).
 
-**Auto-save on add**: whenever a combatant is added (from the add-combatant modal,
-§1), `PresetStore.upsert(name:maxHP:)` creates or updates (case-insensitive name
-match) a preset with that name and HP. For a count>1 spawn, this upserts once using
-the typed base name, not the numbered per-copy names ("Goblin 1", "Goblin 2", ...).
+**Initiative Bonus** — the generic name for "flat modifier added to a random
+initiative roll" (deliberately plain, ruleset-agnostic wording; it's not shown
+as a distinct field in the add-combatant modal, only applied silently there —
+editing it happens in Main Menu → Creatures). Only applies when initiative is
+being rolled (blank in the add modal); an explicitly typed initiative value is
+used exactly as given, bonus ignored. `CombatSession.addCombatant`/
+`addCombatants` both take an `initiativeBonus: Int = 0` parameter for this.
 
-**Editing lives in Main Menu → Combatants**, not in the add flow. That screen:
-list of presets (name + HP), tap to edit (rename / change HP), swipe to delete
-with confirmation. No manual "create new preset" entry point here — presets
-originate from actually adding a combatant in a session; this screen is for
-managing what's accumulated, not authoring from scratch. (Revisit if that turns
-out to be too restrictive in practice.)
+**Auto-save on add**: whenever a combatant is added (from the add-combatant modal,
+§1), `PresetStore.upsert(name:maxHP:initiativeBonus:)` creates or updates
+(case-insensitive name match) a preset with that name/HP. Initiative bonus isn't
+set from the add flow (no field there) — only HP and name upsert on add; bonus is
+edited exclusively from the Creatures screen. For a count>1 spawn, the upsert
+still happens once using the typed base name, not the numbered per-copy names
+("Goblin 1", "Goblin 2", ...).
+
+**Editing lives in Main Menu → Creatures**, not in the add flow. That screen:
+list of presets (name + HP + initiative bonus), tap to edit (rename / change HP /
+change bonus), swipe to delete with confirmation. No manual "create new preset"
+entry point here — presets originate from actually adding a combatant in a
+session; this screen is for managing what's accumulated, not authoring from
+scratch. (Revisit if that turns out to be too restrictive in practice.)
 
 **Default presets** (shipped so the list isn't empty on first launch) — generic
 archetypes, common across fantasy tabletop games generally, not tied to any one
 ruleset. HP values are researched to feel like plausible low-level creature
 toughness, described here in our own generic terms only:
-| Preset | Rough HP | Notes |
-|---|---|---|
-| Goblin | 7 | small, fragile skirmisher archetype |
-| Skeleton | 13 | undead melee archetype, moderately tougher |
-| Thief | 11 | quick, lightly-armored humanoid archetype |
+| Preset | Rough HP | Initiative Bonus | Notes |
+|---|---|---|---|
+| Goblin | 7 | +2 | small, fragile skirmisher archetype |
+| Skeleton | 13 | +2 | undead melee archetype, moderately tougher |
+| Thief | 11 | +3 | quick, lightly-armored humanoid archetype |
+| Orc | 15 | +1 | bulkier melee brute archetype |
+| Wolf | 11 | +2 | fast, fragile beast archetype |
+| Zombie | 22 | −2 | slow, tanky undead archetype |
+| Guard | 11 | +1 | armored humanoid archetype |
 
 **Explicitly out of scope for now**: preset categories/tags, importing/sharing
 preset packs, per-preset default effects, manual preset creation outside the
-add-combatant flow — keep it to name + HP until there's a
+add-combatant flow — keep it to name + HP + initiative bonus until there's a
 concrete need for more.
 
 ## UI/UX Principles

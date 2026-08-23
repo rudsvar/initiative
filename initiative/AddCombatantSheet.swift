@@ -12,6 +12,7 @@ struct AddCombatantSheet: View {
     @State private var initiativeText = ""
     @State private var hpText = ""
     @State private var countText = ""
+    @State private var matchedPresetBonus: Int?
     @FocusState private var nameFieldFocused: Bool
 
     var body: some View {
@@ -65,8 +66,16 @@ struct AddCombatantSheet: View {
     }
 
     private func prefillFromPreset(named newName: String) {
-        guard hpText.isEmpty, let preset = presetStore.preset(named: newName), let maxHP = preset.maxHP else { return }
-        hpText = String(maxHP)
+        guard let preset = presetStore.preset(named: newName) else {
+            matchedPresetBonus = nil
+            return
+        }
+        if hpText.isEmpty, let maxHP = preset.maxHP {
+            hpText = String(maxHP)
+        }
+        // Initiative bonus isn't a visible field here (edited only from Main Menu ->
+        // Combatants) — it's applied silently to random rolls for a matched preset.
+        matchedPresetBonus = preset.initiativeBonus
     }
 
     private func addCombatant() {
@@ -76,11 +85,12 @@ struct AddCombatantSheet: View {
         let initiative = Int(initiativeText)
         let maxHP = Int(hpText)
         let count = max(1, Int(countText) ?? 1)
+        let bonus = matchedPresetBonus ?? 0
 
         if count > 1 {
-            session.addCombatants(name: trimmedName, initiative: initiative, maxHP: maxHP, count: count)
+            session.addCombatants(name: trimmedName, initiative: initiative, maxHP: maxHP, count: count, initiativeBonus: bonus)
         } else {
-            session.addCombatant(name: trimmedName, initiative: initiative ?? Int.random(in: 1...20), maxHP: maxHP)
+            session.addCombatant(name: trimmedName, initiative: initiative, maxHP: maxHP, initiativeBonus: bonus)
         }
         presetStore.upsert(name: trimmedName, maxHP: maxHP)
 

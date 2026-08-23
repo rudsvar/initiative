@@ -315,6 +315,27 @@ final class CombatSessionTests: XCTestCase {
         XCTAssertEqual(session.combatants.count, 1)
     }
 
+    // MARK: - Initiative Bonus
+
+    func testAddCombatantWithNilInitiativeAppliesBonusToRoll() {
+        // Roll is random 1...20, so assert the bonus's effect on the floor/ceiling
+        // rather than an exact value: with bonus +5, result must be in 6...25.
+        session.addCombatant(name: "Goblin", initiative: nil, initiativeBonus: 5)
+        let rolled = session.combatants[0].initiative
+        XCTAssertTrue((6...25).contains(rolled), "expected roll+bonus in 6...25, got \(rolled)")
+    }
+
+    func testAddCombatantWithExplicitInitiativeIgnoresBonus() {
+        session.addCombatant(name: "Goblin", initiative: 10, initiativeBonus: 5)
+        XCTAssertEqual(session.combatants[0].initiative, 10, "explicit value should not have the bonus applied")
+    }
+
+    func testAddCombatantsAppliesBonusToEveryIndependentRoll() {
+        session.addCombatants(name: "Goblin", initiative: nil, maxHP: nil, count: 5, initiativeBonus: 5)
+        let initiatives = session.combatants.map { $0.initiative }
+        XCTAssertTrue(initiatives.allSatisfy { (6...25).contains($0) })
+    }
+
     // MARK: - HP Tracking
 
     func testAddCombatantWithMaxHPSetsCurrentHPToMax() {

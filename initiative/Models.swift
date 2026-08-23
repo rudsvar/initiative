@@ -135,20 +135,27 @@ class CombatSession {
         combatants.sorted { $0.initiative > $1.initiative }
     }
 
-    func addCombatant(name: String, initiative: Int, maxHP: Int? = nil) {
-        let combatant = Combatant(name: name, initiative: initiative, maxHP: maxHP)
+    /// `initiative: nil` rolls 1...20 plus `initiativeBonus` (a flat modifier, e.g. from
+    /// a creature preset). An explicit `initiative` value is used exactly as given —
+    /// the bonus only applies to random rolls, never on top of a deliberate value.
+    func addCombatant(name: String, initiative: Int? = nil, maxHP: Int? = nil, initiativeBonus: Int = 0) {
+        let resolvedInitiative = initiative ?? (Int.random(in: 1...20) + initiativeBonus)
+        let combatant = Combatant(name: name, initiative: resolvedInitiative, maxHP: maxHP)
         combatants.append(combatant)
         combatants.sort { $0.initiative > $1.initiative }
     }
 
     /// Spawns `count` copies of the same creature. Each copy always rolls its own
-    /// random initiative (1...20) — a shared explicit initiative wouldn't make sense
-    /// across multiple entrants, so `count > 1` ignores any single provided value.
-    /// Names get a numeric suffix ("Goblin 1", "Goblin 2", ...) when count > 1.
-    func addCombatants(name: String, initiative: Int?, maxHP: Int?, count: Int) {
+    /// random initiative (1...20 + initiativeBonus) — a shared explicit initiative
+    /// wouldn't make sense across multiple entrants, so `count > 1` ignores any
+    /// single provided value. Names get a numeric suffix ("Goblin 1", "Goblin 2", ...)
+    /// when count > 1.
+    func addCombatants(name: String, initiative: Int?, maxHP: Int?, count: Int, initiativeBonus: Int = 0) {
         guard count > 0 else { return }
         for i in 1...count {
-            let rolledInitiative = count > 1 ? Int.random(in: 1...20) : (initiative ?? Int.random(in: 1...20))
+            let rolledInitiative = count > 1
+                ? Int.random(in: 1...20) + initiativeBonus
+                : (initiative ?? (Int.random(in: 1...20) + initiativeBonus))
             let displayName = count > 1 ? "\(name) \(i)" : name
             combatants.append(Combatant(name: displayName, initiative: rolledInitiative, maxHP: maxHP))
         }

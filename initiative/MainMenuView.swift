@@ -6,9 +6,14 @@ struct MainMenuView: View {
     let presetStore: PresetStore
     @Binding var path: NavigationPath
 
-    private var canResume: Bool {
-        sessionStore.resumableSession() != nil
-    }
+    // Deliberately a stored, explicitly-refreshed @State rather than a computed
+    // property: resumableSession() reads UserDefaults/disk, which @Observable
+    // doesn't track, and MainMenuView is the NavigationStack's persistent root, so
+    // popping back to it (e.g. after deleting a session) doesn't force a re-render
+    // on its own — a computed property here would keep showing stale UI (a
+    // "Resume" button that stayed red after its session was deleted, since body
+    // never re-ran to notice). Refreshed on every appearance instead.
+    @State private var canResume = false
 
     var body: some View {
         ZStack {
@@ -44,7 +49,7 @@ struct MainMenuView: View {
                                 path.append(Route.sessionList)
                             }
 
-                            MenuButton(title: "Combatants", systemImage: "person.3.fill") {
+                            MenuButton(title: "Creatures", systemImage: "pawprint.fill") {
                                 path.append(Route.presetList)
                             }
                         }
@@ -56,6 +61,7 @@ struct MainMenuView: View {
             }
         }
         .navigationBarHidden(true)
+        .onAppear { canResume = sessionStore.resumableSession() != nil }
     }
 
     private func resume() {

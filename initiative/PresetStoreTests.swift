@@ -74,6 +74,26 @@ final class PresetStoreTests: XCTestCase {
         XCTAssertNotNil(store.preset(named: "Goblin"))
     }
 
+    func testSeedDefaultsIncludesInitiativeBonus() {
+        store.seedDefaultsIfEmpty()
+
+        let goblin = store.preset(named: "Goblin")
+        XCTAssertNotNil(goblin?.initiativeBonus)
+        XCTAssertTrue(goblin!.initiativeBonus! > 0)
+    }
+
+    func testUpsertSetsInitiativeBonus() {
+        store.upsert(name: "Goblin", maxHP: 7, initiativeBonus: 2)
+        XCTAssertEqual(store.preset(named: "Goblin")?.initiativeBonus, 2)
+    }
+
+    func testUpsertWithNilInitiativeBonusKeepsPreviousValue() {
+        store.upsert(name: "Goblin", maxHP: 7, initiativeBonus: 2)
+        store.upsert(name: "Goblin", maxHP: 7, initiativeBonus: nil)
+
+        XCTAssertEqual(store.preset(named: "Goblin")?.initiativeBonus, 2)
+    }
+
     func testSeedDefaultsIfEmptyDoesNothingWhenPresetsExist() {
         store.upsert(name: "Custom Creature", maxHP: 20)
 
