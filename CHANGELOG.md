@@ -4,6 +4,49 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Added
+- **Armor Class**: opt-in per combatant (`Combatant.armorClass`,
+  `CreaturePreset.armorClass`), editable everywhere HP already was. Confirmed
+  "AC"/"Armor Class" is a generic tabletop term, not trademarked, before adding
+- **Standard status conditions** (`Conditions.swift`): Blinded, Charmed,
+  Deafened, Frightened, Grappled, Incapacitated, Invisible, Paralyzed,
+  Poisoned, Prone, Restrained, Stunned, Unconscious, Exhausted, Burning,
+  Bleeding — each with an SF Symbol icon + color, quick-picked from a new
+  "Choose Condition" menu in Add Effect. Effect badges (list row + detail
+  screen) now show the matched icon/color instead of a generic sparkle.
+  Confirmed condition names aren't trademarked/copyrighted (single descriptive
+  words like "stunned" aren't ownable) and SF Symbols are licensed for in-app
+  UI use before building this
+- **DM/Player view toggle**: HP is no longer shown on the main combatant list
+  at all (regardless of the toggle) — just name/initiative/reaction/effects.
+  The detail screen's eye icon (also mirrored in the toolbar) switches between
+  exact DM view (editable HP/AC, damage/heal controls) and player view (a
+  single approximate health band — Healthy/Wounded/Critical/Dead, deliberately
+  generic wording — with AC hidden entirely). `CombatSession.playerViewEnabled`
+  is a live UI mode, not persisted
+- **Encounters**: prepare a named creature list ahead of time (Main Menu →
+  Encounters), then start a session already populated with it via a new
+  "Fresh Session" vs. saved-encounter chooser on "New Session". Entries are
+  stat snapshots, not live preset references, so editing/deleting a preset
+  later doesn't retroactively change an existing encounter. Initiative is
+  always rolled fresh per combatant at session start, never stored in the
+  encounter
+- Creatures screen: can now create a new preset directly (top-right "+"), not
+  just edit ones that originated from adding a combatant in a session
+- Session title field now selects all its text on focus (`SelectAllTextField`,
+  a small `UITextField` bridge — plain SwiftUI `TextField` has no pre-iOS-18
+  way to do this) so renaming doesn't require manually clearing the old value
+- Explicitly excluded per direct instruction: legendary/lair actions, held/
+  delayed turns, private per-combatant notes
+
+### Fixed
+- Main menu button icons had different intrinsic widths (play vs. pawprint vs.
+  shield glyphs), so button text started at a different x-offset per button —
+  fixed with a fixed-width icon frame so all button labels align
+- Previous/Next Turn buttons shortened to "Previous"/"Next" (dropped the
+  redundant "Turn" — implied by context) and toolbar "Add" became a plus icon,
+  matching standard iOS conventions
+
 ### Changed
 - **Reaction tracking reimplemented internally as a regular effect.** Using a
   reaction now appends an `Effect(.untilStartOfTheirTurn, isReactionMarker: true)`

@@ -60,6 +60,26 @@ struct CombatantDetailView: View {
         )
     }
 
+    private var armorClassBinding: Binding<String> {
+        Binding(
+            get: { combatant?.armorClass.map(String.init) ?? "" },
+            set: { newValue in
+                guard let index = session.combatants.firstIndex(where: { $0.id == combatantId }) else { return }
+                session.combatants[index].armorClass = Int(newValue)
+            }
+        )
+    }
+
+    /// Generic health bands for player-view mode — no exact numbers, just a rough
+    /// read, and deliberately not using tabletop RPG-specific terminology like "Bloodied".
+    private func healthBand(current: Int, max: Int) -> (label: String, color: Color) {
+        if current <= 0 { return ("Dead", .black) }
+        let fraction = Double(current) / Double(max)
+        if fraction > 0.5 { return ("Healthy", .green) }
+        if fraction > 0.25 { return ("Wounded", .orange) }
+        return ("Critical", .red)
+    }
+
     var body: some View {
         ZStack {
             Theme.background
@@ -104,6 +124,26 @@ struct CombatantDetailView: View {
                                             .stroke(Theme.divider, lineWidth: 1)
                                     )
 
+                                if !session.playerViewEnabled {
+                                    Text("Armor Class")
+                                        .font(.caption)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(Theme.textTertiary)
+                                    TextField("Optional", text: armorClassBinding)
+                                        .keyboardType(.numberPad)
+                                        .font(.subheadline)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(Theme.accent)
+                                        .padding(.horizontal, 12)
+                                        .padding(.vertical, 8)
+                                        .frame(width: 88)
+                                        .background(Theme.background)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 8)
+                                                .stroke(Theme.divider, lineWidth: 1)
+                                        )
+                                }
+
                                 if combatant.isDead {
                                     DeadBadge()
                                 }
@@ -113,11 +153,30 @@ struct CombatantDetailView: View {
                             .cornerRadius(8)
 
                             VStack(alignment: .leading, spacing: 12) {
-                                Text("Health")
-                                    .font(.headline)
-                                    .foregroundColor(Theme.textPrimary)
+                                HStack {
+                                    Text("Health")
+                                        .font(.headline)
+                                        .foregroundColor(Theme.textPrimary)
+                                    Spacer()
+                                    Button(action: { session.playerViewEnabled.toggle() }) {
+                                        Image(systemName: session.playerViewEnabled ? "eye.slash.fill" : "eye.fill")
+                                            .foregroundColor(Theme.textTertiary)
+                                    }
+                                }
 
-                                if combatant.maxHP != nil {
+                                if session.playerViewEnabled {
+                                    if let current = combatant.currentHP, let maxHP = combatant.maxHP {
+                                        let band = healthBand(current: current, max: maxHP)
+                                        Text(band.label)
+                                            .font(.title3)
+                                            .fontWeight(.bold)
+                                            .foregroundColor(band.color)
+                                    } else {
+                                        Text("Not tracked")
+                                            .font(.subheadline)
+                                            .foregroundColor(Theme.textTertiary)
+                                    }
+                                } else if combatant.maxHP != nil {
                                     HStack(spacing: 12) {
                                         VStack(alignment: .leading, spacing: 4) {
                                             Text("Current")
@@ -378,8 +437,17 @@ struct EffectRowView: View {
     let effect: Effect
     let onRemove: () -> Void
 
+    private var condition: StandardCondition? {
+        ConditionLibrary.matching(name: effect.name)
+    }
+
     var body: some View {
         HStack(spacing: 12) {
+            Image(systemName: condition?.symbolName ?? "sparkles")
+                .font(.system(size: 18))
+                .foregroundColor(condition?.color ?? Theme.accent)
+                .frame(width: 22)
+
             VStack(alignment: .leading, spacing: 4) {
                 Text(effect.name)
                     .font(.subheadline)

@@ -54,11 +54,23 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 - ✅ Clear "dead" indicator when HP reaches 0
 
 ### Phase 4: Preset Creatures
-- Every combatant added auto-saves as a reusable preset by name — no explicit
+- ✅ Every combatant added auto-saves as a reusable preset by name — no explicit
   "save as preset" step
-- A handful of built-in default presets to start from
-- Presets are viewed/edited/deleted from Main Menu → Creatures, not from the
+- ✅ A handful of built-in default presets to start from
+- ✅ Presets are viewed/edited/deleted from Main Menu → Creatures, not from the
   add-combatant flow
+
+### Phase 5: DM-side Prep & Play Tools
+- ✅ Armor Class, opt-in per combatant (like HP)
+- ✅ Standard status conditions (stunned, paralyzed, poisoned, etc.) with SF
+  Symbol icons + colors, quick-picked in the Add Effect flow
+- ✅ DM/player view toggle: HP is never shown on the main combatant list; the
+  detail screen defaults to exact numbers (DM view) and can be toggled to
+  approximate health bands + hidden AC (player view) via an eye icon
+- ✅ Pre-made named Encounters: prepare a creature list ahead of time, start a
+  session already populated with it from the Main Menu's "New Session" chooser
+- Explicitly excluded (per direct instruction): legendary/lair actions, held/
+  delayed turns, private per-combatant notes
 
 ## Core Features
 
@@ -366,11 +378,11 @@ still happens once using the typed base name, not the numbered per-copy names
 ("Goblin 1", "Goblin 2", ...).
 
 **Editing lives in Main Menu → Creatures**, not in the add flow. That screen:
-list of presets (name + HP + initiative bonus), tap to edit (rename / change HP /
-change bonus), swipe to delete with confirmation. No manual "create new preset"
-entry point here — presets originate from actually adding a combatant in a
-session; this screen is for managing what's accumulated, not authoring from
-scratch. (Revisit if that turns out to be too restrictive in practice.)
+list of presets (name + HP + AC + initiative bonus), tap to edit, swipe to
+delete (no confirmation dialog — swipe + tap is already two deliberate
+actions), and a top-right "+" to create one directly (name/HP/AC/initiative
+bonus, same fields as editing) — presets don't have to originate from actually
+adding a combatant in a session; either path works.
 
 **Default presets** (shipped so the list isn't empty on first launch) — generic
 archetypes, common across fantasy tabletop games generally, not tied to any one
@@ -431,6 +443,83 @@ the log for a turn that's no longer considered to have happened.
 **Persisted** with the session (`SessionRecord.log`, optional for backward
 compatibility with sessions saved before this existed — decodes as an empty
 log). Cleared on `New Session`.
+
+### 10. Armor Class
+
+Opt-in per combatant, mirrors HP (`Combatant.armorClass: Int?`, `CreaturePreset.
+armorClass: Int?`). Editable from the combatant detail screen (alongside Name/
+Initiative), the add-combatant modal, and the Creatures/Encounters editors.
+"Armor Class"/"AC" is a generic mechanical term used across many tabletop
+systems — not trademarked, confirmed before adding this.
+
+### 11. Standard Conditions
+
+`ConditionLibrary` (`Conditions.swift`) ships a fixed list of standard status
+conditions — Blinded, Charmed, Deafened, Frightened, Grappled, Incapacitated,
+Invisible, Paralyzed, Poisoned, Prone, Restrained, Stunned, Unconscious,
+Exhausted, Burning, Bleeding — each with an SF Symbol icon + color. Plain
+generic English condition words, not trademarked or ruleset-specific (single
+descriptive words like "stunned" aren't ownable), and SF Symbols are licensed
+for in-app UI use on Apple platforms (not for app icons/logos, which doesn't
+apply here).
+
+- **Add Effect** gets a "Choose Condition" menu above the free-text name field
+  — picking one fills the name; the free-text field still accepts anything
+  custom, conditions are a convenience, not a restriction
+- Effect badges (combatant list row, "Active Effects" on the detail screen)
+  look up the effect's name against the library (case-insensitive) and show
+  the matching icon/color; unrecognized/custom effect names fall back to a
+  generic sparkle icon in the theme accent color
+- No new duration mechanism — conditions use the same four `DurationType`
+  cases (and auto-expiry) as any other effect
+
+Explicitly excluded from this app: legendary/lair actions (tabletop RPG-specific
+mechanic, no generic equivalent worth building), held/delayed turns, private
+per-combatant notes — all considered and declined on direct instruction.
+
+### 12. DM / Player View
+
+A single eye-icon toggle (`CombatSession.playerViewEnabled`, not persisted —
+always starts in DM view on load/resume) controls whether HP/AC show exact
+numbers or an approximate read, for when the DM's screen is visible to players.
+
+- **Main combatant list never shows HP or AC at all**, regardless of the
+  toggle — it only ever shows name, initiative, reaction status, and active
+  effects. This isn't the player-view feature; it's a permanent decision to
+  keep the main screen spoiler-free
+- **Combatant detail screen** has its own eye icon next to "Health": DM view
+  (default) shows editable exact Current/Max HP and Armor Class fields, plus
+  the damage/heal/increase-max-HP controls. Player view replaces all of that
+  with a single read-only health band — **Healthy** / **Wounded** / **Critical**
+  / **Dead** (deliberately generic wording, not tabletop RPG's "Bloodied") — and hides
+  Armor Class entirely. Toggling back to DM view restores full editing
+- The toolbar also carries the same toggle (affects `session.playerViewEnabled`
+  globally, so it's consistent whichever screen you toggle it from)
+
+### 13. Encounters
+
+Prepare a named creature list ahead of time, then start a session already
+populated with it — for prep before a session instead of adding combatants
+one at a time at the table.
+
+**Data model**: `Encounter { id, name, entries: [EncounterEntry] }`,
+`EncounterEntry { id, name, maxHP?, armorClass?, initiativeBonus?, count }`.
+Entries are **snapshots**, not live references to a `CreaturePreset` — editing
+or deleting a preset later doesn't retroactively change an encounter that used
+it. `EncounterStore` persists one JSON file per encounter, mirroring `SessionStore`/
+`PresetStore`.
+
+- **Main Menu → Encounters**: create/edit/delete encounters. Editing an
+  encounter lets you add creatures either by picking a saved preset (prefills
+  name/HP/AC/initiative bonus) or typing custom values directly, plus a count
+  per entry; swipe to delete an entry or the whole encounter (no extra
+  confirmation dialog, matching the pattern used elsewhere)
+- **Starting from one**: Main Menu → **New Session** now opens a chooser
+  (`confirmationDialog`) — "Fresh Session" or any saved encounter by name.
+  Picking an encounter resets the session then calls `addCombatants` once per
+  entry; initiative is always rolled fresh per combatant at start time (never
+  stored in the encounter itself) — an encounter is a creature list, not a
+  frozen turn order
 
 ## UI/UX Principles
 

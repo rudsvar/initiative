@@ -11,6 +11,30 @@ struct AddEffectView: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section("Condition") {
+                    Menu {
+                        ForEach(ConditionLibrary.all) { condition in
+                            Button {
+                                effectName = condition.name
+                            } label: {
+                                Label(condition.name, systemImage: condition.symbolName)
+                            }
+                        }
+                    } label: {
+                        HStack {
+                            Text("Choose Condition")
+                            Spacer()
+                            if let matched = ConditionLibrary.matching(name: effectName) {
+                                Label(matched.name, systemImage: matched.symbolName)
+                                    .foregroundColor(matched.color)
+                            } else {
+                                Text("Custom")
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
+                }
+
                 Section("Effect Name") {
                     TextField("e.g., Stunned, Poisoned", text: $effectName)
                 }

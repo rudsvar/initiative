@@ -570,6 +570,23 @@ final class CombatSessionTests: XCTestCase {
         XCTAssertTrue(session.log[0].text.contains("Goblin"))
     }
 
+    // MARK: - Armor Class
+
+    func testAddCombatantSetsArmorClass() {
+        session.addCombatant(name: "Guard", initiative: 10, armorClass: 16)
+        XCTAssertEqual(session.combatants[0].armorClass, 16)
+    }
+
+    func testAddCombatantWithoutArmorClassLeavesNil() {
+        session.addCombatant(name: "Guard", initiative: 10)
+        XCTAssertNil(session.combatants[0].armorClass)
+    }
+
+    func testAddCombatantsAppliesArmorClassToEveryCopy() {
+        session.addCombatants(name: "Guard", initiative: nil, maxHP: nil, armorClass: 16, count: 3)
+        XCTAssertTrue(session.combatants.allSatisfy { $0.armorClass == 16 })
+    }
+
     // MARK: - Initiative Bonus
 
     func testAddCombatantWithNilInitiativeAppliesBonusToRoll() {

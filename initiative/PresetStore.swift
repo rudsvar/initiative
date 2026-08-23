@@ -5,14 +5,16 @@ struct CreaturePreset: Identifiable, Codable, Equatable {
     let id: UUID
     var name: String
     var maxHP: Int?
+    var armorClass: Int?
     /// Flat modifier added to a random 1...20 roll when spawning from this preset.
     /// Only applies when initiative is rolled, never on top of an explicit value.
     var initiativeBonus: Int?
 
-    init(id: UUID = UUID(), name: String, maxHP: Int? = nil, initiativeBonus: Int? = nil) {
+    init(id: UUID = UUID(), name: String, maxHP: Int? = nil, armorClass: Int? = nil, initiativeBonus: Int? = nil) {
         self.id = id
         self.name = name
         self.maxHP = maxHP
+        self.armorClass = armorClass
         self.initiativeBonus = initiativeBonus
     }
 }
@@ -65,15 +67,16 @@ class PresetStore {
     /// Creates a new preset or updates the existing one with a case-insensitive
     /// matching name. Called automatically whenever a combatant is added, so
     /// creature "kinds" become reusable without any explicit save action.
-    func upsert(name: String, maxHP: Int?, initiativeBonus: Int? = nil) {
+    func upsert(name: String, maxHP: Int?, armorClass: Int? = nil, initiativeBonus: Int? = nil) {
         let trimmed = name.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { return }
         if var existing = preset(named: trimmed) {
             existing.maxHP = maxHP ?? existing.maxHP
+            existing.armorClass = armorClass ?? existing.armorClass
             existing.initiativeBonus = initiativeBonus ?? existing.initiativeBonus
             save(existing)
         } else {
-            save(CreaturePreset(name: trimmed, maxHP: maxHP, initiativeBonus: initiativeBonus))
+            save(CreaturePreset(name: trimmed, maxHP: maxHP, armorClass: armorClass, initiativeBonus: initiativeBonus))
         }
     }
 
@@ -82,26 +85,32 @@ class PresetStore {
     func seedDefaultsIfEmpty() {
         guard listPresets().isEmpty else { return }
         for defaultPreset in CreaturePreset.defaults {
-            save(CreaturePreset(name: defaultPreset.name, maxHP: defaultPreset.maxHP, initiativeBonus: defaultPreset.initiativeBonus))
+            save(CreaturePreset(
+                name: defaultPreset.name,
+                maxHP: defaultPreset.maxHP,
+                armorClass: defaultPreset.armorClass,
+                initiativeBonus: defaultPreset.initiativeBonus
+            ))
         }
     }
 }
 
 extension CreaturePreset {
-    /// Generic fantasy-archetype starter presets — HP and initiative bonus figures
-    /// chosen to feel like plausible low-level creature stats, expressed only in our
-    /// own generic terms (no naming/reference to any specific tabletop ruleset).
-    static let defaults: [(name: String, maxHP: Int, initiativeBonus: Int)] = [
-        ("Goblin", 7, 2),
-        ("Skeleton", 13, 2),
-        ("Thief", 11, 3),
-        ("Orc", 15, 1),
-        ("Wolf", 11, 2),
-        ("Zombie", 22, -2),
-        ("Guard", 11, 1),
-        ("Ogre", 59, -1),
-        ("Giant Spider", 26, 3),
-        ("Giant Rat", 7, 2),
-        ("Cultist", 9, 1),
+    /// Generic fantasy-archetype starter presets — HP, AC, and initiative bonus
+    /// figures chosen to feel like plausible low-level creature stats, expressed
+    /// only in our own generic terms (no naming/reference to any specific
+    /// tabletop ruleset).
+    static let defaults: [(name: String, maxHP: Int, armorClass: Int, initiativeBonus: Int)] = [
+        ("Goblin", 7, 15, 2),
+        ("Skeleton", 13, 13, 2),
+        ("Thief", 11, 12, 3),
+        ("Orc", 15, 13, 1),
+        ("Wolf", 11, 13, 2),
+        ("Zombie", 22, 8, -2),
+        ("Guard", 11, 16, 1),
+        ("Ogre", 59, 11, -1),
+        ("Giant Spider", 26, 14, 3),
+        ("Giant Rat", 7, 12, 2),
+        ("Cultist", 9, 12, 1),
     ]
 }

@@ -1,8 +1,8 @@
 import SwiftUI
 
-/// Browse/edit/delete accumulated creature presets. Presets are created automatically
-/// by adding combatants in a session (see AddCombatantSheet) — this screen manages
-/// what's already there rather than authoring new ones from scratch.
+/// Browse/edit/delete creature presets. Presets accumulate automatically as
+/// combatants are added in a session (see AddCombatantSheet), and can also be
+/// created directly here.
 struct PresetListView: View {
     let presetStore: PresetStore
 
@@ -15,7 +15,7 @@ struct PresetListView: View {
                 ContentUnavailableView(
                     "No Creatures Yet",
                     systemImage: "pawprint",
-                    description: Text("Combatants you add during a session are saved here automatically for reuse.")
+                    description: Text("Add one here, or add a combatant during a session — it's saved here automatically.")
                 )
             } else {
                 List {
@@ -28,6 +28,11 @@ struct PresetListView: View {
                                 VStack(alignment: .trailing, spacing: 2) {
                                     if let maxHP = preset.maxHP {
                                         Text("\(maxHP) HP")
+                                            .font(.subheadline)
+                                            .foregroundColor(.secondary)
+                                    }
+                                    if let armorClass = preset.armorClass {
+                                        Text("AC \(armorClass)")
                                             .font(.subheadline)
                                             .foregroundColor(.secondary)
                                     }
@@ -57,6 +62,14 @@ struct PresetListView: View {
         }
         .navigationTitle("Creatures")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: { editingPreset = CreaturePreset(name: "") }) {
+                    Image(systemName: "plus")
+                }
+                .accessibilityLabel("New Creature")
+            }
+        }
         .onAppear { presets = presetStore.listPresets() }
         .sheet(item: $editingPreset) { preset in
             EditPresetView(presetStore: presetStore, preset: preset) {
@@ -74,6 +87,7 @@ private struct EditPresetView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var name: String
     @State private var hpText: String
+    @State private var acText: String
     @State private var bonusText: String
 
     init(presetStore: PresetStore, preset: CreaturePreset, onSave: @escaping () -> Void) {
@@ -82,6 +96,7 @@ private struct EditPresetView: View {
         self.onSave = onSave
         _name = State(initialValue: preset.name)
         _hpText = State(initialValue: preset.maxHP.map(String.init) ?? "")
+        _acText = State(initialValue: preset.armorClass.map(String.init) ?? "")
         _bonusText = State(initialValue: preset.initiativeBonus.map(String.init) ?? "")
     }
 
@@ -95,12 +110,16 @@ private struct EditPresetView: View {
                     TextField("Optional", text: $hpText)
                         .keyboardType(.numberPad)
                 }
+                Section("Armor Class") {
+                    TextField("Optional", text: $acText)
+                        .keyboardType(.numberPad)
+                }
                 Section("Initiative Bonus") {
                     TextField("Optional, added to random rolls", text: $bonusText)
                         .keyboardType(.numbersAndPunctuation)
                 }
             }
-            .navigationTitle("Edit Creature")
+            .navigationTitle(preset.name.isEmpty ? "New Creature" : "Edit Creature")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -111,6 +130,7 @@ private struct EditPresetView: View {
                         var updated = preset
                         updated.name = name.trimmingCharacters(in: .whitespaces)
                         updated.maxHP = Int(hpText)
+                        updated.armorClass = Int(acText)
                         updated.initiativeBonus = Int(bonusText)
                         guard !updated.name.isEmpty else { return }
                         presetStore.save(updated)

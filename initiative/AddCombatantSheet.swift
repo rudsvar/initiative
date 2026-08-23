@@ -11,6 +11,7 @@ struct AddCombatantSheet: View {
     @State private var name = ""
     @State private var initiativeText = ""
     @State private var hpText = ""
+    @State private var acText = ""
     @State private var countText = ""
     @State private var matchedPresetBonus: Int?
     @State private var presets: [CreaturePreset] = []
@@ -46,6 +47,11 @@ struct AddCombatantSheet: View {
 
                 Section("Max HP") {
                     TextField("Optional", text: $hpText)
+                        .keyboardType(.numberPad)
+                }
+
+                Section("Armor Class") {
+                    TextField("Optional", text: $acText)
                         .keyboardType(.numberPad)
                 }
 
@@ -93,6 +99,7 @@ struct AddCombatantSheet: View {
     private func selectPreset(_ preset: CreaturePreset) {
         name = preset.name
         hpText = preset.maxHP.map(String.init) ?? ""
+        acText = preset.armorClass.map(String.init) ?? ""
         matchedPresetBonus = preset.initiativeBonus
     }
 
@@ -103,6 +110,9 @@ struct AddCombatantSheet: View {
         }
         if hpText.isEmpty, let maxHP = preset.maxHP {
             hpText = String(maxHP)
+        }
+        if acText.isEmpty, let armorClass = preset.armorClass {
+            acText = String(armorClass)
         }
         // Initiative bonus isn't a visible field here (edited only from Main Menu ->
         // Combatants) — it's applied silently to random rolls for a matched preset.
@@ -115,15 +125,16 @@ struct AddCombatantSheet: View {
 
         let initiative = Int(initiativeText)
         let maxHP = Int(hpText)
+        let armorClass = Int(acText)
         let count = max(1, Int(countText) ?? 1)
         let bonus = matchedPresetBonus ?? 0
 
         if count > 1 {
-            session.addCombatants(name: trimmedName, initiative: initiative, maxHP: maxHP, count: count, initiativeBonus: bonus)
+            session.addCombatants(name: trimmedName, initiative: initiative, maxHP: maxHP, armorClass: armorClass, count: count, initiativeBonus: bonus)
         } else {
-            session.addCombatant(name: trimmedName, initiative: initiative, maxHP: maxHP, initiativeBonus: bonus)
+            session.addCombatant(name: trimmedName, initiative: initiative, maxHP: maxHP, armorClass: armorClass, initiativeBonus: bonus)
         }
-        presetStore.upsert(name: trimmedName, maxHP: maxHP)
+        presetStore.upsert(name: trimmedName, maxHP: maxHP, armorClass: armorClass)
 
         isPresented = false
     }

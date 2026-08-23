@@ -64,7 +64,7 @@ struct ContentView: View {
                             Button(action: { session.previousTurn() }) {
                                 HStack(spacing: 4) {
                                     Image(systemName: "chevron.left")
-                                    Text("Previous Turn")
+                                    Text("Previous")
                                 }
                                 .font(.system(size: 14, weight: .semibold))
                             }
@@ -81,7 +81,7 @@ struct ContentView: View {
 
                             Button(action: { session.nextTurn() }) {
                                 HStack(spacing: 4) {
-                                    Text("Next Turn")
+                                    Text("Next")
                                     Image(systemName: "chevron.right")
                                 }
                                 .font(.system(size: 14, weight: .semibold))
@@ -98,7 +98,7 @@ struct ContentView: View {
                         Button(action: { session.previousTurn() }) {
                             HStack(spacing: 4) {
                                 Image(systemName: "chevron.left")
-                                Text("Previous Turn")
+                                Text("Previous")
                             }
                             .font(.system(size: 14, weight: .semibold))
                         }
@@ -115,7 +115,7 @@ struct ContentView: View {
 
                         Button(action: { session.nextTurn() }) {
                             HStack(spacing: 4) {
-                                Text("Next Turn")
+                                Text("Next")
                                 Image(systemName: "chevron.right")
                             }
                             .font(.system(size: 14, weight: .semibold))
@@ -143,15 +143,22 @@ struct ContentView: View {
             }
 
             ToolbarItem(placement: .principal) {
-                TextField("Session Name", text: nameBinding)
-                    .font(.headline)
-                    .foregroundColor(Theme.textPrimary)
-                    .multilineTextAlignment(.center)
-                    .submitLabel(.done)
+                SelectAllTextField(text: nameBinding, placeholder: "Session Name")
+                    .frame(width: 200)
             }
 
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button("Add") { showAddCombatant = true }
+                Button(action: { session.playerViewEnabled.toggle() }) {
+                    Image(systemName: session.playerViewEnabled ? "eye.slash.fill" : "eye.fill")
+                }
+                .accessibilityLabel(session.playerViewEnabled ? "Showing approximate status (player view)" : "Showing exact status (DM view)")
+            }
+
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button(action: { showAddCombatant = true }) {
+                    Image(systemName: "plus")
+                }
+                .accessibilityLabel("Add Combatant")
             }
         }
         .onDisappear { autosave() }
@@ -202,16 +209,6 @@ struct CombatantRow: View {
     let combatant: Combatant
     let isCurrent: Bool
 
-    private var hpColor: Color {
-        guard let current = combatant.currentHP, let maxHP = combatant.maxHP, maxHP > 0 else {
-            return Theme.textTertiary
-        }
-        let fraction = Double(current) / Double(maxHP)
-        if fraction > 0.5 { return .green }
-        if fraction > 0.25 { return .orange }
-        return .red
-    }
-
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 12) {
@@ -232,19 +229,14 @@ struct CombatantRow: View {
                         }
                     }
 
-                    HStack(spacing: 8) {
-                        Text("Init \(combatant.initiative)")
-                            .font(.caption)
-                            .foregroundColor(Theme.accent)
-                            .fontWeight(.semibold)
-
-                        if let current = combatant.currentHP, let maxHP = combatant.maxHP {
-                            Text("HP \(current)/\(maxHP)")
-                                .font(.caption)
-                                .fontWeight(.semibold)
-                                .foregroundColor(hpColor)
-                        }
-                    }
+                    // HP intentionally not shown here — main list stays spoiler-free
+                    // even with the screen visible to players; see the combatant
+                    // detail screen for HP (exact for the DM, or approximate with
+                    // the eye-icon player-view toggle on).
+                    Text("Init \(combatant.initiative)")
+                        .font(.caption)
+                        .foregroundColor(Theme.accent)
+                        .fontWeight(.semibold)
 
                     // On its own row (not appended after Init/HP) so it lands at the
                     // same horizontal position across every row, regardless of
@@ -271,10 +263,11 @@ struct CombatantRow: View {
             if !combatant.visibleEffects.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
                     ForEach(combatant.visibleEffects) { effect in
+                        let condition = ConditionLibrary.matching(name: effect.name)
                         HStack(spacing: 8) {
-                            Image(systemName: "sparkles")
+                            Image(systemName: condition?.symbolName ?? "sparkles")
                                 .font(.caption)
-                                .foregroundColor(Theme.accent)
+                                .foregroundColor(condition?.color ?? Theme.accent)
                             Text(effect.name)
                                 .font(.caption)
                                 .foregroundColor(Theme.textTertiary)

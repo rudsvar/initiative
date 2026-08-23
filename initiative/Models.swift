@@ -7,6 +7,7 @@ struct Combatant: Identifiable, Codable {
     var effects: [Effect] = []
     var maxHP: Int?
     var currentHP: Int?
+    var armorClass: Int?
 
     /// Reaction tracking is implemented as a regular effect (untilStartOfTheirTurn,
     /// marked internal) rather than its own stored field, so it expires through the
@@ -27,12 +28,13 @@ struct Combatant: Identifiable, Codable {
         return currentHP <= 0
     }
 
-    init(id: UUID = UUID(), name: String, initiative: Int, maxHP: Int? = nil) {
+    init(id: UUID = UUID(), name: String, initiative: Int, maxHP: Int? = nil, armorClass: Int? = nil) {
         self.id = id
         self.name = name
         self.initiative = initiative
         self.maxHP = maxHP
         self.currentHP = maxHP
+        self.armorClass = armorClass
     }
 }
 
@@ -159,6 +161,11 @@ class CombatSession {
     var roundNumber: Int = 1
     private(set) var log: [LogEntry] = []
 
+    /// When true, HP/AC display shows approximate bands instead of exact numbers
+    /// (for when the DM's screen is visible to players). A live, per-session UI
+    /// mode, not persisted — always starts false (DM view) on load/resume.
+    var playerViewEnabled = false
+
     /// Identity of this session's on-disk record — stable across autosaves so
     /// repeated saves overwrite the same file instead of piling up duplicates.
     private(set) var id = UUID()
@@ -201,9 +208,9 @@ class CombatSession {
     /// `initiative: nil` rolls 1...20 plus `initiativeBonus` (a flat modifier, e.g. from
     /// a creature preset). An explicit `initiative` value is used exactly as given —
     /// the bonus only applies to random rolls, never on top of a deliberate value.
-    func addCombatant(name: String, initiative: Int? = nil, maxHP: Int? = nil, initiativeBonus: Int = 0) {
+    func addCombatant(name: String, initiative: Int? = nil, maxHP: Int? = nil, armorClass: Int? = nil, initiativeBonus: Int = 0) {
         let resolvedInitiative = initiative ?? (Int.random(in: 1...20) + initiativeBonus)
-        let combatant = Combatant(name: name, initiative: resolvedInitiative, maxHP: maxHP)
+        let combatant = Combatant(name: name, initiative: resolvedInitiative, maxHP: maxHP, armorClass: armorClass)
         combatants.append(combatant)
         combatants.sort { $0.initiative > $1.initiative }
         appendLog("\(name) added to combat (initiative \(resolvedInitiative))")
@@ -223,13 +230,13 @@ class CombatSession {
     /// used as-is for every copy (no per-copy randomization — if you typed a number,
     /// that's what they all get). Names get a numeric suffix ("Goblin 1", "Goblin 2",
     /// ...) when count > 1.
-    func addCombatants(name: String, initiative: Int?, maxHP: Int?, count: Int, initiativeBonus: Int = 0) {
+    func addCombatants(name: String, initiative: Int?, maxHP: Int?, armorClass: Int? = nil, count: Int, initiativeBonus: Int = 0) {
         guard count > 0 else { return }
         var spawned: [Combatant] = []
         for i in 1...count {
             let resolvedInitiative = initiative ?? (Int.random(in: 1...20) + initiativeBonus)
             let displayName = count > 1 ? "\(name) \(i)" : name
-            spawned.append(Combatant(name: displayName, initiative: resolvedInitiative, maxHP: maxHP))
+            spawned.append(Combatant(name: displayName, initiative: resolvedInitiative, maxHP: maxHP, armorClass: armorClass))
         }
         combatants.append(contentsOf: spawned)
         combatants.sort { $0.initiative > $1.initiative }
