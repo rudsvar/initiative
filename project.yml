@@ -19,6 +19,7 @@ targets:
       - path: initiative
         includes:
           - "*.swift"
+          - "!*Tests.swift"
     resources:
       - path: initiative/Assets.xcassets
     settings:
@@ -48,6 +49,16 @@ targets:
         UIImageName: ""
         UIImageRespectsSafeAreaInsets: false
 
+  initiativeTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: initiative
+        includes:
+          - "*Tests.swift"
+    dependencies:
+      - target: initiative
+
 schemes:
   initiative:
     build:
@@ -56,6 +67,8 @@ schemes:
     run:
       config: Debug
     test:
+      targets:
+        - initiativeTests
       config: Debug
     profile:
       config: Release
