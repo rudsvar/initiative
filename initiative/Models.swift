@@ -181,6 +181,16 @@ class CombatSession {
         combatants[index].currentHP = min(maxHP, current + amount)
     }
 
+    /// Raises both max and current HP by `amount` (a temporary buff, leveling up,
+    /// etc. — the kind of boost that also tops you up, not just a higher ceiling).
+    func increaseMaxHP(for id: UUID, amount: Int) {
+        guard amount > 0, let index = combatants.firstIndex(where: { $0.id == id }),
+              let maxHP = combatants[index].maxHP,
+              let current = combatants[index].currentHP else { return }
+        combatants[index].maxHP = maxHP + amount
+        combatants[index].currentHP = current + amount
+    }
+
     func removeCombatant(id: UUID) {
         guard let index = combatants.firstIndex(where: { $0.id == id }) else { return }
         combatants.remove(at: index)

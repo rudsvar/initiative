@@ -430,6 +430,48 @@ final class CombatSessionTests: XCTestCase {
         XCTAssertEqual(session.combatants[0].currentHP, 5)
     }
 
+    func testIncreaseMaxHPRaisesBothMaxAndCurrent() {
+        session.addCombatant(name: "Goblin", initiative: 10, maxHP: 10)
+        let id = session.combatants[0].id
+        session.applyDamage(to: id, amount: 4) // current 6/10
+
+        session.increaseMaxHP(for: id, amount: 5)
+
+        XCTAssertEqual(session.combatants[0].maxHP, 15)
+        XCTAssertEqual(session.combatants[0].currentHP, 11)
+    }
+
+    func testIncreaseMaxHPOnUntrackedCombatantDoesNothing() {
+        session.addCombatant(name: "Goblin", initiative: 10)
+        let id = session.combatants[0].id
+
+        session.increaseMaxHP(for: id, amount: 5)
+
+        XCTAssertNil(session.combatants[0].maxHP)
+    }
+
+    func testIncreaseMaxHPIgnoresNonPositiveAmount() {
+        session.addCombatant(name: "Goblin", initiative: 10, maxHP: 10)
+        let id = session.combatants[0].id
+
+        session.increaseMaxHP(for: id, amount: 0)
+        session.increaseMaxHP(for: id, amount: -3)
+
+        XCTAssertEqual(session.combatants[0].maxHP, 10)
+    }
+
+    func testIncreaseMaxHPCanReviveADeadCombatant() {
+        session.addCombatant(name: "Goblin", initiative: 10, maxHP: 10)
+        let id = session.combatants[0].id
+        session.applyDamage(to: id, amount: 10)
+        XCTAssertTrue(session.combatants[0].isDead)
+
+        session.increaseMaxHP(for: id, amount: 5)
+
+        XCTAssertFalse(session.combatants[0].isDead)
+        XCTAssertEqual(session.combatants[0].currentHP, 5)
+    }
+
     func testAddCombatantsSpawnsCountWithNumberedNames() {
         session.addCombatants(name: "Goblin", initiative: nil, maxHP: 5, count: 3)
 

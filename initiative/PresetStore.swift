@@ -99,5 +99,9 @@ extension CreaturePreset {
         ("Wolf", 11, 2),
         ("Zombie", 22, -2),
         ("Guard", 11, 1),
+        ("Ogre", 59, -1),
+        ("Giant Spider", 26, 3),
+        ("Giant Rat", 7, 2),
+        ("Cultist", 9, 1),
     ]
 }

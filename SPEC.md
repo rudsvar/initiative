@@ -143,7 +143,7 @@ An effect has:
 - Tapping an effect should allow manual removal
 - Optional: swipe-to-delete
 
-### 5. HP Tracking (planned — not yet implemented, awaiting confirmation before build)
+### 5. HP Tracking
 
 **Opt-in per combatant.** Not every combatant needs HP tracked (e.g. a
 GM-controlled NPC that's narrative-only) — `maxHP`/`currentHP` are `nil` until
@@ -152,10 +152,15 @@ combatant" flow are unaffected by default.
 
 **Enabling & editing** (from the combatant detail screen, alongside Reaction/Effects)
 - "Track HP" action prompts for a max HP value, sets `currentHP = maxHP`
-- Once tracked: quick +/- damage/heal controls, plus direct numeric entry for
-  exact values (e.g. correcting after a heal spell)
-- `currentHP` clamps to `0...maxHP` — no negative HP, no overheal past max for
-  now (temp HP / overheal is out of scope until there's a concrete need)
+- Once tracked: a single amount field feeds three actions —
+  **Damage** (subtracts, clamps at 0), **Heal** (adds, clamps at current max),
+  and **Increase Max HP** (raises *both* max and current by the amount — a
+  buff/level-up, not just a higher ceiling with no immediate benefit)
+- Direct numeric entry on the Current/Max HP fields themselves for exact
+  corrections (e.g. after a spell effect)
+- `currentHP` clamps to `0...maxHP` for Damage/Heal — no negative HP, no
+  overheal past max via those two actions (Increase Max HP is the deliberate
+  exception, since it moves the ceiling itself)
 
 **Dead indicator**
 - A combatant is dead when `currentHP == 0` (only meaningful if HP is tracked)
@@ -335,6 +340,10 @@ toughness, described here in our own generic terms only:
 | Wolf | 11 | +2 | fast, fragile beast archetype |
 | Zombie | 22 | −2 | slow, tanky undead archetype |
 | Guard | 11 | +1 | armored humanoid archetype |
+| Ogre | 59 | −1 | big, slow brute archetype |
+| Giant Spider | 26 | +3 | ambush predator archetype |
+| Giant Rat | 7 | +2 | weak, swarming filler archetype |
+| Cultist | 9 | +1 | fragile low-level caster/minion archetype |
 
 **Explicitly out of scope for now**: preset categories/tags, importing/sharing
 preset packs, per-preset default effects, manual preset creation outside the

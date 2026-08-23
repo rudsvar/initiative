@@ -4,6 +4,15 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Added
+- **Increase Max HP**: `CombatSession.increaseMaxHP(for:amount:)` raises both
+  max and current HP together (a buff/level-up, not just a higher ceiling) —
+  new third button on the combatant detail screen reusing the existing amount
+  field alongside Damage/Heal
+- Four more starter creatures: Ogre, Giant Spider, Giant Rat, Cultist —
+  fills out brute/ambusher/swarm-filler/caster roles the existing seven didn't
+  cover, HP + initiative bonus researched for realism
+
 ### Fixed
 - **Main menu "Resume" could show stale, wrong state** (e.g. still red/enabled
   right after deleting the session it pointed at). Root cause: `canResume` was

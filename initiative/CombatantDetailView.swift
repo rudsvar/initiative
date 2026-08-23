@@ -197,6 +197,14 @@ struct CombatantDetailView: View {
                                             .foregroundColor(.green)
                                             .disabled(Int(hpAdjustAmount) == nil)
                                         }
+
+                                        Button(action: { increaseMaxHP(for: combatant) }) {
+                                            Label("Increase Max HP", systemImage: "arrow.up.heart.fill")
+                                                .font(.system(size: 14, weight: .semibold))
+                                                .frame(maxWidth: .infinity)
+                                        }
+                                        .foregroundColor(.blue)
+                                        .disabled(Int(hpAdjustAmount) == nil)
                                     }
                                     .padding(.top, 4)
                                 } else {
@@ -297,6 +305,12 @@ struct CombatantDetailView: View {
     private func applyHealing(to combatant: Combatant) {
         guard let amount = Int(hpAdjustAmount) else { return }
         session.applyHealing(to: combatant.id, amount: amount)
+        hpAdjustAmount = ""
+    }
+
+    private func increaseMaxHP(for combatant: Combatant) {
+        guard let amount = Int(hpAdjustAmount) else { return }
+        session.increaseMaxHP(for: combatant.id, amount: amount)
         hpAdjustAmount = ""
     }
 
