@@ -4,6 +4,12 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Fixed
+- Reaction status ("Reaction available"/"Reaction used") on combatant list
+  rows wasn't horizontally aligned between combatants — it was appended after
+  Init/HP on the same line, so its position shifted depending on whether a
+  given combatant had HP tracked. Moved to its own row, always leading-aligned
+
 ### Added
 - **Log entries are now editable, scoped to HP.** Damage/healing/max-HP-increase/
   HP-tracking-started entries carry structured data (`HPOperation` enum + target

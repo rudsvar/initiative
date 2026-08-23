@@ -244,16 +244,19 @@ struct CombatantRow: View {
                                 .fontWeight(.semibold)
                                 .foregroundColor(hpColor)
                         }
+                    }
 
-                        if combatant.reactionUsed {
-                            Label("Reaction used", systemImage: "xmark.circle.fill")
-                                .font(.caption)
-                                .foregroundColor(Theme.divider)
-                        } else {
-                            Label("Reaction available", systemImage: "checkmark.circle.fill")
-                                .font(.caption)
-                                .foregroundColor(Theme.accent)
-                        }
+                    // On its own row (not appended after Init/HP) so it lands at the
+                    // same horizontal position across every row, regardless of
+                    // whether HP text is present for a given combatant.
+                    if combatant.reactionUsed {
+                        Label("Reaction used", systemImage: "xmark.circle.fill")
+                            .font(.caption)
+                            .foregroundColor(Theme.divider)
+                    } else {
+                        Label("Reaction available", systemImage: "checkmark.circle.fill")
+                            .font(.caption)
+                            .foregroundColor(Theme.accent)
                     }
                 }
 

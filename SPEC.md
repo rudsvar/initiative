@@ -88,7 +88,11 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 - Combatants auto-sort by initiative (descending; ties maintain insertion order)
 
 **Combatant Display**
-- List shows: name, initiative number, reaction status, active effects
+- List shows: name, initiative number, HP (if tracked), reaction status,
+  active effects
+- Reaction status sits on its own row (not appended after Init/HP on the same
+  line) so it lands at the same horizontal position across every combatant
+  card, regardless of whether that combatant has HP tracked
 - List is always sorted highest to lowest initiative
 - Current combatant (whose turn it is) is visually emphasized
 
