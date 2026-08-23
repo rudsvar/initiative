@@ -29,10 +29,11 @@ struct MainMenuView: View {
                         .multilineTextAlignment(.center)
 
                         VStack(spacing: 16) {
-                            MenuButton(title: "Resume", systemImage: "play.circle.fill", isPrimary: canResume) {
-                                resume()
+                            if canResume {
+                                MenuButton(title: "Resume", systemImage: "play.circle.fill", isPrimary: true) {
+                                    resume()
+                                }
                             }
-                            .disabled(!canResume)
 
                             MenuButton(title: "New Session", systemImage: "plus.circle.fill") {
                                 startNewSession()

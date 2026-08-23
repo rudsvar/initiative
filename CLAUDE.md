@@ -88,10 +88,20 @@ This keeps the project structure reproducible and diffable (the generated `.pbxp
 
 ## Testing
 
-The `initiativeTests` target (XCTest) covers `Models.swift` — turn order, reaction
-resets, and effect expiration logic. Add new test files ending in `*Tests.swift` in
-`initiative/`; they're auto-excluded from the app target and auto-included in the
-test target via `project.yml`'s include/exclude globs, no manual wiring needed.
+The `initiativeTests` target (XCTest) covers `Models.swift` and `SessionStore.swift` —
+turn order, reaction resets, effect expiration, and session persistence. Add new test
+files ending in `*Tests.swift` in `initiative/`; they're auto-excluded from the app
+target and auto-included in the test target via `project.yml`'s include/exclude globs,
+no manual wiring needed.
+
+**Every new piece of testable logic gets a test, and every bug fix gets a regression
+test that fails without the fix and passes with it** — not just "does it build."
+This applies to model/store logic (`CombatSession`, `SessionStore`) directly; there's
+no UI test target, so keep SwiftUI view bodies as thin, trivial derivations of
+already-tested model/store state (e.g. `if canResume { ... }` reading a tested
+`SessionStore` method) rather than putting logic worth testing only in a view body.
+Confirm the new/regression test actually exercises the bug: run it against the
+pre-fix code first if there's any doubt it would catch the issue.
 
 **Always run tests after changing `Models.swift` or any view logic, before considering
 a change done.** Run from the CLI (faster feedback than opening Xcode, and avoids

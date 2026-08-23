@@ -7,7 +7,16 @@
 ## Target Platform & Requirements
 
 - **Platform**: iOS 17+
-- **Device**: phone
+- **Device**: phone (primary), tablet also supported — the build is universal
+  (`UIDeviceFamily` includes both; no `TARGETED_DEVICE_FAMILY` restriction in
+  `project.yml`) and layouts use adaptive containers (`List`, `Form`,
+  `GeometryReader`-based centering), but tablet-specific layout (split view,
+  larger-screen affordances) hasn't been deliberately designed for — it just
+  runs, unverified for tablet-optimized UX
+- **Permissions**: none. No `NS*UsageDescription` keys, no entitlements, no
+  camera/location/photos/network access — verified by inspecting the built
+  `Info.plist`. All storage is local (`SessionStore`'s JSON files + UserDefaults),
+  no network calls anywhere in the app
 - **Development Environment**: Xcode 15+
 - **App Type**: Native SwiftUI single-window application
 - **Bundle ID**: xyz.rudsvar.initiative
@@ -226,8 +235,8 @@ session is automatically saved under its own stable identity as you play. A sess
 name is auto-generated from when it was created (e.g. "Session — Aug 23, 2026 1:45 PM").
 
 **Main Menu** (app launch / navigating back)
-- **Resume**: loads whichever session was last active, if one still exists on disk
-  (disabled otherwise)
+- **Resume**: loads whichever session was last active, if one still exists on disk —
+  the button is hidden entirely (not just disabled) when there's nothing to resume
 - **New Session**: clears all combat state and starts a fresh session (new identity)
 - **Load Session**: browse all auto-saved sessions, tap to load, swipe left + confirm
   to delete

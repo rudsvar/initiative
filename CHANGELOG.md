@@ -5,6 +5,12 @@ All notable changes to this project are documented here, newest first.
 ## [Unreleased]
 
 ### Changed
+- Main menu "Resume" button is now hidden entirely (not just disabled) when
+  there's no session to resume, instead of showing a muted-but-still-visible
+  button that did nothing when tapped
+- Confirmed and documented: the app requests zero permissions (no usage-
+  description keys, no entitlements, all storage local) and is already a
+  universal build (`UIDeviceFamily` includes tablet) — see `SPEC.md`
 - Renamed `Participant` → `Combatant` throughout the codebase (types, files, UI
   copy, docs) — confirmed with user; `ParticipantDetailView.swift` is now
   `CombatantDetailView.swift`
