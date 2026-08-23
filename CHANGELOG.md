@@ -5,6 +5,16 @@ All notable changes to this project are documented here, newest first.
 ## [Unreleased]
 
 ### Changed
+- **Reaction tracking reimplemented internally as a regular effect.** Using a
+  reaction now appends an `Effect(.untilStartOfTheirTurn, isReactionMarker: true)`
+  to the combatant instead of setting a separately-stored bool — it expires
+  through the same `removeExpiredEffects` pass every other effect already uses,
+  so `nextTurn()` no longer needs its own bespoke reaction-reset line.
+  `Combatant.reactionUsed` is now computed (`effects.contains { isReactionMarker
+  == true }`); `useReaction`/`resetReaction`/`toggleReaction` on `CombatSession`
+  replace direct bool mutation. New `Combatant.visibleEffects` filters the
+  marker out of the user-facing effects list (it has its own dedicated Reaction
+  UI). No user-visible behavior change — purely an internal simplification
 - Reaction indicator replaced the SF Symbol checkmark/xmark with a custom red
   "R" badge (`Theme.LetterBadge` — a `Circle` + `Text`, no image asset
   needed): filled red when available, outlined/muted when used. Used both on

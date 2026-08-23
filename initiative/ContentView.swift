@@ -268,9 +268,9 @@ struct CombatantRow: View {
                 }
             }
 
-            if !combatant.effects.isEmpty {
+            if !combatant.visibleEffects.isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
-                    ForEach(combatant.effects) { effect in
+                    ForEach(combatant.visibleEffects) { effect in
                         HStack(spacing: 8) {
                             Image(systemName: "sparkles")
                                 .font(.caption)

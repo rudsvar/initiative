@@ -42,7 +42,8 @@ final class CombatSessionTests: XCTestCase {
         session.addCombatant(name: "Warrior", initiative: 15)
 
         // Use reaction
-        session.combatants[0].reactionUsed = true
+        let id = session.combatants[0].id
+        session.useReaction(for: id)
         XCTAssertTrue(session.combatants[0].reactionUsed)
 
         // Advance turn
@@ -57,7 +58,7 @@ final class CombatSessionTests: XCTestCase {
         session.addCombatant(name: "P2", initiative: 10)
 
         // P1 uses reaction
-        session.combatants[0].reactionUsed = true
+        session.useReaction(for: session.combatants[0].id)
 
         // Advance to P2's turn
         session.nextTurn()
@@ -70,6 +71,60 @@ final class CombatSessionTests: XCTestCase {
 
         // P1's reaction should now be reset
         XCTAssertFalse(session.combatants[0].reactionUsed)
+    }
+
+    func testUseReactionAddsInternalEffect() {
+        session.addCombatant(name: "P1", initiative: 20)
+        let id = session.combatants[0].id
+
+        session.useReaction(for: id)
+
+        XCTAssertTrue(session.combatants[0].reactionUsed)
+        XCTAssertEqual(session.combatants[0].effects.count, 1)
+        XCTAssertTrue(session.combatants[0].effects[0].isReactionMarker == true)
+    }
+
+    func testUseReactionTwiceDoesNotDuplicate() {
+        session.addCombatant(name: "P1", initiative: 20)
+        let id = session.combatants[0].id
+
+        session.useReaction(for: id)
+        session.useReaction(for: id)
+
+        XCTAssertEqual(session.combatants[0].effects.count, 1)
+    }
+
+    func testResetReactionRemovesInternalEffect() {
+        session.addCombatant(name: "P1", initiative: 20)
+        let id = session.combatants[0].id
+        session.useReaction(for: id)
+
+        session.resetReaction(for: id)
+
+        XCTAssertFalse(session.combatants[0].reactionUsed)
+        XCTAssertTrue(session.combatants[0].effects.isEmpty)
+    }
+
+    func testToggleReactionFlipsState() {
+        session.addCombatant(name: "P1", initiative: 20)
+        let id = session.combatants[0].id
+
+        session.toggleReaction(for: id)
+        XCTAssertTrue(session.combatants[0].reactionUsed)
+
+        session.toggleReaction(for: id)
+        XCTAssertFalse(session.combatants[0].reactionUsed)
+    }
+
+    func testReactionMarkerExcludedFromVisibleEffectsButUserEffectsShown() {
+        session.addCombatant(name: "P1", initiative: 20)
+        let id = session.combatants[0].id
+        session.useReaction(for: id)
+        session.combatants[0].effects.append(Effect(name: "Stunned", durationType: .untilStartOfTheirTurn))
+
+        XCTAssertEqual(session.combatants[0].effects.count, 2, "reaction marker + user effect both stored")
+        XCTAssertEqual(session.combatants[0].visibleEffects.count, 1, "only the user effect should be user-visible")
+        XCTAssertEqual(session.combatants[0].visibleEffects.first?.name, "Stunned")
     }
 
     // MARK: - Turn Advancement
@@ -122,7 +177,7 @@ final class CombatSessionTests: XCTestCase {
         session.addCombatant(name: "P1", initiative: 20)
         session.addCombatant(name: "P2", initiative: 10)
 
-        session.combatants[0].reactionUsed = true
+        session.useReaction(for: session.combatants[0].id)
         session.nextTurn() // resets P2's reaction, P1's stays used
 
         session.previousTurn()

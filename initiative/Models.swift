@@ -4,10 +4,22 @@ struct Combatant: Identifiable, Codable {
     let id: UUID
     var name: String
     var initiative: Int
-    var reactionUsed: Bool = false
     var effects: [Effect] = []
     var maxHP: Int?
     var currentHP: Int?
+
+    /// Reaction tracking is implemented as a regular effect (untilStartOfTheirTurn,
+    /// marked internal) rather than its own stored field, so it expires through the
+    /// same removeExpiredEffects mechanism as everything else instead of needing a
+    /// bespoke reset step in CombatSession.nextTurn(). See CombatSession.toggleReaction.
+    var reactionUsed: Bool {
+        effects.contains { $0.isReactionMarker == true }
+    }
+
+    /// Effects meant for user-facing display — excludes the internal reaction marker.
+    var visibleEffects: [Effect] {
+        effects.filter { $0.isReactionMarker != true }
+    }
 
     /// Only meaningful once HP tracking is enabled (maxHP/currentHP non-nil).
     var isDead: Bool {
@@ -28,11 +40,16 @@ struct Effect: Identifiable, Codable {
     let id: UUID
     var name: String
     var durationType: DurationType
+    /// Internal marker for the "reaction used" effect (see Combatant.reactionUsed) —
+    /// nil/false for every normal, user-created effect. Optional so old saved
+    /// sessions (from before this existed) still decode.
+    var isReactionMarker: Bool?
 
-    init(id: UUID = UUID(), name: String, durationType: DurationType) {
+    init(id: UUID = UUID(), name: String, durationType: DurationType, isReactionMarker: Bool? = nil) {
         self.id = id
         self.name = name
         self.durationType = durationType
+        self.isReactionMarker = isReactionMarker
     }
 }
 
@@ -321,6 +338,29 @@ class CombatSession {
         combatants[index].currentHP = currentHP
     }
 
+    private static let reactionEffectName = "Reaction Used"
+
+    func useReaction(for id: UUID) {
+        guard let index = combatants.firstIndex(where: { $0.id == id }), !combatants[index].reactionUsed else { return }
+        combatants[index].effects.append(
+            Effect(name: Self.reactionEffectName, durationType: .untilStartOfTheirTurn, isReactionMarker: true)
+        )
+    }
+
+    func resetReaction(for id: UUID) {
+        guard let index = combatants.firstIndex(where: { $0.id == id }) else { return }
+        combatants[index].effects.removeAll { $0.isReactionMarker == true }
+    }
+
+    func toggleReaction(for id: UUID) {
+        guard let index = combatants.firstIndex(where: { $0.id == id }) else { return }
+        if combatants[index].reactionUsed {
+            resetReaction(for: id)
+        } else {
+            useReaction(for: id)
+        }
+    }
+
     func removeCombatant(id: UUID) {
         guard let index = combatants.firstIndex(where: { $0.id == id }) else { return }
         let name = combatants[index].name
@@ -351,7 +391,6 @@ class CombatSession {
             turnStartingCombatantId: startingCombatantId
         )
 
-        combatants[currentTurnIndex].reactionUsed = false
         appendLog("\(combatants[currentTurnIndex].name)'s turn")
     }
 

@@ -115,12 +115,21 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 ### 3. Reaction Tracking
 
 **Reaction State**
-- Each combatant has a boolean: reaction available (true) or used (false)
-- Default: true (available)
-- Clicking a combatant reveals an option to "Use Reaction" or "Reset Reaction"
-- "Use Reaction" sets their state to unavailable (used)
-- State persists until their next turn begins (at which point it auto-resets to available)
-- Visual indicator on the list shows reaction status (e.g., checkmark = available, X = used)
+- User-facing behavior unchanged: reaction available/used, defaults to available,
+  toggled from the combatant detail screen, persists until their next turn begins
+- **Internally**, implemented as a regular `Effect` (`.untilStartOfTheirTurn`,
+  marked `isReactionMarker: true`) appended to the combatant's own `effects`
+  array via `CombatSession.useReaction`/`resetReaction`/`toggleReaction`, rather
+  than a separately-stored bool with its own reset step. It expires through the
+  exact same `removeExpiredEffects` pass every other effect uses — `nextTurn()`
+  no longer needs a bespoke "reset reaction" line at all. `Combatant.reactionUsed`
+  is now a computed property (`effects.contains { isReactionMarker == true }`),
+  so read call sites didn't need to change
+- Hidden from the user-facing effects list (`Combatant.visibleEffects` filters
+  it out) — it has its own dedicated Reaction UI, so showing it a second time
+  in "Active Effects" would be redundant
+- Visual indicator on the list is a custom red "R" `LetterBadge` (see §1's
+  "Combatant Display" note)
 
 ### 4. Temporary Effects
 
@@ -258,17 +267,23 @@ struct Combatant {
     id: UUID
     name: String
     initiative: Int  // 1–20 (or higher)
-    reactionUsed: Bool  // false = available, true = used
     effects: [Effect]
     maxHP: Int?      // nil until HP tracking is enabled for this combatant
     currentHP: Int?  // clamped 0...maxHP; 0 == dead (isDead is derived, not stored)
+
+    // Derived, not stored:
+    // reactionUsed: Bool — effects.contains { isReactionMarker == true }
+    // visibleEffects: [Effect] — effects filtered to exclude the reaction marker
 }
 
 struct Effect {
     id: UUID
     name: String
     durationType: DurationType
-    targetCombatantID: UUID?  // nil unless duration is target-based
+    isReactionMarker: Bool?  // internal use only, see "Reaction Tracking" above
+    // Note: target combatant, when duration is target-based, lives inside
+    // durationType itself (untilStartOfTargetTurn(targetID:)/untilEndOfTargetTurn(targetID:)),
+    // not as a separate field.
 }
 
 enum DurationType {

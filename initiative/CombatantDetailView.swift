@@ -245,7 +245,7 @@ struct CombatantDetailView: View {
                                     }
                                 }
 
-                                if combatant.effects.isEmpty {
+                                if combatant.visibleEffects.isEmpty {
                                     VStack(spacing: 8) {
                                         Image(systemName: "sparkles")
                                             .font(.system(size: 32))
@@ -258,7 +258,7 @@ struct CombatantDetailView: View {
                                     .padding(20)
                                 } else {
                                     VStack(spacing: 8) {
-                                        ForEach(combatant.effects) { effect in
+                                        ForEach(combatant.visibleEffects) { effect in
                                             EffectRowView(
                                                 effect: effect,
                                                 onRemove: { removeEffect(effect, from: combatant) }
@@ -315,9 +315,7 @@ struct CombatantDetailView: View {
     }
 
     private func toggleReaction(for combatant: Combatant) {
-        if let index = session.combatants.firstIndex(where: { $0.id == combatant.id }) {
-            session.combatants[index].reactionUsed.toggle()
-        }
+        session.toggleReaction(for: combatant.id)
     }
 
     private func removeEffect(_ effect: Effect, from combatant: Combatant) {
