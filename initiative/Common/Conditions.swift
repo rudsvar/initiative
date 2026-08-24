@@ -35,17 +35,20 @@ enum ConditionCategory {
     /// Something is actively getting worse each round.
     case ongoing
 
+    /// The actual hues live in `ThemePalette` because they have to be retuned per
+    /// theme — a color that sits comfortably beside candle gold can land right on
+    /// top of cinnabar. What stays fixed across every palette is the constraint:
+    /// none of the five may sit near `Theme.accent`, because a chip that reads as
+    /// accent-colored competes with the current-turn marker, which is the one
+    /// thing the accent is reserved for. `ThemePaletteTests` enforces that for
+    /// all four palettes.
     var color: Color {
         switch self {
-        // Cool hues carry the categories that need to stand apart from the warm
-        // scheme; restraint and ongoing stay inside it. None of the five may sit
-        // near candle gold — a chip that reads as accent-colored competes with
-        // the current-turn marker, which is the one thing gold is reserved for.
-        case .sensory: return Color(red: 0.52, green: 0.60, blue: 0.66)
-        case .mental: return Color(red: 0.66, green: 0.50, blue: 0.74)
-        case .restraint: return Color(red: 0.68, green: 0.52, blue: 0.38)
-        case .disabling: return Color(red: 0.38, green: 0.66, blue: 0.62)
-        case .ongoing: return Theme.ember
+        case .sensory: return Theme.palette.conditionSensory
+        case .mental: return Theme.palette.conditionMental
+        case .restraint: return Theme.palette.conditionRestraint
+        case .disabling: return Theme.palette.conditionDisabling
+        case .ongoing: return Theme.palette.conditionOngoing
         }
     }
 }

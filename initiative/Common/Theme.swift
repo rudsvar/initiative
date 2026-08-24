@@ -5,33 +5,42 @@ import SwiftUI
 /// (`Form`/`List` are white by default and need an explicit `Theme.background` +
 /// `.scrollContentBackground(.hidden)` — see `ContentView` for the pattern).
 ///
-/// **Tavern Candlelight.** The organising idea is a dark room lit by one warm
-/// light source: an almost-black warm ink base, surfaces that get progressively
-/// lighter the "closer" they are to the reader, and a single candle-gold accent
-/// that is the only saturated color in normal use. That restraint is deliberate —
-/// gold only reads as light if almost nothing else competes with it, so accent is
-/// spent on exactly one thing per screen (the current turn, the primary action)
-/// and everything else is carried by surface level and type.
+/// **This type is a vocabulary, not a set of values.** The colors themselves live
+/// in `ThemePalette` and the user picks between four of them (see
+/// `ThemeIdentifier`); `Theme`'s color accessors just forward to whichever is
+/// selected. Views never name a palette — they say `Theme.surface`, and get
+/// re-rendered automatically when the selection changes (see `ThemeController`
+/// for why that works without threading anything through the environment).
+///
+/// The *structure* is not themeable, and that's the point. Whichever palette is
+/// in force:
+///
+/// - Surfaces come from an elevation ladder (`background` → `surface` →
+///   `surfaceRaised`), never from borders.
+/// - Borders are hairline weight (`Theme.hairline`). A full 1pt stroke at full
+///   opacity is what makes a UI read as "boxes drawn around things".
+/// - `accent` marks **at most one thing per screen** — the current turn, the
+///   primary action. An accent only reads as emphasis if nothing competes with
+///   it, so anything else that needs to stand out uses a status or condition
+///   color instead.
+/// - Serif for anything that names something, tabular figures for anything
+///   numeric (see `Typography`).
 enum Theme {
 
+    /// The palette currently in force. Prefer the named accessors below; this is
+    /// for the appearance picker, which genuinely needs whole palettes.
+    static var palette: ThemePalette { ThemeController.shared.palette }
+
     // MARK: - Surfaces
-    //
-    // A genuine elevation ladder rather than one flat tone. Each step is a
-    // visible lift, so a row reads as sitting on the page and an input as sitting
-    // in the row without needing a border to say so.
 
-    /// The dark room — the base every screen paints first.
-    static let background = Color(red: 0.11, green: 0.085, blue: 0.072)
-    /// Top of `backgroundGradient`: light falling from above, not a flat wash.
-    static let backgroundLift = Color(red: 0.165, green: 0.128, blue: 0.104)
-    /// Cards and list rows.
-    static let surface = Color(red: 0.175, green: 0.135, blue: 0.110)
-    /// Inputs, chips, and the current-turn row — the topmost step.
-    static let surfaceRaised = Color(red: 0.235, green: 0.180, blue: 0.145)
+    static var background: Color { palette.background }
+    static var backgroundLift: Color { palette.backgroundLift }
+    static var surface: Color { palette.surface }
+    static var surfaceRaised: Color { palette.surfaceRaised }
 
-    /// Warm vertical falloff applied to full-screen backgrounds. Very low
-    /// contrast on purpose: enough to stop the screen reading as a flat block,
-    /// not enough to be noticed as "a gradient".
+    /// Vertical falloff applied to full-screen backgrounds. Very low contrast on
+    /// purpose: enough to stop the screen reading as a flat block, not enough to
+    /// be noticed as "a gradient".
     static var backgroundGradient: LinearGradient {
         LinearGradient(
             colors: [backgroundLift, background],
@@ -40,64 +49,62 @@ enum Theme {
         )
     }
 
-    /// Separators and card outlines. Used at hairline weight (`Theme.hairline`) —
-    /// a full 1pt stroke at full opacity is what makes a UI read as "boxes drawn
-    /// around things" instead of surfaces.
-    static let border = Color(red: 0.36, green: 0.28, blue: 0.225)
+    static var border: Color { palette.border }
     static let hairline: CGFloat = 0.75
-
-    /// Kept as the name older code and `SelectAllTextField` already use.
-    static var divider: Color { border }
-    static var inputBackground: Color { surfaceRaised }
 
     // MARK: - Accent
 
-    /// Candle gold. The app's one saturated color — see the type doc above.
-    static let accent = Color(red: 0.85, green: 0.64, blue: 0.25)
-    /// Gold at fill strength, for tinted backgrounds that must not shout.
+    static var accent: Color { palette.accent }
+    /// Text/glyphs sitting on top of an accent fill.
+    static var accentForeground: Color { palette.accentForeground }
+    /// Accent at fill strength, for tinted backgrounds that must not shout.
     static var accentSoft: Color { accent.opacity(0.14) }
-    /// Warm secondary for destructive/urgent affordances, so "danger" stays in
-    /// the same warm family instead of importing a foreign system red.
-    static let ember = Color(red: 0.80, green: 0.36, blue: 0.22)
 
     // MARK: - Text
 
-    static let textPrimary = Color(red: 0.95, green: 0.92, blue: 0.86)
-    static let textSecondary = Color(red: 0.76, green: 0.68, blue: 0.58)
-    static let textTertiary = Color(red: 0.56, green: 0.48, blue: 0.41)
-    /// SwiftUI's plain `TextField("placeholder", text:)` always renders its
-    /// placeholder in a fixed system gray, ignoring the app theme entirely; the
-    /// `TextField(text:label:)` form is needed to override it with this color.
-    static let placeholderText = Color(red: 0.66, green: 0.57, blue: 0.48)
+    static var textPrimary: Color { palette.textPrimary }
+    static var textSecondary: Color { palette.textSecondary }
+    static var textTertiary: Color { palette.textTertiary }
+    static var placeholderText: Color { palette.placeholderText }
 
     // MARK: - Semantic status
 
-    static let statusGood = Color(red: 0.56, green: 0.68, blue: 0.38)
-    static let statusWarn = Color(red: 0.87, green: 0.58, blue: 0.24)
-    static let statusBad = Color(red: 0.78, green: 0.32, blue: 0.26)
-    static let statusNeutral = Color(red: 0.55, green: 0.50, blue: 0.46)
-    static let statusInfo = Color(red: 0.42, green: 0.56, blue: 0.62)
+    static var statusGood: Color { palette.statusGood }
+    static var statusWarn: Color { palette.statusWarn }
+    static var statusBad: Color { palette.statusBad }
+    static var statusNeutral: Color { palette.statusNeutral }
+    static var statusInfo: Color { palette.statusInfo }
+
+    // MARK: - System appearance
+
+    /// Forced app-wide from `RootView` so every system-provided color follows the
+    /// palette instead of the device's own light/dark setting.
+    static var colorScheme: ColorScheme { palette.colorScheme }
 }
 
 // MARK: - System chrome
 
 extension Theme {
     /// Paints the navigation bar with the app's own surface color and serif
-    /// titles. `.preferredColorScheme(.dark)` alone leaves the bar on UIKit's
-    /// neutral system gray, which reads as a foreign slab against this palette's
-    /// warm brown — and there's no SwiftUI-level way to set a nav bar background
-    /// color, so it has to go through UIAppearance. Called once from `RootView`'s
-    /// initializer, before any bar exists.
+    /// titles. `.preferredColorScheme` alone leaves the bar on UIKit's neutral
+    /// system gray, which reads as a foreign slab against any of these palettes —
+    /// and there's no SwiftUI-level way to set a nav bar background color, so it
+    /// has to go through UIAppearance.
+    ///
+    /// Called once from `RootView.init` and again from `ThemeController` on every
+    /// theme change. The re-application matters: `UINavigationBar.appearance()`
+    /// only configures bars created *after* it is set, and by the time anyone
+    /// picks a theme the app's bar already exists — so live bars are updated in
+    /// place too.
     static func applyNavigationBarAppearance() {
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
         appearance.backgroundColor = UIColor(backgroundLift)
         appearance.shadowColor = UIColor(border.opacity(0.5))
 
-        let serifTitle = UIFont.preferredFont(forTextStyle: .headline).serif
         appearance.titleTextAttributes = [
             .foregroundColor: UIColor(textPrimary),
-            .font: serifTitle,
+            .font: UIFont.preferredFont(forTextStyle: .headline).serif,
         ]
         appearance.largeTitleTextAttributes = [
             .foregroundColor: UIColor(textPrimary),
@@ -107,6 +114,31 @@ extension Theme {
         UINavigationBar.appearance().standardAppearance = appearance
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
         UINavigationBar.appearance().compactAppearance = appearance
+
+        for scene in UIApplication.shared.connectedScenes {
+            guard let windowScene = scene as? UIWindowScene else { continue }
+            for window in windowScene.windows {
+                window.applyToNavigationBars(appearance)
+            }
+        }
+    }
+}
+
+private extension UIView {
+    /// Depth-first walk applying a bar appearance to every live `UINavigationBar`
+    /// in the hierarchy. SwiftUI owns its bars and exposes no handle to them, so
+    /// finding them by traversal is the only way to restyle one that already
+    /// exists.
+    func applyToNavigationBars(_ appearance: UINavigationBarAppearance) {
+        if let bar = self as? UINavigationBar {
+            bar.standardAppearance = appearance
+            bar.scrollEdgeAppearance = appearance
+            bar.compactAppearance = appearance
+            bar.setNeedsLayout()
+        }
+        for subview in subviews {
+            subview.applyToNavigationBars(appearance)
+        }
     }
 }
 
@@ -116,6 +148,9 @@ extension Theme {
     /// A 4pt scale. Every gap and inset in the app comes from here — ad-hoc
     /// numbers are what make spacing look almost-but-not-quite aligned.
     enum Spacing {
+        /// Half-step, for gaps *inside* a single element (the two lines of a stat
+        /// column) where a full step would read as separating them.
+        static let xxs: CGFloat = 2
         static let xs: CGFloat = 4
         static let sm: CGFloat = 8
         static let md: CGFloat = 12
@@ -141,9 +176,8 @@ extension Theme {
     /// digits are functional — initiative, HP and AC sit in columns, and
     /// proportional digits make those columns visibly jitter between values.
     ///
-    /// All styles are built on Dynamic Type text styles (`.headline`, `.caption`,
-    /// …) rather than fixed point sizes so they still scale with the user's text
-    /// size setting.
+    /// Text styles are built on Dynamic Type (`.headline`, `.caption`, …) rather
+    /// than fixed point sizes so they scale with the user's text size setting.
     enum Typography {
         static let display = Font.system(.largeTitle, design: .serif).weight(.bold)
         static let title = Font.system(.title2, design: .serif).weight(.semibold)
@@ -152,17 +186,37 @@ extension Theme {
         static let body = Font.system(.subheadline)
         static let bodyEmphasis = Font.system(.subheadline).weight(.semibold)
         static let caption = Font.system(.caption)
-        /// Small all-caps field/section labels — see `View.sectionLabel()`.
+        /// Small all-caps field/section labels — see `Text.sectionLabel()`.
         static let label = Font.system(.caption2).weight(.semibold)
 
         /// Tabular figures at a text style's size, for stat readouts (HP, AC).
         static let stat = Font.system(.caption, design: .rounded).monospacedDigit()
         static let statLarge = Font.system(.title3, design: .rounded).weight(.bold).monospacedDigit()
+        /// A glyph that sits inline with adjacent text (the heart beside an HP
+        /// value, the skull beside a name). A text style rather than a point size
+        /// so it grows with the text it's sitting next to.
+        static let iconInline = Font.system(.caption2)
 
         /// Tabular figures at an explicit size, for the display-sized numerals
         /// (the initiative column) where a text style isn't large enough.
         static func numeric(_ size: CGFloat, weight: Font.Weight = .bold) -> Font {
             .system(size: size, weight: weight, design: .rounded).monospacedDigit()
         }
+
+        // SF Symbol sizes. Fixed points rather than text styles because each of
+        // these sits in a fixed-size frame or circle — letting the glyph scale
+        // inside a frame that doesn't would just clip it.
+        /// Glyph inside a status chip.
+        static let iconChip = Font.system(size: 11)
+        /// Chevrons and small close/dismiss controls.
+        static let iconControl = Font.system(size: 12, weight: .semibold)
+        /// Leading icon on a menu or list row.
+        static let iconRow = Font.system(size: 15)
+        /// Leading icon on a row that is itself an action (reaction toggle).
+        static let iconRowProminent = Font.system(size: 17)
+        /// Glyph in a circular action button (the HP steppers).
+        static let iconAction = Font.system(size: 16, weight: .bold)
+        /// The one oversized glyph on a screen — the bottom bar's add button.
+        static let iconPrimaryAction = Font.system(size: 26, weight: .bold)
     }
 }

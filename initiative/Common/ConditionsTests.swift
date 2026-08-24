@@ -39,20 +39,24 @@ final class ConditionLibraryTests: XCTestCase {
         XCTAssertEqual(Set(symbols).count, symbols.count, "Two conditions share an SF Symbol")
     }
 
-    /// Candle gold is reserved for the current-turn marker (see `Theme`). A
-    /// condition tinted the same color would compete with it in the combatant
-    /// list, which is exactly the problem the category palette was introduced to
-    /// solve — so no category may drift back toward the accent.
-    func testNoCategoryColorCollidesWithTheAccent() {
-        let accent = Theme.accent.rgbComponents
-        let categories: [ConditionCategory] = [.sensory, .mental, .restraint, .disabling, .ongoing]
-        for category in categories {
-            let color = category.color.rgbComponents
-            let distance = abs(color.r - accent.r) + abs(color.g - accent.g) + abs(color.b - accent.b)
-            XCTAssertGreaterThan(
-                distance, 0.3,
-                "\(category) is too close to Theme.accent and will compete with the current-turn marker"
-            )
+    /// The "no category may sit near the accent" rule now lives in
+    /// `ThemePaletteTests`, which checks it against every palette rather than
+    /// only whichever one is selected.
+
+    /// Categories must resolve through the live theme, so that switching palettes
+    /// actually recolors the chips instead of leaving one hue hardcoded behind.
+    func testEveryCategoryResolvesThroughTheSelectedPalette() {
+        let palette = Theme.palette
+        let expected: [(ConditionCategory, Color)] = [
+            (.sensory, palette.conditionSensory),
+            (.mental, palette.conditionMental),
+            (.restraint, palette.conditionRestraint),
+            (.disabling, palette.conditionDisabling),
+            (.ongoing, palette.conditionOngoing),
+        ]
+        for (category, color) in expected {
+            XCTAssertEqual(category.color.distance(to: color), 0, accuracy: 0.0001,
+                           "\(category) does not read its color from the palette")
         }
     }
 
@@ -65,15 +69,5 @@ final class ConditionLibraryTests: XCTestCase {
                 "\(condition.name) does not take its color from its category"
             )
         }
-    }
-}
-
-private extension Color {
-    /// Enough of a color to compare in tests. `Color` isn't directly decomposable,
-    /// so this goes through UIColor.
-    var rgbComponents: (r: CGFloat, g: CGFloat, b: CGFloat) {
-        var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
-        UIColor(self).getRed(&r, green: &g, blue: &b, alpha: &a)
-        return (r, g, b)
     }
 }

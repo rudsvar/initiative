@@ -67,7 +67,7 @@ struct ContentView: View {
             }
 
             ToolbarItem(placement: .principal) {
-                VStack(spacing: 2) {
+                VStack(spacing: Theme.Spacing.xxs) {
                     SelectAllTextField(
                         text: nameBinding,
                         placeholder: "Session Name",
@@ -237,7 +237,7 @@ private struct TurnControlBar: View {
     private func addButton(glass: Bool) -> some View {
         let content = Button(action: onAdd) {
             Image(systemName: "plus")
-                .font(.system(size: 26, weight: .bold))
+                .font(Theme.Typography.iconPrimaryAction)
         }
         .accessibilityLabel("Add Combatant")
 
@@ -269,7 +269,7 @@ struct CombatantRow: View {
     private func statRow(systemImage: String, text: String, color: Color) -> some View {
         HStack(spacing: Theme.Spacing.xs) {
             Image(systemName: systemImage)
-                .font(.caption2)
+                .font(Theme.Typography.iconInline)
                 .frame(width: 12)
             Text(text)
         }
@@ -323,7 +323,7 @@ struct CombatantRow: View {
 
                     if combatant.isDead {
                         Image(systemName: "skull.fill")
-                            .font(.caption2)
+                            .font(Theme.Typography.iconInline)
                             .foregroundColor(Theme.textPrimary)
                             .padding(Theme.Spacing.xs)
                             .background(Theme.background.opacity(0.8))
@@ -336,7 +336,7 @@ struct CombatantRow: View {
                 // Icon-led (heart/shield) instead of text labels ("14/20 HP"), and
                 // left-aligned within their own column so the icons themselves
                 // line up vertically regardless of how many digits each value has.
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                     healthRow
                     armorClassRow
                 }
@@ -381,13 +381,13 @@ private struct StatusChip: View {
     var body: some View {
         HStack(spacing: Theme.Spacing.xs) {
             Image(systemName: symbolName)
-                .font(.system(size: 11))
+                .font(Theme.Typography.iconChip)
             Text(label)
                 .font(Theme.Typography.label)
         }
         .foregroundColor(color)
         .padding(.horizontal, Theme.Spacing.sm)
-        .padding(.vertical, 5)
+        .padding(.vertical, Theme.Spacing.xs + 2)
         .background(color.opacity(0.13))
         .overlay(
             RoundedRectangle(cornerRadius: Theme.Radius.sm, style: .continuous)

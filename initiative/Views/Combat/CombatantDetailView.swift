@@ -311,7 +311,7 @@ struct CombatantDetailView: View {
     ) -> some View {
         Button(action: action) {
             Image(systemName: systemImage)
-                .font(.system(size: 16, weight: .bold))
+                .font(Theme.Typography.iconAction)
                 .foregroundColor(tint)
                 .frame(width: 38, height: 38)
                 .background(tint.opacity(0.16))
@@ -361,10 +361,10 @@ struct DeadBadge: View {
                 .textCase(.uppercase)
                 .tracking(0.9)
         }
-        .font(.caption2)
+        .font(Theme.Typography.iconInline)
         .foregroundColor(Theme.textPrimary)
         .padding(.horizontal, Theme.Spacing.sm)
-        .padding(.vertical, 5)
+        .padding(.vertical, Theme.Spacing.xs + 2)
         .background(Theme.background)
         .clipShape(Capsule())
         .overlay(Capsule().stroke(Theme.border, lineWidth: Theme.hairline))
@@ -379,11 +379,11 @@ struct ReactionToggleView: View {
         Button(action: onToggle) {
             HStack(spacing: Theme.Spacing.md) {
                 Image(systemName: "arrow.uturn.left")
-                    .font(.system(size: 17))
+                    .font(Theme.Typography.iconRowProminent)
                     .foregroundColor(isUsed ? Theme.textTertiary : Theme.accent)
                     .frame(width: 22)
 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                     Text(isUsed ? "Reaction Used" : "Reaction Available")
                         .font(Theme.Typography.bodyEmphasis)
                         .foregroundColor(Theme.textPrimary)
@@ -419,13 +419,13 @@ struct EffectRowView: View {
     var body: some View {
         HStack(spacing: Theme.Spacing.md) {
             Image(systemName: condition?.symbolName ?? "sparkles")
-                .font(.system(size: 15))
+                .font(Theme.Typography.iconRow)
                 .foregroundColor(tint)
                 .frame(width: 30, height: 30)
                 .background(tint.opacity(0.14))
                 .clipShape(Circle())
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(effect.name)
                     .font(Theme.Typography.bodyEmphasis)
                     .foregroundColor(Theme.textPrimary)
@@ -439,7 +439,7 @@ struct EffectRowView: View {
 
             Button(action: onRemove) {
                 Image(systemName: "xmark")
-                    .font(.system(size: 12, weight: .bold))
+                    .font(Theme.Typography.iconControl)
                     .foregroundColor(Theme.textTertiary)
                     .padding(Theme.Spacing.sm)
             }

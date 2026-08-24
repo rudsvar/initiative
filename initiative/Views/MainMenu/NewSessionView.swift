@@ -63,11 +63,11 @@ struct NewSessionView: View {
     private func row(icon: String, title: String, subtitle: String) -> some View {
         HStack(spacing: Theme.Spacing.md) {
             Image(systemName: icon)
-                .font(.system(size: 15))
+                .font(Theme.Typography.iconRow)
                 .foregroundColor(Theme.accent)
                 .frame(width: 20)
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                 Text(title)
                     .font(Theme.Typography.rowTitle)
                     .foregroundColor(Theme.textPrimary)

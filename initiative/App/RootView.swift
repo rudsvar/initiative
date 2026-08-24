@@ -6,6 +6,7 @@ enum Route: Hashable {
     case presetList
     case encounterList
     case newSessionChooser
+    case appearance
 }
 
 /// App-wide navigation root. Owns the single CombatSession, SessionStore,
@@ -16,6 +17,7 @@ struct RootView: View {
         Theme.applyNavigationBarAppearance()
     }
 
+    @State private var themeController = ThemeController.shared
     @State private var session = CombatSession()
     @State private var sessionStore = SessionStore()
     @State private var presetStore = PresetStore()
@@ -42,18 +44,22 @@ struct RootView: View {
                     EncounterListView(encounterStore: encounterStore, presetStore: presetStore)
                 case .newSessionChooser:
                     NewSessionView(session: session, encounterStore: encounterStore, path: $path)
+                case .appearance:
+                    AppearanceView(controller: themeController)
                 }
             }
         }
         .onAppear { presetStore.seedDefaultsIfEmpty() }
-        // Tavern Candlelight is a dark palette; forcing dark mode here makes every
-        // system-provided color (Form/List default backgrounds, .primary/.secondary
-        // text, placeholder text, native toolbar/nav bar chrome) follow suit
-        // automatically instead of clashing with our dark background whenever the
-        // device itself is in light mode. Screens still set Theme.background
-        // explicitly where they want the exact warm-brown tint rather than the
-        // system's neutral dark gray (see ContentView for the pattern).
-        .preferredColorScheme(.dark)
+        // Forcing the selected palette's appearance makes every system-provided
+        // color (Form/List default backgrounds, .primary/.secondary text,
+        // placeholder text, native toolbar chrome, the keyboard) follow it
+        // automatically instead of clashing whenever the device's own setting
+        // disagrees — which is why the palette declares an appearance rather than
+        // the app hardcoding .dark: Parchment is light, and everything system-drawn
+        // has to know that. Screens still set Theme.background explicitly where
+        // they want the palette's exact tint rather than the system's neutral
+        // gray (see ContentView for the pattern).
+        .preferredColorScheme(Theme.colorScheme)
         .tint(Theme.accent)
     }
 }

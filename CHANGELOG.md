@@ -4,6 +4,47 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Added — selectable themes
+
+- **Four themes, picked from Main Menu → Appearance** (`AppearanceView`), each
+  option drawn in its own colors since a palette is the one setting whose label
+  can't describe the choice:
+  - **Tavern Candlelight** (default, unchanged) — warm near-black, candle gold
+  - **Ink & Cinnabar** — cool blue-black ground, warm off-white text, one
+    cinnabar accent. The cool-ground/warm-ink pairing is a printed-page
+    relationship rather than a screen one, which carries the serif without
+    reading as generic fantasy
+  - **Slate & Brass** — blue-grey stone, muted brass. The quiet one
+  - **Parchment** — light: warm paper, near-black serif, oxblood accent
+- **`ThemePalette` / `ThemeIdentifier` / `ThemeController`**: colors moved out of
+  `Theme` into a value type, with `Theme`'s accessors forwarding to the selected
+  palette. No view was edited to support this — because `ThemeController` is
+  `@Observable` and SwiftUI's observation tracking follows reads through static
+  accessors, `Theme.surface` re-renders on change on its own. Selection persists
+  in `UserDefaults`; an unrecognised stored value falls back to the default
+- A palette declares its own `colorScheme`, forced app-wide, so system-drawn
+  chrome follows a light theme too. `Theme.applyNavigationBarAppearance()` now
+  also updates live nav bars, since `UINavigationBar.appearance()` alone only
+  affects bars created afterwards
+- `Theme.accentForeground`, for content sitting on an accent fill. Previously
+  `Theme.background` was reused for this, which only works while the accent is
+  guaranteed lighter than the page — untrue in Parchment
+- **`ThemePaletteTests`**: the design rules asserted against every palette rather
+  than whichever is selected — monotonic and perceptible elevation ladder, WCAG
+  contrast per text level per surface, accent legibility, declared-vs-actual
+  color scheme, and nothing within 0.3 RGB of the accent. Plus
+  `ThemeControllerTests` for the persistence edges (fresh install, relaunch,
+  unrecognised stored value)
+
+### Fixed
+
+- **`statusWarn` was 0.09 RGB from the accent in Tavern Candlelight** — an amber
+  "Wounded" band in a row beside the current-turn numeral read as a second
+  current-turn marker, exactly the collision the accent rule exists to prevent.
+  Now orange. Found by the new per-palette test, not by eye
+- Condition category colors were hardcoded in `ConditionCategory` and now come
+  from the palette, so switching themes actually recolors the chips
+
 ### Changed — design system overhaul
 
 - **`Theme` is now a full token set, not just colors**: `Theme.Spacing` (4pt

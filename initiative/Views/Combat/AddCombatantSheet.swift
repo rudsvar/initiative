@@ -84,7 +84,7 @@ struct AddCombatantSheet: View {
                                     ? "Each copy gets its own random initiative roll."
                                     : "All copies get this same initiative."
                             )
-                            .font(.caption)
+                            .font(Theme.Typography.caption)
                             .foregroundColor(Theme.textTertiary)
                         }
                     }

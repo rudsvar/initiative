@@ -57,6 +57,10 @@ struct MainMenuView: View {
                         MenuButton(title: "Creatures", systemImage: "pawprint") {
                             path.append(Route.presetList)
                         }
+
+                        MenuButton(title: "Appearance", systemImage: "paintpalette") {
+                            path.append(Route.appearance)
+                        }
                     }
 
                     Spacer(minLength: 0)
@@ -88,7 +92,7 @@ private struct MenuButton: View {
         Button(action: action) {
             HStack(spacing: Theme.Spacing.md) {
                 Image(systemName: systemImage)
-                    .font(.system(size: 15))
+                    .font(Theme.Typography.iconRow)
                     .frame(width: 20, alignment: .center)
 
                 Text(title)
@@ -98,14 +102,14 @@ private struct MenuButton: View {
 
                 if !isPrimary {
                     Image(systemName: "chevron.right")
-                        .font(.system(size: 12, weight: .semibold))
+                        .font(Theme.Typography.iconControl)
                         .foregroundColor(Theme.textTertiary)
                 }
             }
             .padding(.horizontal, Theme.Spacing.lg)
             .padding(.vertical, Theme.Spacing.md)
             .frame(minHeight: 48)
-            .foregroundColor(isPrimary ? Theme.background : Theme.textPrimary)
+            .foregroundColor(isPrimary ? Theme.accentForeground : Theme.textPrimary)
             .background(isPrimary ? Theme.accent : Theme.surface)
             .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous))
             .overlay(

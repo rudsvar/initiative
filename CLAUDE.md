@@ -52,8 +52,11 @@ initiative/
 │   ├── MainMenu/       # MainMenuView
 │   ├── Presets/        # PresetListView (Main Menu -> Creatures)
 │   ├── Encounters/      # EncounterListView (+ its nested Edit/Add sheets)
-│   └── Sessions/       # SessionListView (Main Menu -> Load Session)
-├── Common/            # Theme.swift (design tokens: color/spacing/radius/type),
+│   ├── Sessions/       # SessionListView (Main Menu -> Load Session)
+│   └── Settings/        # AppearanceView (Main Menu -> Appearance, theme picker)
+├── Common/            # Theme.swift (the token vocabulary: color/spacing/radius/type),
+│                        ThemePalette.swift (the four palettes' actual values),
+│                        ThemeController.swift (which one is selected + persistence),
 │                        ViewExtensions.swift (the shared view modifiers built on them),
 │                        Conditions.swift, StatusBand.swift, FlowLayout.swift,
 │                        SelectAllTextField.swift — shared across screens
@@ -93,10 +96,25 @@ project.yml            # XcodeGen configuration (regenerates .xcodeproj)
 - **The palette's rules, not just its values** — `Theme`'s doc comment is the
   authority, but in short: surfaces come from the elevation ladder
   (`background` → `surface` → `surfaceRaised`) rather than from borders, borders
-  are hairline (`Theme.hairline`), and **candle gold (`Theme.accent`) marks at
-  most one thing per screen**. Anything else that wants to stand out uses a
-  status/category color. `ConditionLibrary`'s five category hues are constrained
-  by a test (`ConditionsTests`) to stay clear of the accent.
+  are hairline (`Theme.hairline`), and **`Theme.accent` marks at most one thing
+  per screen**. Anything else that wants to stand out uses a status/category
+  color.
+- **Colors are themeable; the structure is not.** The values live in
+  `ThemePalette` (four of them, see `ThemeIdentifier`), `ThemeController` owns the
+  selection, and `Theme`'s color accessors forward to it. **Never name a palette
+  in a view** — say `Theme.surface`; SwiftUI re-renders on theme change because
+  `ThemeController` is `@Observable` and observation tracking follows reads
+  through static accessors. Adding a token means adding it to *every* palette
+  (there are no defaulted fields, on purpose). Anything UIKit-side has to be
+  re-applied by hand on change — see `Theme.applyNavigationBarAppearance()`,
+  which also walks live windows because `UINavigationBar.appearance()` only
+  affects bars created after it's set.
+- **`ThemePaletteTests` enforces the design rules across all four palettes** —
+  monotonic, perceptible elevation ladder; WCAG contrast for each text level on
+  each surface; `accentForeground` legible on `accent`; declared `colorScheme`
+  matching how the palette paints; nothing within 0.3 RGB of the accent. Run it
+  after touching any color: it has already caught collisions that looked fine by
+  eye.
 - Prefer native system *components* (`Form`/`Section`, `List`,
   `ContentUnavailableView`, native swipe actions/confirmation dialogs) over
   hand-rolled containers — that part hasn't changed — but their *colors* must

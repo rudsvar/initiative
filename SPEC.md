@@ -632,26 +632,61 @@ one thing SwiftUI can't color at all, so it's set once through
 `Theme.applyNavigationBarAppearance()` from `RootView.init` — without it the bar
 stays on UIKit's neutral system gray and reads as a foreign slab.
 
-### Palette: Tavern Candlelight
+### Structure is fixed; the palette is chosen
 
-The organising idea is **a dark room lit by one warm light source**. Two rules
-follow from it, and they're the load-bearing part of the design:
+Two rules are the load-bearing part of the design, and **no theme gets to opt out
+of either** — they're what makes the app readable mid-combat:
 
 1. **Depth comes from surfaces, not borders.** There's a real elevation ladder —
-   `background` (near-black warm ink) → `surface` (cards, list rows) →
-   `surfaceRaised` (inputs, chips, the current-turn row) — plus a very
-   low-contrast warm gradient (`backgroundGradient`) so a full screen doesn't
-   read as a flat block. Outlines are hairline weight (`Theme.hairline`, 0.75pt)
-   at reduced opacity; a full-weight 1pt stroke on every element is what makes a
-   UI read as "boxes drawn around things".
-2. **Candle gold marks at most one thing per screen.** `Theme.accent` is the
-   only saturated color in normal use, and it only reads as *light* if nothing
-   else competes with it. On the combat screen it's spent on the current turn
+   `background` → `surface` (cards, list rows) → `surfaceRaised` (inputs, chips,
+   the current-turn row) — plus a very low-contrast gradient
+   (`backgroundGradient`) so a full screen doesn't read as a flat block. Outlines
+   are hairline weight (`Theme.hairline`, 0.75pt) at reduced opacity; a
+   full-weight 1pt stroke on every element is what makes a UI read as "boxes
+   drawn around things". The ladder always runs *toward the light*, including in
+   the light palette — Parchment's steps get whiter as they come forward rather
+   than being a dark ladder inverted.
+2. **The accent marks at most one thing per screen.** `Theme.accent` is the only
+   saturated color in normal use, and it only reads as emphasis if nothing else
+   competes with it. On the combat screen it's spent on the current turn
    (initiative numeral, leading edge bar, outline) and the primary action;
    non-current initiative numbers are `textSecondary`. Anything else that needs
    to stand out uses a status or condition-category color, never the accent.
-   `Theme.ember` is the warm secondary for urgent/destructive affordances, so
-   "danger" stays in the same family instead of importing a system red.
+
+### Themes
+
+Colors are values, not constants: `ThemePalette` holds the whole set,
+`ThemeIdentifier` enumerates the four selectable ones, and `Theme`'s color
+accessors forward to whichever `ThemeController` has selected. Views never name a
+palette — they say `Theme.surface` and get re-rendered on change automatically,
+because `ThemeController` is `@Observable` and SwiftUI tracks observable reads
+through static accessors. That's what made theming possible without editing every
+view to thread an environment value through.
+
+| Theme | Ground | Accent | Notes |
+|---|---|---|---|
+| **Tavern Candlelight** (default) | warm near-black | candle gold | The original. A dark room lit by one flame. |
+| **Ink & Cinnabar** | cool blue-black | cinnabar red | Warm off-white text on a cool ground — a printed-page relationship rather than a screen one, which is what carries the serif without reading as generic-fantasy. Red already means urgency, so `conditionOngoing` moves to a cold acid green to keep red meaning one thing. |
+| **Slate & Brass** | blue-grey stone | muted brass | The quiet one; least flavour, most legible. `conditionRestraint` is clay rather than the bronze the warm palettes use, since bronze is indistinguishable from brass. |
+| **Parchment** | warm paper (light) | oxblood | Offered, never the default: a white phone at a dim table is a flashlight in everyone's face. Status and condition colors are darkened across the board — mid-tones that work on black wash out on paper. |
+
+A palette also declares its `colorScheme`, forced app-wide from `RootView`, so
+everything system-drawn (keyboard, native toolbar chrome, `Form`/`List` defaults)
+follows the theme rather than the device setting. Selection persists in
+`UserDefaults` under `selectedTheme`; an unrecognised stored value falls back to
+the default rather than failing. The picker is **Main Menu → Appearance**
+(`AppearanceView`), which draws each option in its own colors — a palette is the
+one setting whose label genuinely can't describe the choice.
+
+**`ThemePaletteTests` checks the design rules against every palette**, not just
+the selected one: the elevation ladder is monotonic and each step perceptible,
+text meets WCAG contrast on every surface it sits on (AAA primary / AA secondary
+/ AA-large tertiary), `accentForeground` is legible on `accent`, the declared
+`colorScheme` matches how the palette actually paints, and no condition or status
+color sits within 0.3 RGB of the accent. Writing those down caught two real
+collisions by hand-tuned eye: Tavern's amber `statusWarn` was 0.09 from candle
+gold (a "Wounded" band read as a second current-turn marker), and Parchment's top
+two elevation steps were only 1.07:1 apart.
 
 Semantic status colors (`statusGood`/`Warn`/`Bad`/`Neutral`/`Info`) carry
 health/armor bands and the Damage/Heal/Increase-Max-HP buttons — muted, warm
@@ -672,10 +707,13 @@ enough to candle gold to compete with the current-turn marker.
 Conditions are now grouped into five `ConditionCategory` cases by *what they do
 to you* — `sensory`, `mental`, `restraint`, `disabling`, `ongoing` — and the
 color comes from the category. A glance at chip color says which kind of trouble
-a combatant is in, the palette stays small enough to sit inside the warm scheme,
-and `ConditionsTests` asserts that no category drifts back toward the accent.
-Icons stay per-condition and are asserted unique, since the glyph is what
-distinguishes conditions *within* a category.
+a combatant is in, and the palette stays small enough to sit inside any of the
+four schemes. The hues themselves live in `ThemePalette` rather than beside the
+conditions, because they have to be retuned per theme (a color that sits happily
+beside candle gold can land on top of cinnabar); what's fixed is the constraint,
+asserted for every palette in `ThemePaletteTests`. Icons stay per-condition and
+are asserted unique, since the glyph is what distinguishes conditions *within* a
+category.
 
 ### Typography
 

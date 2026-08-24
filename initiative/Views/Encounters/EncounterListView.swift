@@ -115,7 +115,7 @@ private struct EditEncounterView: View {
                                     Spacer()
                                     if let maxHP = entry.maxHP {
                                         Text("\(maxHP) HP")
-                                            .font(.caption)
+                                            .font(Theme.Typography.caption)
                                             .foregroundColor(Theme.textTertiary)
                                     }
                                 }

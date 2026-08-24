@@ -28,7 +28,7 @@ struct PresetListView: View {
                                 Spacer(minLength: Theme.Spacing.sm)
                                 // Same icon-led stat column as the combatant row,
                                 // so a creature reads the same wherever it appears.
-                                VStack(alignment: .leading, spacing: 2) {
+                                VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                                     if let maxHP = preset.maxHP {
                                         statRow("heart.fill", "\(maxHP)")
                                     }
@@ -97,7 +97,7 @@ struct PresetListView: View {
     private func statRow(_ systemImage: String, _ text: String) -> some View {
         HStack(spacing: Theme.Spacing.xs) {
             Image(systemName: systemImage)
-                .font(.caption2)
+                .font(Theme.Typography.iconInline)
                 .frame(width: 12)
             Text(text)
         }

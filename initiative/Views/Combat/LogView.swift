@@ -37,7 +37,7 @@ struct LogView: View {
                             ForEach(roundsAscending, id: \.self) { round in
                                 Section {
                                     ForEach(entries(forRound: round)) { entry in
-                                        VStack(alignment: .leading, spacing: 2) {
+                                        VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
                                             Text(entry.text)
                                                 .font(Theme.Typography.body)
                                                 .foregroundColor(Theme.textPrimary)
@@ -45,7 +45,7 @@ struct LogView: View {
                                                 .font(Theme.Typography.caption)
                                                 .foregroundColor(Theme.textTertiary)
                                         }
-                                        .padding(.vertical, 2)
+                                        .padding(.vertical, Theme.Spacing.xxs)
                                         .id(entry.id)
                                         .listRowBackground(Theme.surface)
                                         .swipeActions(edge: .trailing) {
