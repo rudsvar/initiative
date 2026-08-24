@@ -47,15 +47,13 @@ struct Encounter: Identifiable, Codable, Equatable {
 class EncounterStore {
     private let fileManager = FileManager.default
     private let baseDirectory: URL
-    private let ledger: DefaultInstallLedger
 
-    init(baseDirectory: URL? = nil, defaults: UserDefaults = .standard) {
+    init(baseDirectory: URL? = nil) {
         let directory = baseDirectory
             ?? FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
                 .appendingPathComponent("Encounters", isDirectory: true)
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         self.baseDirectory = directory
-        self.ledger = DefaultInstallLedger(defaults: defaults, key: "installedDefaultEncounters")
     }
 
     func listEncounters() -> [Encounter] {
@@ -81,19 +79,37 @@ class EncounterStore {
         try? fileManager.removeItem(at: url)
     }
 
-    /// Installs any default encounter this install has never been offered before,
-    /// alongside whatever the user has built themselves. Same three-case rule as
-    /// `PresetStore.installNewDefaults()` — see `DefaultInstallLedger`.
-    func installNewDefaults() {
-        let existingNames = Set(listEncounters().map { $0.name.lowercased() })
-        var offered: [String] = []
+    /// Saves an editable copy of an encounter under a fresh name, and returns it.
+    /// The only route from a built-in encounter to a customised one.
+    @discardableResult
+    func duplicate(_ encounter: Encounter) -> Encounter {
+        // New entry ids as well as a new encounter id: entries are snapshots, and
+        // two encounters sharing entry identity would make SwiftUI's list
+        // diffing treat them as the same rows.
+        let copy = Encounter(
+            name: UniqueName.forCopy(of: encounter.name, avoiding: listEncounters().map(\.name)),
+            entries: encounter.entries.map {
+                EncounterEntry(
+                    name: $0.name,
+                    maxHP: $0.maxHP,
+                    armorClass: $0.armorClass,
+                    initiativeBonus: $0.initiativeBonus,
+                    count: $0.count
+                )
+            }
+        )
+        save(copy)
+        return copy
+    }
 
-        for template in DefaultContent.encounters where !ledger.contains(template.name) {
-            offered.append(template.name)
-            guard !existingNames.contains(template.name.lowercased()) else { continue }
+    /// Ensures every built-in encounter is present, alongside whatever the user
+    /// has built themselves. Same rule as `PresetStore.installDefaults()`:
+    /// built-ins can't be deleted, so anything missing is new or renamed and
+    /// belongs back in the list.
+    func installDefaults() {
+        let existingNames = Set(listEncounters().map { $0.name.lowercased() })
+        for template in DefaultContent.encounters where !existingNames.contains(template.name.lowercased()) {
             save(DefaultContent.encounter(from: template))
         }
-
-        ledger.markInstalled(offered)
     }
 }

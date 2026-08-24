@@ -48,7 +48,7 @@ initiative/
 │                        CodableCompatibilityTests.swift
 ├── Stores/           # SessionStore/PresetStore/EncounterStore (JSON-file persistence),
 │                        DefaultContent.swift (the starter creature roster + encounters),
-│                        DefaultInstallLedger.swift (how defaults stay additive) + tests
+│                        (installed on every launch; built-ins are read-only) + tests
 ├── Views/
 │   ├── Combat/        # ContentView, CombatantDetailView, LogView, AddCombatantSheet, AddEffectView
 │   ├── MainMenu/       # MainMenuView
@@ -132,15 +132,18 @@ project.yml            # XcodeGen configuration (regenerates .xcodeproj)
   `ContentView.swift`) so it doesn't stand out as unthemed. The navigation bar
   is the exception that can't be done in SwiftUI at all — it's set once via
   `Theme.applyNavigationBarAppearance()` from `RootView.init`.
-**Default content** (`Stores/DefaultContent.swift`) is **additive, never
-all-or-nothing**: `installNewDefaults()` runs on every launch and installs
-anything the `DefaultInstallLedger` has never offered before. Adding a creature
-or encounter to the table is all that's needed for it to reach existing
-installs — do *not* reintroduce "seed only if the store is empty", which is what
-prevented that. Deletions are respected and permanent — there is no "Restore
-Defaults" action on either screen, deliberately — and a preset the user has
-edited is never overwritten by its default. Encounters name creatures rather than restating stats; keep it
-that way and `DefaultContentTests` will catch a typo'd name.
+
+**Default content** (`Stores/DefaultContent.swift`) is **read-only and
+permanent**. Built-ins can't be deleted, renamed, or edited — rows offer
+Duplicate instead of Delete, the edit sheets open disabled with a Duplicate
+action, and `PresetStore.upsert` refuses to touch a built-in (otherwise adding a
+combatant named "Goblin" rewrites the built-in's stats). `installDefaults()` runs
+on every launch and installs anything missing; adding to the table is all that's
+needed for it to reach existing installs — do *not* reintroduce "seed only if the
+store is empty", which is what prevented that. A preset the user holds under a
+built-in's name is never overwritten. Encounters name creatures rather than
+restating stats; keep it that way and `DefaultContentTests` will catch a typo'd
+name.
 
 - Consult the `ios-hig` skill (`<agent-config>/skills/ios-hig/SKILL.md`) before building new
   screens — practical Apple HIG checklist for this app.

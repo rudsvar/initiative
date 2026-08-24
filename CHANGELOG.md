@@ -21,12 +21,36 @@ All notable changes to this project are documented here, newest first.
   height. Stacked, three stats made every row three lines tall, which at 70-odd
   creatures cost more scrolling than the aligned columns were worth
 
+### Changed — built-in content is read-only
+
+- **Built-in creatures and encounters can no longer be deleted, renamed, or
+  edited.** They're a fixture, not a starting point to whittle down. Rows offer
+  **Duplicate** where the user's own offer Delete, and tapping one opens the
+  familiar sheet with every field disabled and Duplicate where Save would be
+- Copies are named "Goblin Copy", then "Goblin Copy 2"… and land in **Yours**,
+  fully editable
+- **`upsert` no longer modifies a built-in.** Adding a combatant called "Goblin"
+  with 12 HP was quietly rewriting the built-in Goblin's stats — an edit to
+  read-only content through the back door, from a screen that isn't even the
+  Creatures list
+- **The install ledger is gone**, and with it `DefaultInstallLedger`. Its only
+  job was telling "new in this version" apart from "deleted on purpose", and
+  deleting a built-in is no longer possible — so `installDefaults()` is now a
+  plain what's-missing check. A built-in that goes missing (an older version, or
+  renamed away) comes back on the next launch
+
+### Changed — combat screen controls
+
+- **"+" moved to the top right**, where it is on every other screen, and the
+  session options menu (player view, log) took its place at the bottom centre.
+  The one action that's the same everywhere is now in the same corner
+  everywhere, and the two controls that exist only during combat sit together
+  with the turn controls
+
 ### Removed
 
-- **Restore Defaults, on both screens.** It was a control whose only job was to
-  undo something the user had just deliberately done, and with the lists now
-  sorted into Yours and Included nothing goes mysteriously missing. Deleting a
-  default is now permanent. `restoreMissingDefaults()` went from both stores
+- **Restore Defaults, on both screens.** Superseded: with built-ins undeletable
+  there is nothing to restore. `restoreMissingDefaults()` went from both stores
   rather than being left as an API with no caller
 
 ### Added — starter content

@@ -78,12 +78,23 @@ struct EncounterListView: View {
                     }
                     .cardRowStyle()
                     .cardRowLayout()
+                    // Built-in encounters are fixtures: no deleting, no editing,
+                    // only copying. Same rule as the Creatures screen.
                     .swipeActions(edge: .trailing) {
-                        Button(role: .destructive) {
-                            encounterStore.delete(id: encounter.id)
-                            encounters = encounterStore.listEncounters()
-                        } label: {
-                            Label("Delete", systemImage: "trash")
+                        if encounter.isBuiltIn {
+                            Button {
+                                encounterStore.duplicate(encounter)
+                                encounters = encounterStore.listEncounters()
+                            } label: {
+                                Label("Duplicate", systemImage: "plus.square.on.square")
+                            }
+                        } else {
+                            Button(role: .destructive) {
+                                encounterStore.delete(id: encounter.id)
+                                encounters = encounterStore.listEncounters()
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
                         }
                     }
                 }
@@ -101,6 +112,8 @@ struct EncounterListView: View {
     }
 }
 
+/// Doubles as the read-only view of a built-in encounter — see the equivalent
+/// note on the Creatures screen's sheet.
 private struct EditEncounterView: View {
     let encounterStore: EncounterStore
     let presetStore: PresetStore
@@ -110,10 +123,17 @@ private struct EditEncounterView: View {
     @State private var encounter: Encounter
     @State private var showAddEntry = false
 
+    /// Fixed at presentation time from the encounter as saved, *not* from the
+    /// editable `@State` copy — otherwise typing over a built-in's name in the
+    /// disabled field (were it ever possible) would flip the screen out of
+    /// read-only mid-edit.
+    private let isReadOnly: Bool
+
     init(encounterStore: EncounterStore, presetStore: PresetStore, encounter: Encounter, onSave: @escaping () -> Void) {
         self.encounterStore = encounterStore
         self.presetStore = presetStore
         self.onSave = onSave
+        self.isReadOnly = encounter.isBuiltIn
         _encounter = State(initialValue: encounter)
     }
 
@@ -147,21 +167,32 @@ private struct EditEncounterView: View {
                             .onDelete { encounter.entries.remove(atOffsets: $0) }
                         }
 
-                        Button(action: { showAddEntry = true }) {
-                            Label("Add Creature", systemImage: "plus")
+                        if !isReadOnly {
+                            Button(action: { showAddEntry = true }) {
+                                Label("Add Creature", systemImage: "plus")
+                            }
                         }
                     }
                 }
                 .scrollContentBackground(.hidden)
                 .listRowBackground(Theme.surfaceRaised)
             }
-            .navigationTitle("Edit Encounter")
+            .disabled(isReadOnly)
+            .navigationTitle(isReadOnly ? encounter.name : "Edit Encounter")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(isReadOnly ? "Done" : "Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
+                    if isReadOnly {
+                        Button("Duplicate") {
+                            encounterStore.duplicate(encounter)
+                            onSave()
+                            dismiss()
+                        }
+                        .fontWeight(.semibold)
+                    } else {
                     Button("Save") {
                         let trimmed = encounter.name.trimmingCharacters(in: .whitespaces)
                         guard !trimmed.isEmpty else { return }
@@ -172,6 +203,7 @@ private struct EditEncounterView: View {
                     }
                     .fontWeight(.semibold)
                     .disabled(encounter.name.trimmingCharacters(in: .whitespaces).isEmpty)
+                    }
                 }
             }
             .sheet(isPresented: $showAddEntry) {

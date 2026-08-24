@@ -89,14 +89,27 @@ struct PresetListView: View {
                     }
                     .cardRowStyle()
                     .cardRowLayout()
+                    // Built-in creatures are fixtures: they can't be deleted or
+                    // edited, only copied. So a built-in row offers Duplicate
+                    // where a user's own offers Delete, rather than offering
+                    // actions that then refuse.
                     .swipeActions(edge: .trailing) {
-                        // No extra confirmation dialog: swipe-to-reveal + tap
-                        // Delete is already two deliberate actions.
-                        Button(role: .destructive) {
-                            presetStore.delete(id: preset.id)
-                            presets = presetStore.listPresets()
-                        } label: {
-                            Label("Delete", systemImage: "trash")
+                        if preset.isBuiltIn {
+                            Button {
+                                presetStore.duplicate(preset)
+                                presets = presetStore.listPresets()
+                            } label: {
+                                Label("Duplicate", systemImage: "plus.square.on.square")
+                            }
+                        } else {
+                            // No extra confirmation dialog: swipe-to-reveal + tap
+                            // Delete is already two deliberate actions.
+                            Button(role: .destructive) {
+                                presetStore.delete(id: preset.id)
+                                presets = presetStore.listPresets()
+                            } label: {
+                                Label("Delete", systemImage: "trash")
+                            }
                         }
                     }
                 }
@@ -118,6 +131,10 @@ struct PresetListView: View {
     }
 }
 
+/// Doubles as the read-only view of a built-in creature. Built-ins can't be
+/// edited, but they still need to be *inspectable* — and showing the same fields
+/// greyed out, with Duplicate where Save would be, makes the relationship between
+/// the two obvious in a way a separate detail screen wouldn't.
 private struct EditPresetView: View {
     let presetStore: PresetStore
     let preset: CreaturePreset
@@ -128,6 +145,8 @@ private struct EditPresetView: View {
     @State private var hpText: String
     @State private var acText: String
     @State private var bonusText: String
+
+    private var isReadOnly: Bool { preset.isBuiltIn }
 
     init(presetStore: PresetStore, preset: CreaturePreset, onSave: @escaping () -> Void) {
         self.presetStore = presetStore
@@ -171,13 +190,24 @@ private struct EditPresetView: View {
                 .scrollContentBackground(.hidden)
                 .listRowBackground(Theme.surfaceRaised)
             }
-            .navigationTitle(preset.name.isEmpty ? "New Creature" : "Edit Creature")
+            .disabled(isReadOnly)
+            .navigationTitle(navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(isReadOnly ? "Done" : "Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
+                    if isReadOnly {
+                        // The only way to customise a built-in. The copy lands in
+                        // "Yours" at the top of the list, where it's editable.
+                        Button("Duplicate") {
+                            presetStore.duplicate(preset)
+                            onSave()
+                            dismiss()
+                        }
+                        .fontWeight(.semibold)
+                    } else {
                     Button("Save") {
                         var updated = preset
                         updated.name = name.trimmingCharacters(in: .whitespaces)
@@ -191,9 +221,15 @@ private struct EditPresetView: View {
                     }
                     .fontWeight(.semibold)
                     .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+                    }
                 }
             }
         }
+    }
+
+    private var navigationTitle: String {
+        if isReadOnly { return preset.name }
+        return preset.name.isEmpty ? "New Creature" : "Edit Creature"
     }
 }
 

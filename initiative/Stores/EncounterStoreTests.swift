@@ -4,34 +4,27 @@ import XCTest
 final class EncounterStoreTests: XCTestCase {
     var store: EncounterStore!
     var tempDirectory: URL!
-    private var suiteName = ""
-    private var defaults: UserDefaults!
-
     override func setUp() {
         super.setUp()
         tempDirectory = FileManager.default.temporaryDirectory
             .appendingPathComponent(UUID().uuidString, isDirectory: true)
-        suiteName = "EncounterStoreTests.\(UUID().uuidString)"
-        defaults = UserDefaults(suiteName: suiteName)
-        store = EncounterStore(baseDirectory: tempDirectory, defaults: defaults)
+        store = EncounterStore(baseDirectory: tempDirectory)
     }
 
     override func tearDown() {
         try? FileManager.default.removeItem(at: tempDirectory)
-        defaults.removePersistentDomain(forName: suiteName)
-        defaults = nil
         super.tearDown()
     }
 
-    /// A second store over the same directory and ledger — the next launch.
+    /// A second store over the same directory — the next launch.
     private func relaunched() -> EncounterStore {
-        EncounterStore(baseDirectory: tempDirectory, defaults: defaults)
+        EncounterStore(baseDirectory: tempDirectory)
     }
 
     // MARK: - Default content
 
-    func testInstallNewDefaultsPopulatesStarterEncounters() {
-        store.installNewDefaults()
+    func testInstallDefaultsPopulatesTheStarterEncounters() {
+        store.installDefaults()
 
         XCTAssertEqual(store.listEncounters().count, DefaultContent.encounters.count)
     }
@@ -40,7 +33,7 @@ final class EncounterStoreTests: XCTestCase {
     /// its lineup against the creature table rather than saving bare names — an
     /// encounter with no HP/AC would start a session with empty combatants.
     func testInstalledEncountersCarryResolvedCreatureStats() {
-        store.installNewDefaults()
+        store.installDefaults()
 
         let ambush = store.listEncounters().first { $0.name == "Goblin Ambush" }
         let goblins = ambush?.entries.first { $0.name == "Goblin" }
@@ -49,31 +42,33 @@ final class EncounterStoreTests: XCTestCase {
         XCTAssertEqual(goblins?.count, 4)
     }
 
-    func testInstallNewDefaultsAddsToExistingUserEncounters() {
+    func testInstallDefaultsAddsToExistingUserEncounters() {
         store.save(Encounter(name: "My Own Fight", entries: [EncounterEntry(name: "Thing", maxHP: 5)]))
 
-        store.installNewDefaults()
+        store.installDefaults()
 
         let names = store.listEncounters().map(\.name)
         XCTAssertEqual(names.count, DefaultContent.encounters.count + 1)
         XCTAssertTrue(names.contains("My Own Fight"))
     }
 
-    func testInstallNewDefaultsIsIdempotentAcrossLaunches() {
-        store.installNewDefaults()
-        relaunched().installNewDefaults()
+    func testInstallDefaultsIsIdempotentAcrossLaunches() {
+        store.installDefaults()
+        relaunched().installDefaults()
 
         XCTAssertEqual(store.listEncounters().count, DefaultContent.encounters.count)
     }
 
-    func testADeletedDefaultEncounterDoesNotComeBack() {
-        store.installNewDefaults()
+    /// Built-in encounters are fixtures — the screen offers no way to delete one,
+    /// and anything missing is restored on the next launch.
+    func testAMissingBuiltInEncounterIsRestored() {
+        store.installDefaults()
         let doomed = store.listEncounters().first!
         store.delete(id: doomed.id)
 
-        relaunched().installNewDefaults()
+        relaunched().installDefaults()
 
-        XCTAssertNil(store.listEncounters().first { $0.name == doomed.name })
+        XCTAssertNotNil(store.listEncounters().first { $0.name == doomed.name })
     }
 
 
@@ -114,5 +109,32 @@ final class EncounterStoreTests: XCTestCase {
     func testEncounterEntryCountClampsToAtLeastOne() {
         let entry = EncounterEntry(name: "Goblin", count: 0)
         XCTAssertEqual(entry.count, 1)
+    }
+
+    // MARK: - Built-ins are read-only
+
+    func testDuplicateMakesAnEditableCopyUnderANewName() {
+        store.installDefaults()
+        let ambush = store.listEncounters().first { $0.name == "Goblin Ambush" }!
+
+        let copy = store.duplicate(ambush)
+
+        XCTAssertEqual(copy.name, "Goblin Ambush Copy")
+        XCTAssertEqual(copy.entries.map(\.name), ambush.entries.map(\.name))
+        XCTAssertEqual(copy.entries.map(\.count), ambush.entries.map(\.count))
+        XCTAssertFalse(copy.isBuiltIn)
+        XCTAssertNotNil(store.listEncounters().first { $0.name == "Goblin Ambush" })
+    }
+
+    /// Entries are snapshots, so a copy needs its own entry identities — sharing
+    /// them would make SwiftUI's list diffing treat two encounters' rows as the
+    /// same rows.
+    func testDuplicatedEntriesGetFreshIdentities() {
+        store.installDefaults()
+        let ambush = store.listEncounters().first { $0.name == "Goblin Ambush" }!
+
+        let copy = store.duplicate(ambush)
+
+        XCTAssertTrue(Set(copy.entries.map(\.id)).isDisjoint(with: Set(ambush.entries.map(\.id))))
     }
 }

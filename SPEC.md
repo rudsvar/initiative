@@ -597,30 +597,40 @@ written down; `DefaultContentTests` fails if an encounter names a creature that
 isn't in the roster, which would otherwise install combatants with no HP or AC
 and nothing at runtime would object.
 
-**Defaults are additive, never all-or-nothing.** `installNewDefaults()` runs on
-every launch on both stores and installs anything a `DefaultInstallLedger` has
-never *offered* before. The ledger — a list of names in `UserDefaults` — is what
-separates three cases that a simpler rule conflates:
+**Defaults are additive, never all-or-nothing.** `installDefaults()` runs on every
+launch on both stores and installs any built-in that isn't currently present:
 
 | Situation | Behaviour |
 |---|---|
-| New default, not present | installed |
-| New default, user already has that name | left alone, recorded as offered — their version is never overwritten |
-| Previously offered, now absent | user deleted it; stays deleted, permanently |
+| Built-in missing (new this version, or renamed away) | installed |
+| User already has a preset with that name | left alone — their version is never overwritten |
 
-The two rules this replaced were each wrong in one direction. "Seed only if the
-store is empty" meant defaults added in a later version never reached anyone who
-had already used the app, and a single custom creature made before first launch
-permanently cost you the whole roster. "Install anything currently missing" would
-have fixed that and resurrected everything you had deliberately deleted, on every
-launch.
+The rule this replaced, "seed only if the store is empty", meant defaults added
+in a later version never reached anyone who had already used the app, and a
+single custom creature made before first launch permanently cost you the whole
+roster.
 
-**There is deliberately no "Restore Defaults" action** on either screen. A
-deletion is final, which is the simpler rule to hold in your head, and both
-screens already sort what's left into Yours and Included so nothing is
-mysteriously absent. Restoring can be reintroduced if the need turns out to be
-real; until then it was a control that only ever undid something the user had
-just chosen to do.
+**Built-in content is read-only and permanent.** A built-in creature or encounter
+cannot be deleted, renamed, or edited — the library is a fixture, not a starting
+point to be whittled down. Concretely:
+
+- No Delete swipe action on a built-in row; it offers **Duplicate** instead.
+- Tapping one opens the same sheet with every field disabled and **Duplicate**
+  where Save would be. Showing the familiar fields greyed out makes the
+  relationship between original and copy obvious in a way a separate detail
+  screen wouldn't.
+- `PresetStore.upsert` — which runs whenever a combatant is added — **refuses to
+  modify a built-in**. Adding a combatant called "Goblin" with 12 HP would
+  otherwise quietly rewrite the built-in Goblin's stats: an edit to read-only
+  content through the back door, from a screen that isn't even the Creatures list.
+- Copies are named `"Goblin Copy"`, then `"Goblin Copy 2"`… (`UniqueName`), and
+  land in **Yours**, where they're fully editable and deletable.
+
+This also removes the need for a "Restore Defaults" action, and for any memory of
+what has been installed before: since a built-in can't be deleted, anything
+missing is either new in this version or something the user renamed into a
+creature of their own, and either way belongs back in the list. `installDefaults()`
+is therefore a plain what's-missing check run on every launch.
 
 ### Browsing the libraries
 

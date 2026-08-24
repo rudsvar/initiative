@@ -47,8 +47,10 @@ struct ContentView: View {
             TurnControlBar(
                 canGoBack: session.canGoToPreviousTurn,
                 canAdvance: !session.sortedCombatants.isEmpty,
+                playerViewEnabled: session.playerViewEnabled,
                 onPrevious: { session.previousTurn() },
-                onAdd: { showAddCombatant = true },
+                onTogglePlayerView: { session.playerViewEnabled.toggle() },
+                onShowLog: { showLog = true },
                 onNext: { session.nextTurn() }
             )
         }
@@ -84,25 +86,16 @@ struct ContentView: View {
                 .frame(width: 200)
             }
 
+            // "+" adds a combatant, exactly as it does on Creatures and
+            // Encounters. The options menu it replaced moved to the bottom bar,
+            // where the turn controls already are — the two things you reach for
+            // mid-combat now sit in the same place, and the one thing that's the
+            // same on every screen is in the same corner on every screen.
             ToolbarItem(placement: .navigationBarTrailing) {
-                Menu {
-                    Button {
-                        session.playerViewEnabled.toggle()
-                    } label: {
-                        Label(
-                            session.playerViewEnabled ? "Show DM View" : "Show Player View",
-                            systemImage: session.playerViewEnabled ? "eye.slash.fill" : "eye.fill"
-                        )
-                    }
-                    Button {
-                        showLog = true
-                    } label: {
-                        Label("Log", systemImage: "list.bullet.clipboard")
-                    }
-                } label: {
-                    Image(systemName: "line.3.horizontal")
+                Button(action: { showAddCombatant = true }) {
+                    Image(systemName: "plus")
                 }
-                .accessibilityLabel("Options")
+                .accessibilityLabel("Add Combatant")
             }
         }
         .onDisappear { autosave() }
@@ -149,15 +142,21 @@ struct ContentView: View {
     }
 }
 
-/// Previous / Add / Next, pinned below the initiative list. Written once with the
-/// iOS 26 glass treatment applied conditionally, rather than as two near-identical
-/// copies of the whole bar — the layout is the same either way, only the button
-/// material differs.
+/// Previous / options / Next, pinned below the initiative list. Written once with
+/// the iOS 26 glass treatment applied conditionally, rather than as two
+/// near-identical copies of the whole bar — the layout is the same either way,
+/// only the button material differs.
+///
+/// The centre slot holds the session's own controls (player view, log) rather
+/// than Add: adding a combatant is the same action it is on every other screen
+/// and belongs in the same top-right corner, while these two exist only here.
 private struct TurnControlBar: View {
     let canGoBack: Bool
     let canAdvance: Bool
+    let playerViewEnabled: Bool
     let onPrevious: () -> Void
-    let onAdd: () -> Void
+    let onTogglePlayerView: () -> Void
+    let onShowLog: () -> Void
     let onNext: () -> Void
 
     var body: some View {
@@ -188,7 +187,7 @@ private struct TurnControlBar: View {
             .disabled(!canGoBack)
             .frame(maxWidth: .infinity, alignment: .leading)
 
-            addButton(glass: glass)
+            optionsButton(glass: glass)
                 .frame(maxWidth: .infinity, alignment: .center)
 
             stepButton(
@@ -234,12 +233,22 @@ private struct TurnControlBar: View {
     }
 
     @ViewBuilder
-    private func addButton(glass: Bool) -> some View {
-        let content = Button(action: onAdd) {
-            Image(systemName: "plus")
+    private func optionsButton(glass: Bool) -> some View {
+        let content = Menu {
+            Button(action: onTogglePlayerView) {
+                Label(
+                    playerViewEnabled ? "Show DM View" : "Show Player View",
+                    systemImage: playerViewEnabled ? "eye.slash.fill" : "eye.fill"
+                )
+            }
+            Button(action: onShowLog) {
+                Label("Log", systemImage: "list.bullet.clipboard")
+            }
+        } label: {
+            Image(systemName: "line.3.horizontal")
                 .font(Theme.Typography.iconPrimaryAction)
         }
-        .accessibilityLabel("Add Combatant")
+        .accessibilityLabel("Session Options")
 
         if glass, #available(iOS 26.0, *) {
             content.buttonStyle(.glass)

@@ -49,12 +49,12 @@ struct RootView: View {
                 }
             }
         }
-        // Runs on every launch, not just the first: default content is additive,
-        // so creatures and encounters added in a later version reach people who
-        // have already been using the app. See DefaultInstallLedger.
+        // Runs on every launch, not just the first: built-in creatures and
+        // encounters are permanent fixtures, so anything missing — new in this
+        // version, or renamed away by the user — is put back.
         .onAppear {
-            presetStore.installNewDefaults()
-            encounterStore.installNewDefaults()
+            presetStore.installDefaults()
+            encounterStore.installDefaults()
         }
         // Forcing the selected palette's appearance makes every system-provided
         // color (Form/List default backgrounds, .primary/.secondary text,

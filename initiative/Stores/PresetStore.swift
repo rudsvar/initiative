@@ -26,15 +26,13 @@ struct CreaturePreset: Identifiable, Codable, Equatable {
 class PresetStore {
     private let fileManager = FileManager.default
     private let baseDirectory: URL
-    private let ledger: DefaultInstallLedger
 
-    init(baseDirectory: URL? = nil, defaults: UserDefaults = .standard) {
+    init(baseDirectory: URL? = nil) {
         let directory = baseDirectory
             ?? FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
                 .appendingPathComponent("Presets", isDirectory: true)
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         self.baseDirectory = directory
-        self.ledger = DefaultInstallLedger(defaults: defaults, key: "installedDefaultCreatures")
     }
 
     func listPresets() -> [CreaturePreset] {
@@ -69,10 +67,17 @@ class PresetStore {
     /// Creates a new preset or updates the existing one with a case-insensitive
     /// matching name. Called automatically whenever a combatant is added, so
     /// creature "kinds" become reusable without any explicit save action.
+    ///
+    /// **Built-in creatures are never modified by this.** Adding a combatant
+    /// called "Goblin" with 12 HP would otherwise quietly rewrite the built-in
+    /// Goblin's stats — an edit to read-only content through the back door.
+    /// Nothing is saved in that case; to keep customised stats, copy the built-in
+    /// and name the copy.
     func upsert(name: String, maxHP: Int?, armorClass: Int? = nil, initiativeBonus: Int? = nil) {
         let trimmed = name.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { return }
         if var existing = preset(named: trimmed) {
+            guard !existing.isBuiltIn else { return }
             existing.maxHP = maxHP ?? existing.maxHP
             existing.armorClass = armorClass ?? existing.armorClass
             existing.initiativeBonus = initiativeBonus ?? existing.initiativeBonus
@@ -82,25 +87,36 @@ class PresetStore {
         }
     }
 
-    /// Installs any default creature this install has never been offered before,
-    /// **in addition to** whatever the user already has. Called on every launch.
-    ///
-    /// Three cases, all deliberate (see `DefaultInstallLedger`):
-    /// - never offered, not present → installed
-    /// - never offered, but the user already has a preset by that name → left
-    ///   alone and recorded as offered, so their version is never overwritten
-    /// - offered before but now absent → the user deleted it; stays deleted
-    func installNewDefaults() {
-        let existingNames = Set(listPresets().map { $0.name.lowercased() })
-        var offered: [String] = []
+    /// Saves an editable copy of a preset under a fresh name, and returns it.
+    /// This is the only route from a built-in creature to a customised one.
+    @discardableResult
+    func duplicate(_ preset: CreaturePreset) -> CreaturePreset {
+        let copy = CreaturePreset(
+            name: UniqueName.forCopy(of: preset.name, avoiding: listPresets().map(\.name)),
+            maxHP: preset.maxHP,
+            armorClass: preset.armorClass,
+            initiativeBonus: preset.initiativeBonus
+        )
+        save(copy)
+        return copy
+    }
 
-        for creature in DefaultContent.creatures where !ledger.contains(creature.name) {
-            offered.append(creature.name)
-            guard !existingNames.contains(creature.name.lowercased()) else { continue }
+    /// Ensures every built-in creature is present, **in addition to** whatever the
+    /// user has. Called on every launch.
+    ///
+    /// Built-in creatures are permanent fixtures — the Creatures screen offers no
+    /// way to delete one — so "not currently present" can only mean new in this
+    /// version, or renamed into something of the user's own. Either way the right
+    /// answer is to put it there, which is why this is a plain
+    /// what's-missing check with no memory of what has been installed before.
+    ///
+    /// A preset the user already has under a built-in's name is left exactly as
+    /// it is; their edits are never overwritten by the default.
+    func installDefaults() {
+        let existingNames = Set(listPresets().map { $0.name.lowercased() })
+        for creature in DefaultContent.creatures where !existingNames.contains(creature.name.lowercased()) {
             save(creature.asPreset)
         }
-
-        ledger.markInstalled(offered)
     }
 }
 
