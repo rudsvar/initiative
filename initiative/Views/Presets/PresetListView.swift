@@ -8,6 +8,11 @@ struct PresetListView: View {
 
     @State private var presets: [CreaturePreset] = []
     @State private var editingPreset: CreaturePreset?
+    @State private var query = ""
+
+    private var matches: [CreaturePreset] {
+        presets.filter { ListSections.matches(query: query, in: $0.searchableText) }
+    }
 
     var body: some View {
         Group {
@@ -17,48 +22,20 @@ struct PresetListView: View {
                     systemImage: "pawprint",
                     description: Text("Add one here, or add a combatant during a session — it's saved here automatically.")
                 )
+            } else if matches.isEmpty {
+                ContentUnavailableView.search(text: query)
             } else {
+                let groups = ListSections.split(matches, isBuiltIn: \.isBuiltIn)
                 List {
-                    ForEach(presets) { preset in
-                        Button(action: { editingPreset = preset }) {
-                            HStack(spacing: Theme.Spacing.md) {
-                                Text(preset.name)
-                                    .font(Theme.Typography.rowTitle)
-                                    .foregroundColor(Theme.textPrimary)
-                                Spacer(minLength: Theme.Spacing.sm)
-                                // Same icon-led stat column as the combatant row,
-                                // so a creature reads the same wherever it appears.
-                                VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
-                                    if let maxHP = preset.maxHP {
-                                        statRow("heart.fill", "\(maxHP)")
-                                    }
-                                    if let armorClass = preset.armorClass {
-                                        statRow("shield.fill", "\(armorClass)")
-                                    }
-                                    if let bonus = preset.initiativeBonus, bonus != 0 {
-                                        statRow("die.face.5.fill", "\(bonus >= 0 ? "+" : "")\(bonus)")
-                                    }
-                                }
-                            }
-                        }
-                        .cardRowStyle()
-                        .cardRowLayout()
-                        .swipeActions(edge: .trailing) {
-                            // No extra confirmation dialog: swipe-to-reveal + tap
-                            // Delete is already two deliberate actions.
-                            Button(role: .destructive) {
-                                presetStore.delete(id: preset.id)
-                                presets = presetStore.listPresets()
-                            } label: {
-                                Label("Delete", systemImage: "trash")
-                            }
-                        }
-                    }
+                    section("Yours", presets: groups.mine)
+                    section("Included", presets: groups.builtIn)
                 }
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
+                .scrollDismissesKeyboard(.interactively)
             }
         }
+        .bottomSearchBar(text: $query, prompt: "Search creatures", isVisible: !presets.isEmpty)
         .themedScreen()
         .navigationTitle("Creatures")
         .navigationBarTitleDisplayMode(.inline)
@@ -90,6 +67,57 @@ struct PresetListView: View {
         .sheet(item: $editingPreset) { preset in
             EditPresetView(presetStore: presetStore, preset: preset) {
                 presets = presetStore.listPresets()
+            }
+        }
+    }
+
+    /// Hidden entirely when empty rather than shown as a bare header — a "Yours"
+    /// heading over nothing reads as something having gone missing.
+    @ViewBuilder
+    private func section(_ title: String, presets sectionPresets: [CreaturePreset]) -> some View {
+        if !sectionPresets.isEmpty {
+            Section {
+                ForEach(sectionPresets) { preset in
+                    Button(action: { editingPreset = preset }) {
+                        HStack(spacing: Theme.Spacing.md) {
+                            Text(preset.name)
+                                .font(Theme.Typography.rowTitle)
+                                .foregroundColor(Theme.textPrimary)
+                            Spacer(minLength: Theme.Spacing.sm)
+                            // Icon-led like the combatant row, so a creature
+                            // reads the same wherever it appears — but laid out
+                            // across rather than stacked. Stacked, three stats
+                            // make every row three lines tall, and at 70-odd
+                            // creatures that costs more scrolling than the
+                            // aligned columns are worth.
+                            HStack(spacing: Theme.Spacing.md) {
+                                if let maxHP = preset.maxHP {
+                                    statRow("heart.fill", "\(maxHP)")
+                                }
+                                if let armorClass = preset.armorClass {
+                                    statRow("shield.fill", "\(armorClass)")
+                                }
+                                if let bonus = preset.initiativeBonus, bonus != 0 {
+                                    statRow("die.face.5.fill", "\(bonus >= 0 ? "+" : "")\(bonus)")
+                                }
+                            }
+                        }
+                    }
+                    .cardRowStyle()
+                    .cardRowLayout()
+                    .swipeActions(edge: .trailing) {
+                        // No extra confirmation dialog: swipe-to-reveal + tap
+                        // Delete is already two deliberate actions.
+                        Button(role: .destructive) {
+                            presetStore.delete(id: preset.id)
+                            presets = presetStore.listPresets()
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                    }
+                }
+            } header: {
+                Text(title).sectionLabel()
             }
         }
     }

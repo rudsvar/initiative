@@ -638,10 +638,37 @@ permanently cost you the whole roster. "Install anything currently missing" woul
 have fixed that and resurrected everything you had deliberately deleted, on every
 launch.
 
-**Restore Defaults** (in the options menu on both the Creatures and Encounters
-screens) is the sole override: it re-adds every default not currently present,
-including ones deleted on purpose. It's behind a menu rather than a bar button
-because it's the one action here that undoes a deliberate deletion.
+**Restore Default Creatures** (in the Creatures screen's options menu) is the
+sole override: it re-adds every default creature not currently present, including
+ones deleted on purpose. It's behind a menu rather than a bar button because it's
+the one action here that undoes a deliberate deletion. There is deliberately no
+equivalent for encounters — an encounter is cheap to rebuild by hand, and the
+button was removed as clutter.
+
+### Browsing the libraries
+
+Creatures and Encounters are the same screen twice — a saved library mixing what
+shipped with the app and what the user has built — so they're presented
+identically, from `Common/ListSections.swift` and `Common/SearchBar.swift`:
+
+- **Two sections, "Yours" above "Included"**, so the handful of things you made
+  aren't buried in seventy built-ins. Origin is decided by *name* rather than a
+  stored flag: renaming a default makes it yours, editing its stats doesn't. That
+  needs no change to the on-disk format and can't fall out of step with the
+  default roster. An empty section is hidden entirely rather than shown as a bare
+  header.
+- **Search pinned at the bottom of the screen**, not the system `.searchable`
+  bar under the title — it's where the thumb is on a phone held one-handed at a
+  table, and the combat screen already puts its controls in a bottom bar, so it
+  reads as the same shape rather than a second convention. Its chrome matches
+  that bar: page color, hairline top edge, nothing else.
+- Terms are ANDed but may match different fields, so narrowing works ("giant
+  spider" doesn't return every Giant) and an encounter is findable by what's
+  *in* it ("troll boar" finds Bridge Troll). Matching is
+  `localizedStandardContains` — case- and diacritic-insensitive, as user-facing
+  search should be.
+- No results shows `ContentUnavailableView.search(text:)`; the bar itself is
+  hidden when the library is empty, since there's nothing to filter.
 
 ## Design & Theming
 

@@ -10,6 +10,11 @@ struct EncounterListView: View {
 
     @State private var encounters: [Encounter] = []
     @State private var editingEncounter: Encounter?
+    @State private var query = ""
+
+    private var matches: [Encounter] {
+        encounters.filter { ListSections.matches(query: query, in: $0.searchableText) }
+    }
 
     var body: some View {
         Group {
@@ -19,37 +24,20 @@ struct EncounterListView: View {
                     systemImage: "shield.lefthalf.filled",
                     description: Text("Prepare a named list of creatures ahead of time to start a session with.")
                 )
+            } else if matches.isEmpty {
+                ContentUnavailableView.search(text: query)
             } else {
+                let groups = ListSections.split(matches, isBuiltIn: \.isBuiltIn)
                 List {
-                    ForEach(encounters) { encounter in
-                        Button(action: { editingEncounter = encounter }) {
-                            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                                Text(encounter.name)
-                                    .font(Theme.Typography.rowTitle)
-                                    .foregroundColor(Theme.textPrimary)
-                                Text(summary(for: encounter))
-                                    .font(Theme.Typography.caption)
-                                    .foregroundColor(Theme.textTertiary)
-                                    .lineLimit(2)
-                                    .multilineTextAlignment(.leading)
-                            }
-                        }
-                        .cardRowStyle()
-                        .cardRowLayout()
-                        .swipeActions(edge: .trailing) {
-                            Button(role: .destructive) {
-                                encounterStore.delete(id: encounter.id)
-                                encounters = encounterStore.listEncounters()
-                            } label: {
-                                Label("Delete", systemImage: "trash")
-                            }
-                        }
-                    }
+                    section("Yours", encounters: groups.mine)
+                    section("Included", encounters: groups.builtIn)
                 }
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
+                .scrollDismissesKeyboard(.interactively)
             }
         }
+        .bottomSearchBar(text: $query, prompt: "Search encounters and creatures", isVisible: !encounters.isEmpty)
         .themedScreen()
         .navigationTitle("Encounters")
         .navigationBarTitleDisplayMode(.inline)
@@ -60,27 +48,47 @@ struct EncounterListView: View {
                 }
                 .accessibilityLabel("New Encounter")
             }
-            // Behind the menu rather than as a bare bar button, for the same
-            // reason as the Creatures screen: it's the one action that overrides
-            // a deliberate deletion, so it shouldn't be a mistimed tap away.
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Menu {
-                    Button {
-                        encounterStore.restoreMissingDefaults()
-                        encounters = encounterStore.listEncounters()
-                    } label: {
-                        Label("Restore Default Encounters", systemImage: "arrow.counterclockwise")
-                    }
-                } label: {
-                    Image(systemName: "line.3.horizontal")
-                }
-                .accessibilityLabel("Options")
-            }
         }
         .onAppear { encounters = encounterStore.listEncounters() }
         .sheet(item: $editingEncounter) { encounter in
             EditEncounterView(encounterStore: encounterStore, presetStore: presetStore, encounter: encounter) {
                 encounters = encounterStore.listEncounters()
+            }
+        }
+    }
+
+    /// Hidden entirely when empty rather than shown as a bare header — see the
+    /// matching helper on the Creatures screen, which both lists mirror.
+    @ViewBuilder
+    private func section(_ title: String, encounters sectionEncounters: [Encounter]) -> some View {
+        if !sectionEncounters.isEmpty {
+            Section {
+                ForEach(sectionEncounters) { encounter in
+                    Button(action: { editingEncounter = encounter }) {
+                        VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                            Text(encounter.name)
+                                .font(Theme.Typography.rowTitle)
+                                .foregroundColor(Theme.textPrimary)
+                            Text(summary(for: encounter))
+                                .font(Theme.Typography.caption)
+                                .foregroundColor(Theme.textTertiary)
+                                .lineLimit(2)
+                                .multilineTextAlignment(.leading)
+                        }
+                    }
+                    .cardRowStyle()
+                    .cardRowLayout()
+                    .swipeActions(edge: .trailing) {
+                        Button(role: .destructive) {
+                            encounterStore.delete(id: encounter.id)
+                            encounters = encounterStore.listEncounters()
+                        } label: {
+                            Label("Delete", systemImage: "trash")
+                        }
+                    }
+                }
+            } header: {
+                Text(title).sectionLabel()
             }
         }
     }

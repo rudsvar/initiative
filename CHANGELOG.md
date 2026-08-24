@@ -4,6 +4,30 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Added — searching and sectioning the libraries
+
+- **Search on both Creatures and Encounters**, pinned at the bottom of the
+  screen rather than under the navigation title: it's where the thumb is on a
+  phone held one-handed, and the combat screen already puts its controls in a
+  bottom bar. One `SearchBar` component, applied identically to both
+- Terms are ANDed but may match different fields — "giant spider" doesn't return
+  every Giant, and "troll boar" finds the Bridge Troll encounter, whose *name*
+  contains neither word. Matching is case- and diacritic-insensitive
+- **Both lists split into "Yours" above "Included"**, so the few things you made
+  aren't buried in seventy built-ins. Origin is decided by name, so renaming a
+  default makes it yours while editing its stats doesn't — no change to the
+  on-disk format, and nothing to fall out of step with the roster
+- Creature rows lay their stats out across rather than stacked, halving row
+  height. Stacked, three stats made every row three lines tall, which at 70-odd
+  creatures cost more scrolling than the aligned columns were worth
+
+### Removed
+
+- **Restore Default Encounters.** An encounter is cheap enough to rebuild by hand
+  that the button was clutter. `EncounterStore.restoreMissingDefaults()` went
+  with it rather than being left as an API with no caller; the Creatures
+  equivalent stays
+
 ### Added — starter content
 
 - **The default creature roster grew from 11 to 71** — beasts, people, warbands,

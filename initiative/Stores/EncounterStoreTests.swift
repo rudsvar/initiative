@@ -76,19 +76,6 @@ final class EncounterStoreTests: XCTestCase {
         XCTAssertNil(store.listEncounters().first { $0.name == doomed.name })
     }
 
-    func testRestoreMissingDefaultsBringsBackDeletedOnesOnly() {
-        store.installNewDefaults()
-        let doomed = store.listEncounters().first { $0.name == "Bridge Troll" }!
-        store.delete(id: doomed.id)
-        store.save(Encounter(name: "My Own Fight"))
-
-        store.restoreMissingDefaults()
-
-        let names = store.listEncounters().map(\.name)
-        XCTAssertEqual(names.count, DefaultContent.encounters.count + 1)
-        XCTAssertTrue(names.contains("Bridge Troll"))
-        XCTAssertTrue(names.contains("My Own Fight"))
-    }
 
     func testListEncountersEmptyInitially() {
         XCTAssertTrue(store.listEncounters().isEmpty)

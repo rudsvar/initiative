@@ -60,6 +60,8 @@ initiative/
 │                        ThemePalette.swift (every palette's actual values),
 │                        ThemeController.swift (which one is selected + persistence),
 │                        ViewExtensions.swift (the shared view modifiers built on them),
+│                        ListSections.swift + SearchBar.swift (how the Creatures
+│                        and Encounters libraries are searched and sectioned),
 │                        Conditions.swift, StatusBand.swift, FlowLayout.swift,
 │                        SelectAllTextField.swift — shared across screens
 ├── Assets.xcassets/   # Images, colors, app icon
@@ -92,9 +94,14 @@ project.yml            # XcodeGen configuration (regenerates .xcodeproj)
   `themedScreen()` (full-screen backdrop), `cardRowStyle(isHighlighted:)` +
   `cardRowLayout()` (every list row in the app), `sectionCard()` (a group of
   controls on a detail screen), `fieldStyle(width:)` (text input chrome),
-  `Text.sectionLabel()` (tracked caps field label) and `Text.cardHeading()`
-  (serif card title). These exist because each was previously copy-pasted per
-  screen and drifted apart.
+  `Text.sectionLabel()` (tracked caps field label), `Text.cardHeading()`
+  (serif card title) and `bottomSearchBar(text:prompt:isVisible:)`. These exist
+  because each was previously copy-pasted per screen and drifted apart.
+- **The Creatures and Encounters screens are deliberately the same screen twice**
+  — both are a saved library mixing built-in and user-made entries, so both get
+  search (bottom-anchored, `SearchBar`) and a Yours-above-Included split from the
+  shared `ListSections`. Change one and change the other; the matching and
+  splitting live outside the views precisely so they can be tested.
 - **The palette's rules, not just its values** — `Theme`'s doc comment is the
   authority, but in short: surfaces come from the elevation ladder
   (`background` → `surface` → `surfaceRaised`) rather than from borders, borders

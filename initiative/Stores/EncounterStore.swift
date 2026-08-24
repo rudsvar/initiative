@@ -96,15 +96,4 @@ class EncounterStore {
 
         ledger.markInstalled(offered)
     }
-
-    /// Adds back every default encounter not currently present, leaving existing
-    /// ones (edited or not) untouched. Explicit action only — it's the one thing
-    /// that overrides a deliberate deletion.
-    func restoreMissingDefaults() {
-        let existingNames = Set(listEncounters().map { $0.name.lowercased() })
-        for template in DefaultContent.encounters where !existingNames.contains(template.name.lowercased()) {
-            save(DefaultContent.encounter(from: template))
-        }
-        ledger.markInstalled(DefaultContent.encounters.map(\.name))
-    }
 }

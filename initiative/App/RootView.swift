@@ -68,7 +68,6 @@ struct RootView: View {
         .preferredColorScheme(Theme.colorScheme)
         .tint(Theme.accent)
     }
-
 }
 
 #Preview {
