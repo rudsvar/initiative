@@ -816,89 +816,149 @@ anything numeric**:
 
 **Impact**: Every view should have a `#Preview` block; test UI visually during development.
 
-## Researched Proposals (Not Yet Implemented)
+## Planned: one mechanism for everything that ticks
 
-Findings from direct research requests — documented for a future decision,
-not implemented. Nothing here changes current behavior.
+**Not implemented.** This supersedes the earlier separate proposals for
+caster-anchored durations, recharge timers and save-based reminders — they turned
+out to be the same feature seen from three angles.
 
-### Caster-anchored durations, recharge timers, generic turn timer
+### The observation
 
-**Is a "target/caster" concept needed again?** A target-based duration
-(`.untilStartOfTargetTurn`/`.untilEndOfTargetTurn`) existed early on and was
-removed on the reasoning that "effects are always self-applied to the
-combatant they're on, so a target never made sense." That's still correct
-for the common case — "Stunned until the end of *this combatant's own* next
-turn" is exactly what today's `.untilStartOfTheirTurn`/`.untilEndOfTheirTurn`
-already models, since "their" = the combatant carrying the effect.
+The app already has three things that are secretly one thing:
 
-But there's a real case that's genuinely different: some effects are
-anchored to a turn boundary that belongs to *a different* combatant than
-the one carrying the effect — most naturally, the caster. Example pattern:
-an effect placed on Target A that expires at the start/end of Caster B's
-next turn, not Target A's. The combatant whose turn matters isn't "the
-target" in the old removed sense (recipient of the effect) — it's an
-arbitrary *anchor combatant*, which happens to often be the caster.
+- an **effect** (a name that expires after N turn boundaries),
+- the **reaction marker** (an effect with a flag on it), and
+- anything the DM currently tracks in their head because the app can't hold it.
 
-**Proposal**: generalize rather than reintroduce the old shape. Replace (or
-add alongside) today's owner-only duration with an anchor-combatant duration:
-`.untilStartOfCombatantTurn(anchorID: UUID, remainingTurns: Int)` /
-`.untilEndOfCombatantTurn(...)`, where the anchor defaults to the effect's
-own owner (today's behavior, unchanged for the common case) but can be set
-to any other combatant in `AddEffectView` when the effect's expiry is
-someone else's turn instead. This is a strict superset of both the old
-target-based type and today's owner-only type — one mechanism, not two.
-**Not implemented** — would need `AddEffectView`'s combatant picker back
-(removed with the old target-based type), `DurationType`'s manual Codable
-brought back to carry an anchor ID, and `removeExpiredEffects` to check
-against the anchor rather than assume owner.
+Everything in that third category has the same shape: *a named thing attached to
+a combatant, which resolves at a particular turn boundary, by one of a small
+number of rules.* A dragon's breath weapon isn't a new feature — it's an effect
+whose resolution rule happens to be "roll a d6 and see" instead of "count down
+from 1". Building recharge, save-ends, ongoing damage and concentration as four
+separate features is exactly how this screen would get cluttered; building one
+mechanism with four resolution rules is how it doesn't.
 
-**Recharge timers (e.g. a dragon's breath weapon)**: no new mechanism
-needed — a recharge cooldown is already fully expressible as a normal
-named effect with a turn-count duration (e.g. an effect named "Breath
-Weapon Recharging" with `remainingTurns: 3` on the monster itself). The
-only piece that's genuinely missing is a *non-deterministic* recharge (5th-edition's
-"roll a d6, recharges on 5-6 at the start of each turn") — that would need
-either a manual "roll succeeded, remove effect" swipe (already possible
-today, no new feature) or an explicit dice-adjacent UI, which conflicts
-with the project's standing non-goal of "dice rolling or complex rules
-automation." Recommendation: don't build anything new here — the existing
-effect system already covers the common case, and true random-recharge
-support isn't worth the scope given the non-goal.
+### The shape
 
-**Generic turn timer**: everything above is still anchored to *some*
-combatant's turn. A standalone timer independent of any one combatant
-(e.g. "this lasts 3 full rounds regardless of whose turn it is") isn't
-expressible today. Could be modeled as a session-level construct keyed off
-`roundNumber` alone rather than any combatant's turn boundary. No concrete
-want expressed yet beyond "maybe" — low priority, flagged for later if a
-real use case shows up.
+Two fields on `Effect`, both orthogonal, neither multiplying the other's cases:
 
-### In-app reminders for save-based conditions
+```swift
+struct Effect {
+    var name: String
+    var kind: EffectKind          // .condition | .cooldown        (new, defaults .condition)
+    var anchorID: UUID?           // whose turn it keys off; nil = the owner  (new)
+    var durationType: DurationType
+}
 
-**The gap**: today's `DurationType` is purely turn-count based
-(`remainingTurns`) — there's no way to express "lasts until the affected
-combatant succeeds on a saving throw," a common condition-duration pattern
-(e.g. a condition that allows a save at the end of each of the creature's
-turns). Nothing currently reminds the DM a save is due.
+enum DurationType {
+    case untilStartOfTheirTurn(remainingTurns: Int)   // today, unchanged
+    case untilEndOfTheirTurn(remainingTurns: Int)     // today, unchanged
+    case recharge(die: Int, succeedsOn: Int)          // rolled at the anchor's turn start
+    case untilSaveSucceeds(timing: TurnBoundary)      // prompts; never auto-expires
+    case manual                                       // sits until removed by hand
+}
+```
 
-**Proposal**: add a duration case that doesn't auto-expire by turn count —
-e.g. `DurationType.untilSaveSucceeds` — paired with a lightweight in-app
-reminder, not a system push notification. This is a single-device,
-foreground-only app (the DM is looking at the screen during their own
-session), so `UNUserNotificationCenter` local notifications would be the
-wrong tool — they need a permission prompt and are meant for when the app
-isn't in the foreground, neither of which applies here. Instead:
-`CombatSession.nextTurn()` would check the incoming current combatant's
-effects for any `.untilSaveSucceeds` entries and surface them (a transient
-banner or `.alert`, e.g. "Roll a save for Alice: Poisoned") with two
-actions — **Save Made** (removes the effect) or **Dismiss** (effect stays,
-no further reminder until their next turn). Removal stays a manual DM
-call either way (matches the project's "no automated rules" stance) — the
-addition is purely the reminder, not resolving the save itself.
+**`anchorID` is a field, not more enum cases.** The earlier proposal folded the
+anchor into the duration (`.untilStartOfCombatantTurn(anchorID:…)`), which
+doubles the case count for a concern that varies independently of how the effect
+resolves. As a field it composes: any resolution rule can key off anyone's turn.
+`nil` means the owner, so every existing effect keeps its meaning and the common
+case needs no UI.
 
-**Not implemented** — would need the new `DurationType` case (with the
-usual Codable back-compat handling), a way to mark it from `AddEffectView`,
-and a reminder-surfacing hook in `ContentView` around `nextTurn()`.
+**`kind` exists only to change wording and weight**, not behaviour. A *condition*
+is something wrong with you; a *cooldown* is something you can't do yet. They
+expire identically, but "Breath Weapon" shouldn't shout in the same red as
+"Burning" — cooldown chips take the quiet `textTertiary` treatment the reaction
+chip already uses. It also retires `isReactionMarker`: reaction-used becomes a
+cooldown with a one-turn duration, which is what it always was.
+
+### What this then supports
+
+| Mechanic | Expressed as |
+|---|---|
+| Reaction used | cooldown, `.untilStartOfTheirTurn(1)` — what it already is |
+| **Dragon's breath, recharge 5–6** | cooldown, `.recharge(die: 6, succeedsOn: 5)` |
+| Once per encounter | cooldown, `.manual` |
+| Stunned, save ends | condition, `.untilSaveSucceeds(.endOfTurn)` |
+| Blinded for 3 rounds | condition, `.untilEndOfTheirTurn(3)` — what it already is |
+| Held by a spell the caster maintains | condition on the target, `anchorID` = caster |
+
+### The turn prompt
+
+The second half, and the part that makes it usable rather than merely
+expressible: when a combatant's turn begins, anything of theirs needing attention
+is surfaced **once, together**, not as badges to notice.
+
+- `.recharge` rolls automatically and reports the result ("Breath Weapon
+  recharged — rolled 5"). The app already rolls d20 for initiative, so rolling a
+  d6 here is consistent with what it does, not a new kind of thing. The roll goes
+  through the existing log, which is also the undo mechanism, so a roll the DM
+  doesn't want is one swipe from gone.
+- `.untilSaveSucceeds` asks ("Save for Wren: Frightened?") with **Saved** /
+  **Not yet**. The app never resolves the save — that's the DM's call, and the
+  standing no-rules-automation line stays exactly where it is. What's added is
+  the reminder, not the ruling.
+- One sheet per turn, dismissible, never blocking. Nothing appears when there's
+  nothing pending, which is most turns.
+
+### Keeping it uncluttered
+
+Four rules, and they're the whole reason this is one feature and not six:
+
+1. **One mechanism, not one feature per mechanic.** Anything that ticks is an
+   effect with a resolution rule. New mechanics should arrive as new rules, and
+   if a mechanic can't be expressed as one, that's a signal to reconsider it
+   rather than to add a parallel system.
+2. **The default path doesn't change.** Adding "Stunned for 2 turns" involves
+   exactly the taps it does today. `kind` defaults to `.condition`, `anchorID`
+   defaults to the owner.
+3. **Complexity is quick-picked, not configured.** A small `CooldownLibrary`
+   (Recharge 5–6, Recharge 6, Recharge 4–6, Once per encounter) sits beside the
+   existing condition chips, so the common cases are one tap. The anchor picker
+   and a custom die live behind an **Advanced** disclosure that is closed by
+   default and that most sessions never open.
+4. **Nothing new on the combat list unless it's live.** Chips already work this
+   way; cooldowns join them in the quiet treatment rather than adding a row.
+
+### Also worth having, in rough priority order
+
+Each is a resolution rule or a small field, not a subsystem:
+
+1. **Ongoing damage** — "5 fire at the start of your turn". An amount on an
+   effect, applied at its boundary through the existing HP log so it's undoable
+   and shows up in the log like any other damage. The `ongoing` condition
+   category already exists and currently only means a colour; this makes it mean
+   something. Cheapest real win on this list.
+2. **Concentration** — a link from an effect to the caster maintaining it, so
+   that dropping or ending concentration clears everything it holds up. Needs
+   `anchorID` plus a prompt when the anchor takes damage. Common enough at the
+   table to be worth it.
+3. **Limited uses** — "3 charges left", a counter that decrements on tap. Fits as
+   a `.manual` cooldown carrying a count.
+4. **Death saves** — a 3-successes/3-failures counter for a downed combatant.
+   Today "dead" is binary. This is a per-combatant counter rather than an effect,
+   so it's the one item here that doesn't fold into the mechanism above.
+5. **Temporary HP** — absorbs damage before real HP. A field on `Combatant` and a
+   change to how damage applies; touches the HP log's undo, so not free.
+6. **Round-anchored effects** — "at the start of round 4, the bridge collapses",
+   or an environmental effect on a fixed initiative count. Anchored to the round
+   rather than to any combatant; would need `anchorID` to become an enum
+   (`.combatant(UUID)` / `.round`) rather than an optional.
+
+**Declined**, for the same reasons as before: auras and zones (needs a map, and
+this app deliberately has no spatial model), legendary and lair actions as
+first-class mechanics (excluded on direct instruction; a lair action is
+expressible as a round-anchored effect if item 6 ever lands), and anything that
+resolves a rule rather than reminding the DM to.
+
+### Migration note
+
+`Effect` and `DurationType` are a durable on-disk format
+(`CodableCompatibilityTests` guards this). New fields must decode as absent —
+`kind` → `.condition`, `anchorID` → `nil` — and the existing `isReactionMarker`
+has to keep decoding until the cooldown kind can be relied on to have replaced
+it. That's a decode-side alias, not a data migration.
 
 ## Non-Goals
 
@@ -906,7 +966,9 @@ and a reminder-surfacing hook in `ContentView` around `nextTurn()`.
 - Complex state management libraries (Redux, MobX) until needed
 - Extensive third-party dependencies
 - Character sheet integration or detailed stat tracking
-- Dice rolling or complex rules automation
+- Resolving rules on the DM's behalf. Rolling *is* in scope where the app is
+  the natural place for it — initiative already rolls, and recharge would (see
+  the planned effects work) — but attack/damage/save resolution is not
 - Network multiplayer (local single-device only)
 - Audio notifications or detailed sound design
 - Deep customization of rules or mechanics (keep it generic/system-agnostic)

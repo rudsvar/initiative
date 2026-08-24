@@ -4,6 +4,15 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Planned
+
+- **One mechanism for everything that ticks** (SPEC → "Planned"). Recharge
+  abilities (a dragon's breath, "recharge 5–6"), save-ends conditions, ongoing
+  damage and concentration are the same shape as the effects already in the app,
+  not four new features: a named thing on a combatant that resolves at a turn
+  boundary by one of a few rules. Supersedes the three separate proposals that
+  were previously recorded. Nothing implemented yet
+
 ### Added — searching and sectioning the libraries
 
 - **Search on both Creatures and Encounters**, pinned at the bottom of the
