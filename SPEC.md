@@ -900,10 +900,16 @@ The second half, and the part that makes it usable rather than merely
 expressible: when a combatant's turn begins, anything of theirs needing attention
 is surfaced **once, together**, not as badges to notice.
 
-- Each pending item is one line: what to roll, apply, or be aware of. *"Bog Hulk —
-  roll to recharge Breath Weapon (5–6 on a d6)"*, *"Wren — roll a save vs
-  Frightened (DC 14 Con)"*. Two answers: **Made it** (the effect goes) or
-  **Not yet** (it stays, and asks again next turn).
+- Each pending item is one line, and answering it is one tap. *"Bog Hulk — roll
+  to recharge Breath Weapon (5–6 on a d6)"* and *"Wren — roll a save vs
+  Frightened (DC 14 Con)"* both offer **Made it** (the effect goes) / **Not yet**
+  (it stays, and asks again next turn). A death save offers **Success** /
+  **Failure** instead, because there both outcomes count for something.
+- Three kinds of thing land here: something needing an answer
+  (`.untilRollSucceeds`, death saves), something with an amount to apply (ongoing
+  damage), and nothing else. Ordinary countdowns stay out — every Blinded and
+  Restrained in the game reporting "still blinded" would bury the two lines that
+  actually want a decision.
 - **The app never rolls and never decides.** The dice are on the table; the
   phone's job is to remember that a roll is owed, which is the part that
   actually gets forgotten mid-combat. Whatever the DM answers goes through the
@@ -950,8 +956,8 @@ Each is a resolution rule or a small field, not a subsystem:
    table to be worth it.
 3. **Limited uses** — "3 charges left", a counter that decrements on tap. Fits as
    a `.manual` cooldown carrying a count.
-4. **Death saves** — see below. It folds into the mechanism after all; an
-   earlier draft of this section had it as a separate counter, which was wrong.
+4. **Death saves** — see below. Reuses the turn prompt, but keeps its own state;
+   it's the one item here that genuinely doesn't fold into the effect mechanism.
 5. **Temporary HP** — absorbs damage before real HP. A field on `Combatant` and a
    change to how damage applies; touches the HP log's undo, so not free.
 6. **Round-anchored effects** — "at the start of round 4, the bridge collapses",
@@ -967,45 +973,49 @@ resolves a rule rather than reminding the DM to.
 
 ### Death saves
 
-A downed combatant is on a **three-turn fuse**, not a scoreboard. When someone
-starts dying they get a countdown effect that decrements on each of their own
-turns exactly like any other duration, and when it runs out they're dead.
-
-```
-condition "Dying", .untilEndOfTheirTurn(remainingTurns: 3), reminds: true
-```
-
-No new rule and no new counter — this is the duration the app has always had,
-plus a reminder. (An earlier draft called this the one mechanic that wouldn't
-fold in. It folds in.)
-
-**What the simplification trades away**, stated plainly: it can't represent
-rolling your way back up — three successes stabilising you, a natural 20, two
-failures then a heal. The app counts turns, not outcomes. Stabilising is the DM
-removing the effect by hand, and healing above 0 removes it automatically. That's
-the right trade for a tracker whose whole job is *remembering*, not adjudicating:
-the alternative is asking the DM to report six roll outcomes per downed
-character, which is more tapping than the thing it replaces.
-
-**The reminder is the point.** On that combatant's turn the prompt says *"Wren is
-dying — roll a death save (2 turns left)"*. It never blocks, never takes the turn
-away, and dismissing it doesn't stop the countdown. This is the third thing the
-turn prompt surfaces, alongside "needs an answer" and "has an amount to apply":
+**At the start of a dying combatant's turn**, the prompt asks for the roll's
+outcome, and it's one tap: **Success** or **Failure**. Three successes and
+they're stable; three failures and they're dead. Start of turn rather than end,
+because that's when the turn arrives and the roll is owed — and it's the same
+boundary the rest of the prompt fires at, so a downed character's whole situation
+is on one screen at one moment rather than split across their turn.
 
 ```swift
-var reminds: Bool   // default false; true means "mention this on their turn"
+// on Combatant
+var deathSaves: DeathSaves?          // nil unless dying
+
+struct DeathSaves: Codable, Equatable {
+    var successes: Int               // 3 → stable, effect clears
+    var failures: Int                // 3 → dead
+}
 ```
 
-`.untilRollSucceeds` implies it. Ordinary countdowns don't set it, or every
-Blinded and Restrained in the game would fill the prompt with nothing to do.
+**This one does not fold into the effect mechanism, and shouldn't be forced to.**
+Two earlier drafts of this section got it wrong in opposite directions — first as
+a standalone counter with no reuse, then as a plain three-turn countdown. The
+countdown version is wrong because the outcome of each roll matters: you can fail
+twice and be healed, or succeed three times and stabilise, and a timer can
+express neither. Bending `DurationType` to carry two tallies and a
+death-on-failure rule would give it a case with five associated values that
+exactly one thing uses, which is worse than a small honest special case.
 
-**Open decision — when does dying start?** Auto-applying it whenever HP hits 0
-would put a three-turn fuse on all six goblins you just killed, and the app has
-no notion of player versus monster to tell them apart. Recommended: make it a
-**quick-pick** (one tap on the detail screen when someone drops), and revisit
-automatic application if a player/NPC flag on `Combatant` ever lands for other
-reasons. Not decided unilaterally, because "0 HP means dead" is what the app does
-today and changing it silently would be a behaviour change to every combat.
+What *is* shared is the part worth sharing: the turn prompt. Death saves are one
+more line in it, next to recharges and save-ends, using the same reminder
+infrastructure and the same never-block rule.
+
+- **Never blocks.** Dismissing records nothing and asks again next turn; the
+  count only moves when the DM taps.
+- **Healing above 0 clears it.** So does removing it by hand — that's
+  "stabilised".
+- Every change goes through the existing log, so a mistapped Failure is one
+  undo away.
+
+**Open decision — when does dying start?** Auto-applying at 0 HP would put death
+saves on all six goblins you just killed, and the app has no notion of player
+versus monster to tell them apart. Recommended: a **quick-pick** (one tap on the
+detail screen when someone drops), revisited if a player/NPC flag on `Combatant`
+ever lands for other reasons. Not decided unilaterally, because "0 HP means dead"
+is what the app does today and changing that silently would alter every combat.
 
 ### Migration note
 
