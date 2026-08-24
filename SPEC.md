@@ -853,7 +853,7 @@ struct Effect {
 enum DurationType {
     case untilStartOfTheirTurn(remainingTurns: Int)   // today, unchanged
     case untilEndOfTheirTurn(remainingTurns: Int)     // today, unchanged
-    case untilRollSucceeds(at: TurnBoundary, hint: String?)   // reminds; never auto-expires
+    case untilRollSucceeds(at: TurnBoundary, roll: RollTarget?)  // prompts; never auto-expires
     case manual                                       // sits until removed by hand
 }
 ```
@@ -865,9 +865,10 @@ a success this goes away". They differ only in the verb, which `kind` already
 carries — *roll to recharge* for a cooldown, *roll a save* for a condition. Hence
 one case rather than a `.recharge` and a `.untilSaveSucceeds`.
 
-`hint` is short free text for **what** to roll — `"5–6 on a d6"`, `"DC 13 Con"` —
-shown in the reminder and nowhere else, so chips stay short. It's optional
-because the DM often already knows.
+`roll` says **what** to roll — a die and a target where the app can evaluate it
+("5–6 on a d6"), or just a label where it can't ("DC 13 Con"). Shown in the
+prompt and nowhere else, so chips stay short. See *The turn prompt* for why that
+distinction decides whether the DM is offered an **Auto** button.
 
 **`anchorID` is a field, not more enum cases.** The earlier proposal folded the
 anchor into the duration (`.untilStartOfCombatantTurn(anchorID:…)`), which
@@ -888,36 +889,66 @@ cooldown with a one-turn duration, which is what it always was.
 | Mechanic | Expressed as |
 |---|---|
 | Reaction used | cooldown, `.untilStartOfTheirTurn(1)` — what it already is |
-| **Dragon's breath, recharge 5–6** | cooldown, `.untilRollSucceeds(at: .startOfTurn, hint: "5–6 on a d6")` |
+| **Dragon's breath, recharge 5–6** | cooldown, `.untilRollSucceeds(at: .startOfTurn, roll: d6 on 5+)` |
 | Once per encounter | cooldown, `.manual` |
-| Stunned, save ends | condition, `.untilRollSucceeds(at: .endOfTurn, hint: "DC 14 Con")` |
+| Stunned, save ends | condition, `.untilRollSucceeds(at: .endOfTurn, roll: label "DC 14 Con")` |
 | Blinded for 3 rounds | condition, `.untilEndOfTheirTurn(3)` — what it already is |
 | Held by a spell the caster maintains | condition on the target, `anchorID` = caster |
 
 ### The turn prompt
 
 The second half, and the part that makes it usable rather than merely
-expressible: when a combatant's turn begins, anything of theirs needing attention
-is surfaced **once, together**, not as badges to notice.
+expressible: when a combatant's turn begins, everything of theirs needing
+attention is surfaced **once, together**, not as badges to notice.
 
-- Each pending item is one line, and answering it is one tap. *"Bog Hulk — roll
-  to recharge Breath Weapon (5–6 on a d6)"* and *"Wren — roll a save vs
-  Frightened (DC 14 Con)"* both offer **Made it** (the effect goes) / **Not yet**
-  (it stays, and asks again next turn). A death save offers **Success** /
-  **Failure** instead, because there both outcomes count for something.
-- Three kinds of thing land here: something needing an answer
-  (`.untilRollSucceeds`, death saves), something with an amount to apply (ongoing
-  damage), and nothing else. Ordinary countdowns stay out — every Blinded and
-  Restrained in the game reporting "still blinded" would bury the two lines that
-  actually want a decision.
-- **The app never rolls and never decides.** The dice are on the table; the
-  phone's job is to remember that a roll is owed, which is the part that
-  actually gets forgotten mid-combat. Whatever the DM answers goes through the
-  existing log, so it's undoable like anything else.
-- One sheet per turn, dismissible, never blocking. Nothing appears when there's
-  nothing pending, which is most turns.
-- The same list is reachable on demand, so a prompt dismissed by accident isn't
-  lost — a combatant with something owed keeps a marker until it's answered.
+**It has to be answered.** Not dismissible, not a banner that fades — the whole
+point is that these are the things that get forgotten mid-combat, and a prompt
+you can wave away is one you will wave away. Turn advancement waits on it.
+Nothing appears when nothing is pending, which is most turns, so the cost of
+being insistent is paid only when there's a real reason.
+
+- Each item is one line, answered in one tap. *"Bog Hulk — roll to recharge
+  Breath Weapon (5–6 on a d6)"* and *"Wren — roll a save vs Frightened (DC 14
+  Con)"* offer **Made it** / **Not yet**. A death save offers **Success** /
+  **Failure**, because there both outcomes count for something.
+- Two kinds of thing land here: something needing an answer
+  (`.untilRollSucceeds`, death saves) and something with an amount to apply
+  (ongoing damage). Ordinary countdowns stay out — every Blinded and Restrained
+  in the game reporting "still blinded" would bury the two lines that actually
+  want a decision.
+
+**Roll for me.** Alongside the answer buttons, an item may offer **Auto**, which
+rolls the die and applies the result. This is not a retreat from "the app doesn't
+roll" — the rule was always that the app doesn't roll *on its own*, and this is
+the DM delegating a specific roll, once, by pressing a button that says so. The
+roll and its outcome go through the existing log, so it's visible and one undo
+from gone.
+
+**Auto is only offered where the app can honestly evaluate the roll**, which is a
+sharper line than it first looks:
+
+| Prompt | Auto? | Why |
+|---|---|---|
+| Recharge 5–6 | yes | a bare die check against a fixed number — the app knows everything involved |
+| Death save | yes | d20 against 10, and nothing the app doesn't hold |
+| Save vs DC 14 Con | **no** | needs the creature's modifier, which the app doesn't track and shouldn't start tracking |
+
+That means the roll target has to be structured rather than free text, so that
+`hint` becomes:
+
+```swift
+case untilRollSucceeds(at: TurnBoundary, roll: RollTarget?)
+
+struct RollTarget {
+    var die: Int?          // e.g. 6 — nil when it isn't a plain die check
+    var succeedsOn: Int?   // e.g. 5
+    var label: String?     // e.g. "DC 14 Con" — always shown, never evaluated
+}
+```
+
+`die` and `succeedsOn` present → **Auto** appears. Label only → the DM answers.
+A recharge quick-pick fills in the numbers; a save DC is typed as a label and
+stays a label.
 
 ### Keeping it uncluttered
 
@@ -960,7 +991,10 @@ Each is a resolution rule or a small field, not a subsystem:
    it's the one item here that genuinely doesn't fold into the effect mechanism.
 5. **Temporary HP** — absorbs damage before real HP. A field on `Combatant` and a
    change to how damage applies; touches the HP log's undo, so not free.
-6. **Round-anchored effects** — "at the start of round 4, the bridge collapses",
+6. **Player-aware player view** — with the tag above, "show player view" could
+   hide the monsters' numbers while leaving the party's visible, which is what a
+   DM actually wants when turning the phone around. Today it hides everyone's.
+7. **Round-anchored effects** — "at the start of round 4, the bridge collapses",
    or an environmental effect on a fixed initiative count. Anchored to the round
    rather than to any combatant; would need `anchorID` to become an enum
    (`.combatant(UUID)` / `.round`) rather than an optional.
@@ -970,6 +1004,35 @@ this app deliberately has no spatial model), legendary and lair actions as
 first-class mechanics (excluded on direct instruction; a lair action is
 expressible as a round-anchored effect if item 6 ever lands), and anything that
 resolves a rule rather than reminding the DM to.
+
+### Player and NPC combatants
+
+A one-bit distinction that several things want, and which the app currently
+lacks:
+
+```swift
+// on CreaturePreset and on Combatant
+var isPlayer: Bool
+```
+
+**Defaults, chosen so the common case needs no thought:**
+
+- **Built-in creatures: NPC.** The whole roster is monsters; there's no ambiguity.
+- **Creatures you make yourself: player.** If you're typing a creature in by
+  hand, it's most often a party member — the built-ins already cover the bestiary.
+- **A combatant added from a preset inherits the preset's setting**, and either
+  can be flipped: a checkbox in the create/edit form, and a toggle on the
+  combatant detail screen for the case that only matters this once.
+
+The toggle is visible **at the moment of creation**, in the Add Combatant sheet,
+rather than inferred later. The tempting heuristic — "count > 1 means monsters" —
+would be right often enough to be trusted and wrong often enough to hurt, and a
+visible default that's one tap to change beats a clever guess.
+
+**What it's for**, beyond death saves: player view already hides HP from the
+table, and knowing which combatants are the players is what would let it hide
+the *right* ones rather than all of them. Not built yet, but it's the reason this
+is a property of the combatant rather than a flag on the death-save feature.
 
 ### Death saves
 
@@ -1003,19 +1066,19 @@ What *is* shared is the part worth sharing: the turn prompt. Death saves are one
 more line in it, next to recharges and save-ends, using the same reminder
 infrastructure and the same never-block rule.
 
-- **Never blocks.** Dismissing records nothing and asks again next turn; the
-  count only moves when the DM taps.
+- **Answered, not dismissed** — like everything else in the prompt. **Auto** is
+  available here (d20 against 10), since nothing outside the app is involved.
 - **Healing above 0 clears it.** So does removing it by hand — that's
   "stabilised".
 - Every change goes through the existing log, so a mistapped Failure is one
   undo away.
 
-**Open decision — when does dying start?** Auto-applying at 0 HP would put death
-saves on all six goblins you just killed, and the app has no notion of player
-versus monster to tell them apart. Recommended: a **quick-pick** (one tap on the
-detail screen when someone drops), revisited if a player/NPC flag on `Combatant`
-ever lands for other reasons. Not decided unilaterally, because "0 HP means dead"
-is what the app does today and changing that silently would alter every combat.
+**When does dying start?** Automatically, at 0 HP — but **only for players**. An
+NPC at 0 HP is dead exactly as it is today, so the six goblins you just killed
+stay killed and nothing new appears. This was the open question in the previous
+draft, and the player/NPC tag settles it: the reason auto-starting looked wrong
+was never the automation, it was that the app couldn't tell a party member from a
+goblin.
 
 ### Migration note
 
@@ -1031,11 +1094,13 @@ it. That's a decode-side alias, not a data migration.
 - Complex state management libraries (Redux, MobX) until needed
 - Extensive third-party dependencies
 - Character sheet integration or detailed stat tracking
-- Rolling dice during play, or resolving rules on the DM's behalf. The app
-  reminds the DM that a roll is owed and records the outcome they report; it
-  never rolls a save, a recharge, an attack, or damage. (Initiative is the one
-  exception, and it's a setup convenience — a value being filled in when a
-  combatant is added, not a ruling made during a turn.)
+- Rolling or resolving anything the DM hasn't explicitly asked for. The app's
+  job is to remember that a roll is owed and record the outcome. It will roll on
+  request — initiative when a combatant is added, a recharge or death save via
+  the prompt's **Auto** button — but only where it can evaluate the whole roll
+  itself, and never as the default answer. Saving throws against a DC, attacks
+  and damage stay off the table entirely: they need modifiers the app doesn't
+  track and shouldn't start tracking.
 - Network multiplayer (local single-device only)
 - Audio notifications or detailed sound design
 - Deep customization of rules or mechanics (keep it generic/system-agnostic)

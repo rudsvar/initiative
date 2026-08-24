@@ -15,8 +15,11 @@ All notable changes to this project are documented here, newest first.
   save-ends into a single rule rather than two. Death saves reuse the same turn
   prompt (one tap, Success or Failure, at the start of the dying combatant's
   turn) but keep their own state — three successes stabilises, three failures
-  kills, and neither is expressible as a duration. Supersedes the three separate
-  proposals previously recorded. Nothing implemented yet
+  kills, and neither is expressible as a duration. The prompt must be answered
+  rather than dismissed, with an **Auto** button that rolls where the app can
+  evaluate the whole roll itself. Adds a player/NPC tag on creatures and
+  combatants, which is what makes auto-starting death saves correct. Supersedes
+  the three separate proposals previously recorded. Nothing implemented yet
 
 ### Added — searching and sectioning the libraries
 
