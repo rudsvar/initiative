@@ -12,8 +12,10 @@ All notable changes to this project are documented here, newest first.
   not four new features: a named thing on a combatant that resolves at a turn
   boundary by one of a few rules. The app reminds the DM that a roll is owed and
   records the answer — it never rolls, which is what collapses recharge and
-  save-ends into a single rule rather than two. Supersedes the three separate
-  proposals previously recorded. Nothing implemented yet
+  save-ends into a single rule rather than two. Death saves fold in as well — a
+  three-turn countdown with a reminder, not a successes/failures scoreboard.
+  Supersedes the three separate proposals previously recorded. Nothing
+  implemented yet
 
 ### Added — searching and sectioning the libraries
 
