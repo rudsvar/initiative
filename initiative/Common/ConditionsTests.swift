@@ -71,3 +71,34 @@ final class ConditionLibraryTests: XCTestCase {
         }
     }
 }
+
+extension ConditionLibraryTests {
+
+    /// The research finding, pinned: six of the sixteen conditions are ended by
+    /// doing something about them rather than by a countdown or a boundary roll,
+    /// so `untilRemoved` is not an edge case and these must not drift back to a
+    /// timer.
+    func testConditionsCounteredByActionDefaultToUntilRemoved() {
+        for name in ["Prone", "Grappled", "Unconscious", "Burning", "Exhausted", "Invisible"] {
+            XCTAssertEqual(
+                ConditionLibrary.matching(name: name)?.defaultDuration, .untilRemoved,
+                "\(name) ends when someone does something about it, not on a schedule"
+            )
+        }
+    }
+
+    func testConditionsThatUsuallyAllowASaveDefaultToARoll() {
+        for name in ["Frightened", "Charmed", "Paralyzed", "Stunned", "Restrained", "Poisoned"] {
+            XCTAssertTrue(
+                ConditionLibrary.matching(name: name)?.defaultDuration.awaitsRoll == true,
+                "\(name) is commonly save-ends and should prefill that way"
+            )
+        }
+    }
+
+    func testEveryConditionHasADefaultDuration() {
+        // Nothing to assert beyond it compiling and being reachable, but this
+        // fails loudly if a condition is added without one being considered.
+        XCTAssertEqual(ConditionLibrary.all.count, 16)
+    }
+}

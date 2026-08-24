@@ -162,6 +162,11 @@ struct CombatantDetailView: View {
         .sectionCard()
     }
 
+    /// One width for every box in the Health card. They sit in two stacked rows
+    /// and read as a grid, so Amount being narrower than Current/Max made the
+    /// columns visibly fail to line up.
+    private static let hpFieldWidth: CGFloat = 74
+
     private func healthCard(for combatant: Combatant) -> some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             Text("Health").cardHeading()
@@ -178,14 +183,14 @@ struct CombatantDetailView: View {
                             text: currentHPBinding,
                             placeholder: "HP",
                             color: combatant.isDead ? Theme.textTertiary : Theme.accent,
-                            width: 74
+                            width: Self.hpFieldWidth
                         )
                         labelledField(
                             "Amount",
                             text: $damageHealAmount,
                             placeholder: "–",
                             color: Theme.textPrimary,
-                            width: 66
+                            width: Self.hpFieldWidth
                         )
 
                         Spacer(minLength: 0)
@@ -207,14 +212,14 @@ struct CombatantDetailView: View {
                             text: maxHPBinding,
                             placeholder: "Max",
                             color: Theme.textPrimary,
-                            width: 74
+                            width: Self.hpFieldWidth
                         )
                         labelledField(
                             "Amount",
                             text: $maxIncreaseAmount,
                             placeholder: "–",
                             color: Theme.textPrimary,
-                            width: 66
+                            width: Self.hpFieldWidth
                         )
 
                         Spacer(minLength: 0)

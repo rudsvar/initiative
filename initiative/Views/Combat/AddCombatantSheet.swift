@@ -41,6 +41,7 @@ struct AddCombatantSheet: View {
                                 }
                             }
                         }
+                        .listRowBackground(Theme.surfaceRaised)
                     }
 
                     Section("Name") {
@@ -52,6 +53,7 @@ struct AddCombatantSheet: View {
                                 prefillFromPreset(named: newValue)
                             }
                     }
+                    .listRowBackground(Theme.surfaceRaised)
 
                     Section("Max HP") {
                         TextField(text: $hpText) {
@@ -59,6 +61,7 @@ struct AddCombatantSheet: View {
                         }
                             .keyboardType(.numberPad)
                     }
+                    .listRowBackground(Theme.surfaceRaised)
 
                     Section("Armor Class") {
                         TextField(text: $acText) {
@@ -66,6 +69,7 @@ struct AddCombatantSheet: View {
                         }
                             .keyboardType(.numberPad)
                     }
+                    .listRowBackground(Theme.surfaceRaised)
 
                     Section("Type") {
                         // Visible at the moment of creation rather than inferred
@@ -80,6 +84,7 @@ struct AddCombatantSheet: View {
                                 .foregroundColor(Theme.textTertiary)
                         }
                     }
+                    .listRowBackground(Theme.surfaceRaised)
 
                     Section("Count") {
                         TextField(text: $countText) {
@@ -87,6 +92,7 @@ struct AddCombatantSheet: View {
                         }
                             .keyboardType(.numberPad)
                     }
+                    .listRowBackground(Theme.surfaceRaised)
 
                     Section("Initiative") {
                         TextField(text: $initiativeText) {
@@ -94,6 +100,7 @@ struct AddCombatantSheet: View {
                         }
                             .keyboardType(.numberPad)
                     }
+                    .listRowBackground(Theme.surfaceRaised)
 
                     if (Int(countText) ?? 1) > 1 {
                         Section {
@@ -105,10 +112,13 @@ struct AddCombatantSheet: View {
                             .font(Theme.Typography.caption)
                             .foregroundColor(Theme.textTertiary)
                         }
+                        .listRowBackground(Theme.surfaceRaised)
                     }
                 }
+                // Row background goes on each Section, never on the Form:
+                // attached to the Form it is silently ignored, which is why
+                // every one of these was rendering system grey in all nine themes.
                 .scrollContentBackground(.hidden)
-                .listRowBackground(Theme.surfaceRaised)
             }
             .navigationTitle("Add Combatant")
             .navigationBarTitleDisplayMode(.inline)

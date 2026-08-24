@@ -10,6 +10,15 @@ struct StandardCondition: Identifiable {
     let name: String
     let symbolName: String
     let category: ConditionCategory
+    /// How this condition *usually* ends, used to prefill the duration when it's
+    /// picked so the common case needs no further tapping.
+    ///
+    /// Research note: no condition is inherently one shape — the governing rule
+    /// is that a condition lasts until it's countered or for a duration the
+    /// *source* specified, so duration belongs to the source, not the condition.
+    /// These are tendencies, always overridable, and they exist so that picking
+    /// "Prone" doesn't pre-select a countdown when standing up is what ends it.
+    let defaultDuration: DurationType
 
     var color: Color { category.color }
 }
@@ -55,26 +64,26 @@ enum ConditionCategory {
 
 enum ConditionLibrary {
     static let all: [StandardCondition] = [
-        StandardCondition(name: "Blinded", symbolName: "eye.slash.fill", category: .sensory),
-        StandardCondition(name: "Deafened", symbolName: "ear.fill", category: .sensory),
-        StandardCondition(name: "Invisible", symbolName: "circle.dashed", category: .sensory),
+        StandardCondition(name: "Blinded", symbolName: "eye.slash.fill", category: .sensory, defaultDuration: .untilEndOfTheirTurn(remainingTurns: 1)),
+        StandardCondition(name: "Deafened", symbolName: "ear.fill", category: .sensory, defaultDuration: .untilEndOfTheirTurn(remainingTurns: 1)),
+        StandardCondition(name: "Invisible", symbolName: "circle.dashed", category: .sensory, defaultDuration: .untilRemoved),
 
-        StandardCondition(name: "Charmed", symbolName: "heart.fill", category: .mental),
-        StandardCondition(name: "Frightened", symbolName: "exclamationmark.triangle.fill", category: .mental),
+        StandardCondition(name: "Charmed", symbolName: "heart.fill", category: .mental, defaultDuration: .untilRollSucceeds(at: .endOfTurn, hint: nil)),
+        StandardCondition(name: "Frightened", symbolName: "exclamationmark.triangle.fill", category: .mental, defaultDuration: .untilRollSucceeds(at: .endOfTurn, hint: nil)),
 
-        StandardCondition(name: "Grappled", symbolName: "hand.raised.fill", category: .restraint),
-        StandardCondition(name: "Restrained", symbolName: "link", category: .restraint),
-        StandardCondition(name: "Prone", symbolName: "arrow.down.circle.fill", category: .restraint),
+        StandardCondition(name: "Grappled", symbolName: "hand.raised.fill", category: .restraint, defaultDuration: .untilRemoved),
+        StandardCondition(name: "Restrained", symbolName: "link", category: .restraint, defaultDuration: .untilRollSucceeds(at: .endOfTurn, hint: nil)),
+        StandardCondition(name: "Prone", symbolName: "arrow.down.circle.fill", category: .restraint, defaultDuration: .untilRemoved),
 
-        StandardCondition(name: "Incapacitated", symbolName: "bolt.slash.fill", category: .disabling),
-        StandardCondition(name: "Paralyzed", symbolName: "bolt.fill", category: .disabling),
-        StandardCondition(name: "Stunned", symbolName: "star.fill", category: .disabling),
-        StandardCondition(name: "Unconscious", symbolName: "moon.zzz.fill", category: .disabling),
-        StandardCondition(name: "Exhausted", symbolName: "battery.25", category: .disabling),
+        StandardCondition(name: "Incapacitated", symbolName: "bolt.slash.fill", category: .disabling, defaultDuration: .untilEndOfTheirTurn(remainingTurns: 1)),
+        StandardCondition(name: "Paralyzed", symbolName: "bolt.fill", category: .disabling, defaultDuration: .untilRollSucceeds(at: .endOfTurn, hint: nil)),
+        StandardCondition(name: "Stunned", symbolName: "star.fill", category: .disabling, defaultDuration: .untilRollSucceeds(at: .endOfTurn, hint: nil)),
+        StandardCondition(name: "Unconscious", symbolName: "moon.zzz.fill", category: .disabling, defaultDuration: .untilRemoved),
+        StandardCondition(name: "Exhausted", symbolName: "battery.25", category: .disabling, defaultDuration: .untilRemoved),
 
-        StandardCondition(name: "Poisoned", symbolName: "drop.fill", category: .ongoing),
-        StandardCondition(name: "Burning", symbolName: "flame.fill", category: .ongoing),
-        StandardCondition(name: "Bleeding", symbolName: "drop.triangle.fill", category: .ongoing),
+        StandardCondition(name: "Poisoned", symbolName: "drop.fill", category: .ongoing, defaultDuration: .untilRollSucceeds(at: .endOfTurn, hint: nil)),
+        StandardCondition(name: "Burning", symbolName: "flame.fill", category: .ongoing, defaultDuration: .untilRemoved),
+        StandardCondition(name: "Bleeding", symbolName: "drop.triangle.fill", category: .ongoing, defaultDuration: .untilEndOfTheirTurn(remainingTurns: 1)),
     ]
 
     /// Case-insensitive lookup by name, for badges that display an existing

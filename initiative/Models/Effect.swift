@@ -62,6 +62,23 @@ struct Effect: Identifiable, Codable {
 /// so duration is just start/end of the owner's own turn, optionally repeated across
 /// several of their turns via `remainingTurns`.
 ///
+/// Two of the cases don't count down at all, and research into how conditions
+/// actually end says both are needed. The governing rule across tabletop systems
+/// is that *a condition lasts until it is countered, or for a duration specified
+/// by whatever imposed it* — duration belongs to the **source**, not the
+/// condition. So no condition is inherently one shape, but there are three
+/// shapes, and only one of them is a countdown:
+///
+/// - **A countdown** — the source said how long. Blinded, Deafened, most
+///   area effects.
+/// - **`untilRollSucceeds`** — rolled at a turn boundary. Frightened, Charmed,
+///   Paralyzed, Stunned, Restrained, Poisoned tend this way.
+/// - **`untilRemoved`** — countered by doing something about it, on no schedule
+///   at all. Prone (stand up), Grappled (escape, *when you choose to act* — so a
+///   turn-boundary prompt would nag about a roll you may not be attempting),
+///   Unconscious (regain HP), Burning (put it out), Exhausted (rest). Six of the
+///   sixteen standard conditions want this, so it isn't an edge case.
+///
 /// `untilRollSucceeds` is the exception that doesn't count down at all: it sits
 /// there until the DM says a roll succeeded. A recharging ability and a
 /// save-ends condition are the same thing seen from two sides — *at this
@@ -73,6 +90,7 @@ enum DurationType: Equatable, Codable {
     case untilStartOfTheirTurn(remainingTurns: Int)
     case untilEndOfTheirTurn(remainingTurns: Int)
     case untilRollSucceeds(at: TurnBoundary, hint: String?)
+    case untilRemoved
 
     var description: String {
         switch self {
@@ -84,6 +102,8 @@ enum DurationType: Equatable, Codable {
             let when = boundary == .startOfTurn ? "start" : "end"
             let what = hint.map { " (\($0))" } ?? ""
             return "Until a roll succeeds, at the \(when) of their turn\(what)"
+        case .untilRemoved:
+            return "Until removed"
         }
     }
 
@@ -98,7 +118,7 @@ enum DurationType: Equatable, Codable {
         // with target-based effects still decode — they collapse into the owner-turn
         // equivalent since the target concept no longer exists.
         case untilStartOfTheirTurn, untilEndOfTheirTurn, untilStartOfTargetTurn, untilEndOfTargetTurn
-        case untilRollSucceeds
+        case untilRollSucceeds, untilRemoved
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -118,6 +138,8 @@ enum DurationType: Equatable, Codable {
                 at: try container.decodeIfPresent(TurnBoundary.self, forKey: .boundary) ?? .startOfTurn,
                 hint: try container.decodeIfPresent(String.self, forKey: .hint)
             )
+        case .untilRemoved:
+            self = .untilRemoved
         }
     }
 
@@ -134,6 +156,8 @@ enum DurationType: Equatable, Codable {
             try container.encode(Kind.untilRollSucceeds, forKey: .kind)
             try container.encode(boundary, forKey: .boundary)
             try container.encodeIfPresent(hint, forKey: .hint)
+        case .untilRemoved:
+            try container.encode(Kind.untilRemoved, forKey: .kind)
         }
     }
 }

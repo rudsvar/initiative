@@ -7,7 +7,6 @@ struct ContentView: View {
     @Binding var path: NavigationPath
 
     @Environment(\.scenePhase) private var scenePhase
-    @State private var pendingRemoveCombatant: Combatant?
     @State private var showAddCombatant = false
     @State private var showLog = false
     /// Non-empty while the turn is waiting on answers. Advancing is gated on it —
@@ -36,8 +35,11 @@ struct ContentView: View {
                     )
                     .cardRowLayout()
                     .swipeActions(edge: .trailing) {
+                        // No confirmation dialog: swipe-to-reveal plus a tap on
+                        // Delete is already two deliberate actions, and it's the
+                        // pattern every other list in the app uses.
                         Button(role: .destructive) {
-                            pendingRemoveCombatant = combatant
+                            session.removeCombatant(id: combatant.id)
                         } label: {
                             Label("Remove", systemImage: "trash")
                         }
@@ -105,24 +107,6 @@ struct ContentView: View {
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .background {
                 autosave()
-            }
-        }
-        .confirmationDialog(
-            "Remove \(pendingRemoveCombatant?.name ?? "")?",
-            isPresented: Binding(
-                get: { pendingRemoveCombatant != nil },
-                set: { if !$0 { pendingRemoveCombatant = nil } }
-            ),
-            titleVisibility: .visible
-        ) {
-            Button("Remove", role: .destructive) {
-                if let combatant = pendingRemoveCombatant {
-                    session.removeCombatant(id: combatant.id)
-                }
-                pendingRemoveCombatant = nil
-            }
-            Button("Cancel", role: .cancel) {
-                pendingRemoveCombatant = nil
             }
         }
         .sheet(isPresented: $showAddCombatant) {

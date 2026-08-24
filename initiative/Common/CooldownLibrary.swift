@@ -36,8 +36,10 @@ struct StandardCooldown: Identifiable {
             label: "Once per encounter",
             effectName: "Used",
             // No roll and no countdown: it's gone for the fight, and the DM
-            // removes it when the fight ends.
-            durationType: .untilEndOfTheirTurn(remainingTurns: 99)
+            // removes it when the fight ends. This was briefly faked with a
+            // 99-turn countdown, which would eventually have shown up in the UI
+            // as "98 turns left".
+            durationType: .untilRemoved
         ),
     ]
 }

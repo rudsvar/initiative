@@ -4,6 +4,48 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### To do
+
+Agreed but not built, in the order they'd be worth doing:
+
+1. **Tap-to-apply effects screen.** Replace the Add Effect form with a grid of
+   every condition: tap one to apply it with its default duration, tap it again
+   to configure, swipe to remove. Fewer presses than the current
+   open-form-pick-configure-confirm flow, and it's what the per-condition
+   defaults below were added for
+2. Ongoing damage amounts, concentration, limited uses, temp HP, player-aware
+   player view, round-anchored effects (SPEC → "Planned: the rest of it")
+
+### Fixed
+
+- **Every Form in the app was rendering system-grey rows in all nine themes.**
+  `listRowBackground` was attached to the `Form` rather than to its rows, where
+  it's silently ignored — the accent tint propagated, which is why it looked
+  half-right. Now attached per `Section`
+- The Health card's **Amount fields were 66pt against Current/Max at 74pt**. They
+  sit in two stacked rows and read as a grid, so the columns visibly failed to
+  line up. All four share one width now
+- **Removing a combatant no longer asks for confirmation.** Swipe-to-reveal plus
+  a tap on Delete is already two deliberate actions, and it's the pattern every
+  other list in the app uses
+- `StandardCooldown`'s "Once per encounter" was faking "until removed" with a
+  99-turn countdown, which would eventually have surfaced as "98 turns left"
+
+### Added
+
+- **`DurationType.untilRemoved`** — for conditions countered by doing something
+  about them rather than by a clock. Research into how conditions actually end
+  found the governing rule is that a condition lasts *until it is countered, or
+  for a duration the source specified*: duration belongs to the source, not the
+  condition. Three shapes follow, and **six of the sixteen** standard conditions
+  want this one — Prone (stand up), Grappled (escape, and *when you choose to
+  act*, so a turn-boundary prompt would nag about a roll you may not be
+  attempting), Unconscious, Burning, Exhausted, Invisible
+- **Each condition now carries the duration it usually wants**, so picking Prone
+  prefills "until removed" and picking Frightened prefills a save. Tendencies,
+  always overridable — but picking used to prefill a countdown every time, which
+  was wrong for more than half of them
+
 ### Added — recharges, save-ends conditions, and death saves
 
 - **Effects can now wait on a roll instead of a countdown.**

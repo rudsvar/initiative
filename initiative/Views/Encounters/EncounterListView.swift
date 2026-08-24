@@ -147,6 +147,7 @@ private struct EditEncounterView: View {
                             Text("Encounter name").foregroundColor(Theme.placeholderText)
                         }
                     }
+                    .listRowBackground(Theme.surfaceRaised)
 
                     Section("Creatures") {
                         if encounter.entries.isEmpty {
@@ -173,9 +174,12 @@ private struct EditEncounterView: View {
                             }
                         }
                     }
+                    .listRowBackground(Theme.surfaceRaised)
                 }
+                // Row background goes on each Section, never on the Form:
+                // attached to the Form it is silently ignored, which is why
+                // every one of these was rendering system grey in all nine themes.
                 .scrollContentBackground(.hidden)
-                .listRowBackground(Theme.surfaceRaised)
             }
             .disabled(isReadOnly)
             .navigationTitle(isReadOnly ? encounter.name : "Edit Encounter")
@@ -247,6 +251,7 @@ private struct AddEncounterEntryView: View {
                                 }
                             }
                         }
+                        .listRowBackground(Theme.surfaceRaised)
                     }
 
                     Section("Name") {
@@ -257,27 +262,33 @@ private struct AddEncounterEntryView: View {
                                 prefillFromPreset(named: newValue)
                             }
                     }
+                    .listRowBackground(Theme.surfaceRaised)
                     Section("Max HP") {
                         TextField(text: $hpText) {
                             Text("Optional").foregroundColor(Theme.placeholderText)
                         }
                             .keyboardType(.numberPad)
                     }
+                    .listRowBackground(Theme.surfaceRaised)
                     Section("Armor Class") {
                         TextField(text: $acText) {
                             Text("Optional").foregroundColor(Theme.placeholderText)
                         }
                             .keyboardType(.numberPad)
                     }
+                    .listRowBackground(Theme.surfaceRaised)
                     Section("Count") {
                         TextField(text: $countText) {
                             Text("1").foregroundColor(Theme.placeholderText)
                         }
                             .keyboardType(.numberPad)
                     }
+                    .listRowBackground(Theme.surfaceRaised)
                 }
+                // Row background goes on each Section, never on the Form:
+                // attached to the Form it is silently ignored, which is why
+                // every one of these was rendering system grey in all nine themes.
                 .scrollContentBackground(.hidden)
-                .listRowBackground(Theme.surfaceRaised)
             }
             .navigationTitle("Add Creature")
             .navigationBarTitleDisplayMode(.inline)

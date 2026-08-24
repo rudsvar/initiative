@@ -29,6 +29,7 @@ struct AddEffectView: View {
                         .pickerStyle(.segmented)
                         .labelsHidden()
                     }
+                    .listRowBackground(Theme.surfaceRaised)
 
                     if kind == .condition {
                         Section("Condition") {
@@ -36,6 +37,7 @@ struct AddEffectView: View {
                                 ForEach(ConditionLibrary.all) { condition in
                                     Button {
                                         effectName = condition.name
+                                        apply(condition.defaultDuration)
                                     } label: {
                                         Label(condition.name, systemImage: condition.symbolName)
                                     }
@@ -54,6 +56,7 @@ struct AddEffectView: View {
                                 }
                             }
                         }
+                        .listRowBackground(Theme.surfaceRaised)
                     } else {
                         Section("Cooldown") {
                             Menu {
@@ -69,6 +72,7 @@ struct AddEffectView: View {
                                 }
                             }
                         }
+                        .listRowBackground(Theme.surfaceRaised)
                     }
 
                     Section(kind == .condition ? "Effect Name" : "Ability Name") {
@@ -77,12 +81,14 @@ struct AddEffectView: View {
                                 .foregroundColor(Theme.placeholderText)
                         }
                     }
+                    .listRowBackground(Theme.surfaceRaised)
 
                     Section("Duration") {
                         Picker("Duration", selection: $selectedDurationType) {
                             Text("Until start of their turn").tag(DurationTypeSelection.untilStartOfTheirTurn)
                             Text("Until end of their turn").tag(DurationTypeSelection.untilEndOfTheirTurn)
                             Text("Until a roll succeeds").tag(DurationTypeSelection.untilRollSucceeds)
+                            Text("Until removed").tag(DurationTypeSelection.untilRemoved)
                         }
                         .pickerStyle(.inline)
                         .labelsHidden()
@@ -96,10 +102,11 @@ struct AddEffectView: View {
                                 Text("What to roll — e.g. 5–6 on a d6")
                                     .foregroundColor(Theme.placeholderText)
                             }
-                        } else {
+                        } else if selectedDurationType != .untilRemoved {
                             Stepper("Turns: \(turnsCount)", value: $turnsCount, in: 1...20)
                         }
                     }
+                    .listRowBackground(Theme.surfaceRaised)
 
                     if selectedDurationType == .untilRollSucceeds {
                         Section {
@@ -109,10 +116,13 @@ struct AddEffectView: View {
                                 .font(Theme.Typography.caption)
                                 .foregroundColor(Theme.textTertiary)
                         }
+                        .listRowBackground(Theme.surfaceRaised)
                     }
                 }
+                // Row background goes on each Section, never on the Form:
+                // attached to the Form it is silently ignored, which is why
+                // every one of these was rendering system grey in all nine themes.
                 .scrollContentBackground(.hidden)
-                .listRowBackground(Theme.surfaceRaised)
             }
             .navigationTitle("Add Effect")
             .navigationBarTitleDisplayMode(.inline)
@@ -144,7 +154,14 @@ struct AddEffectView: View {
 
     private func apply(_ cooldown: StandardCooldown) {
         effectName = cooldown.effectName
-        switch cooldown.durationType {
+        apply(cooldown.durationType)
+    }
+
+    /// Prefills the duration controls from a quick-pick's default. Picking is
+    /// meant to be the whole interaction for the common case; the fields below
+    /// stay editable for when it isn't.
+    private func apply(_ duration: DurationType) {
+        switch duration {
         case .untilRollSucceeds(let boundary, let hint):
             selectedDurationType = .untilRollSucceeds
             rollBoundary = boundary
@@ -155,6 +172,8 @@ struct AddEffectView: View {
         case .untilEndOfTheirTurn(let turns):
             selectedDurationType = .untilEndOfTheirTurn
             turnsCount = min(20, turns)
+        case .untilRemoved:
+            selectedDurationType = .untilRemoved
         }
     }
 
@@ -171,6 +190,8 @@ struct AddEffectView: View {
         case .untilRollSucceeds:
             let hint = rollHint.trimmingCharacters(in: .whitespaces)
             durationType = .untilRollSucceeds(at: rollBoundary, hint: hint.isEmpty ? nil : hint)
+        case .untilRemoved:
+            durationType = .untilRemoved
         }
 
         let effect = Effect(name: trimmedName, durationType: durationType, kind: kind)
@@ -185,6 +206,7 @@ enum DurationTypeSelection: Equatable, Hashable {
     case untilStartOfTheirTurn
     case untilEndOfTheirTurn
     case untilRollSucceeds
+    case untilRemoved
 }
 
 #Preview {

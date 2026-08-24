@@ -170,18 +170,21 @@ private struct EditPresetView: View {
                             Text("Name").foregroundColor(Theme.placeholderText)
                         }
                     }
+                    .listRowBackground(Theme.surfaceRaised)
                     Section("Max HP") {
                         TextField(text: $hpText) {
                             Text("Optional").foregroundColor(Theme.placeholderText)
                         }
                             .keyboardType(.numberPad)
                     }
+                    .listRowBackground(Theme.surfaceRaised)
                     Section("Armor Class") {
                         TextField(text: $acText) {
                             Text("Optional").foregroundColor(Theme.placeholderText)
                         }
                             .keyboardType(.numberPad)
                     }
+                    .listRowBackground(Theme.surfaceRaised)
                     Section("Type") {
                         Toggle("Player character", isOn: $isPlayer)
                             .tint(Theme.accent)
@@ -189,6 +192,7 @@ private struct EditPresetView: View {
                             .font(Theme.Typography.caption)
                             .foregroundColor(Theme.textTertiary)
                     }
+                    .listRowBackground(Theme.surfaceRaised)
 
                     Section("Initiative Bonus") {
                         TextField(text: $bonusText) {
@@ -196,9 +200,12 @@ private struct EditPresetView: View {
                         }
                             .keyboardType(.numbersAndPunctuation)
                     }
+                    .listRowBackground(Theme.surfaceRaised)
                 }
+                // Row background goes on each Section, never on the Form:
+                // attached to the Form it is silently ignored, which is why
+                // every one of these was rendering system grey in all nine themes.
                 .scrollContentBackground(.hidden)
-                .listRowBackground(Theme.surfaceRaised)
             }
             .disabled(isReadOnly)
             .navigationTitle(navigationTitle)

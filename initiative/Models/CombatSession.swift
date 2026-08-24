@@ -450,6 +450,9 @@ class CombatSession {
                     // Never ages out. It leaves when the DM says the roll
                     // succeeded — see pendingTurnPrompts.
                     return effect
+                case .untilRemoved:
+                    // Countered by doing something about it, on no schedule.
+                    return effect
                 }
             }
         }
