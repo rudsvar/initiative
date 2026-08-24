@@ -10,8 +10,10 @@ All notable changes to this project are documented here, newest first.
   abilities (a dragon's breath, "recharge 5–6"), save-ends conditions, ongoing
   damage and concentration are the same shape as the effects already in the app,
   not four new features: a named thing on a combatant that resolves at a turn
-  boundary by one of a few rules. Supersedes the three separate proposals that
-  were previously recorded. Nothing implemented yet
+  boundary by one of a few rules. The app reminds the DM that a roll is owed and
+  records the answer — it never rolls, which is what collapses recharge and
+  save-ends into a single rule rather than two. Supersedes the three separate
+  proposals previously recorded. Nothing implemented yet
 
 ### Added — searching and sectioning the libraries
 

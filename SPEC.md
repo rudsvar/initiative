@@ -853,11 +853,21 @@ struct Effect {
 enum DurationType {
     case untilStartOfTheirTurn(remainingTurns: Int)   // today, unchanged
     case untilEndOfTheirTurn(remainingTurns: Int)     // today, unchanged
-    case recharge(die: Int, succeedsOn: Int)          // rolled at the anchor's turn start
-    case untilSaveSucceeds(timing: TurnBoundary)      // prompts; never auto-expires
+    case untilRollSucceeds(at: TurnBoundary, hint: String?)   // reminds; never auto-expires
     case manual                                       // sits until removed by hand
 }
 ```
+
+**The app does not roll.** It reminds the DM to, and records what they say. That
+single decision collapses what looked like two features into one: a recharge and
+a save-ends condition are both "at this boundary, the DM rolls something, and on
+a success this goes away". They differ only in the verb, which `kind` already
+carries — *roll to recharge* for a cooldown, *roll a save* for a condition. Hence
+one case rather than a `.recharge` and a `.untilSaveSucceeds`.
+
+`hint` is short free text for **what** to roll — `"5–6 on a d6"`, `"DC 13 Con"` —
+shown in the reminder and nowhere else, so chips stay short. It's optional
+because the DM often already knows.
 
 **`anchorID` is a field, not more enum cases.** The earlier proposal folded the
 anchor into the duration (`.untilStartOfCombatantTurn(anchorID:…)`), which
@@ -878,9 +888,9 @@ cooldown with a one-turn duration, which is what it always was.
 | Mechanic | Expressed as |
 |---|---|
 | Reaction used | cooldown, `.untilStartOfTheirTurn(1)` — what it already is |
-| **Dragon's breath, recharge 5–6** | cooldown, `.recharge(die: 6, succeedsOn: 5)` |
+| **Dragon's breath, recharge 5–6** | cooldown, `.untilRollSucceeds(at: .startOfTurn, hint: "5–6 on a d6")` |
 | Once per encounter | cooldown, `.manual` |
-| Stunned, save ends | condition, `.untilSaveSucceeds(.endOfTurn)` |
+| Stunned, save ends | condition, `.untilRollSucceeds(at: .endOfTurn, hint: "DC 14 Con")` |
 | Blinded for 3 rounds | condition, `.untilEndOfTheirTurn(3)` — what it already is |
 | Held by a spell the caster maintains | condition on the target, `anchorID` = caster |
 
@@ -890,17 +900,18 @@ The second half, and the part that makes it usable rather than merely
 expressible: when a combatant's turn begins, anything of theirs needing attention
 is surfaced **once, together**, not as badges to notice.
 
-- `.recharge` rolls automatically and reports the result ("Breath Weapon
-  recharged — rolled 5"). The app already rolls d20 for initiative, so rolling a
-  d6 here is consistent with what it does, not a new kind of thing. The roll goes
-  through the existing log, which is also the undo mechanism, so a roll the DM
-  doesn't want is one swipe from gone.
-- `.untilSaveSucceeds` asks ("Save for Wren: Frightened?") with **Saved** /
-  **Not yet**. The app never resolves the save — that's the DM's call, and the
-  standing no-rules-automation line stays exactly where it is. What's added is
-  the reminder, not the ruling.
+- Each pending item is one line: what to roll, and for what. *"Bog Hulk —
+  roll to recharge Breath Weapon (5–6 on a d6)"*, *"Wren — roll a save vs
+  Frightened (DC 14 Con)"*. Two answers: **Made it** (the effect goes) or
+  **Not yet** (it stays, and asks again next turn).
+- **The app never rolls and never decides.** The dice are on the table; the
+  phone's job is to remember that a roll is owed, which is the part that
+  actually gets forgotten mid-combat. Whatever the DM answers goes through the
+  existing log, so it's undoable like anything else.
 - One sheet per turn, dismissible, never blocking. Nothing appears when there's
   nothing pending, which is most turns.
+- The same list is reachable on demand, so a prompt dismissed by accident isn't
+  lost — a combatant with something owed keeps a marker until it's answered.
 
 ### Keeping it uncluttered
 
@@ -909,7 +920,8 @@ Four rules, and they're the whole reason this is one feature and not six:
 1. **One mechanism, not one feature per mechanic.** Anything that ticks is an
    effect with a resolution rule. New mechanics should arrive as new rules, and
    if a mechanic can't be expressed as one, that's a signal to reconsider it
-   rather than to add a parallel system.
+   rather than to add a parallel system. Note how much smaller this got once the
+   app stopped rolling: two mechanics, one rule.
 2. **The default path doesn't change.** Adding "Stunned for 2 turns" involves
    exactly the taps it does today. `kind` defaults to `.condition`, `anchorID`
    defaults to the owner.
@@ -926,10 +938,12 @@ Four rules, and they're the whole reason this is one feature and not six:
 Each is a resolution rule or a small field, not a subsystem:
 
 1. **Ongoing damage** — "5 fire at the start of your turn". An amount on an
-   effect, applied at its boundary through the existing HP log so it's undoable
-   and shows up in the log like any other damage. The `ongoing` condition
-   category already exists and currently only means a colour; this makes it mean
-   something. Cheapest real win on this list.
+   effect, surfaced in the same turn prompt with a one-tap **Apply** that goes
+   through the existing HP log, so it's undoable and reads like any other damage.
+   Applying is one tap rather than automatic for the same reason the app doesn't
+   roll: the DM might rule otherwise. The `ongoing` condition category already
+   exists and currently only means a colour; this makes it mean something.
+   Cheapest real win on this list.
 2. **Concentration** — a link from an effect to the caster maintaining it, so
    that dropping or ending concentration clears everything it holds up. Needs
    `anchorID` plus a prompt when the anchor takes damage. Common enough at the
@@ -966,9 +980,11 @@ it. That's a decode-side alias, not a data migration.
 - Complex state management libraries (Redux, MobX) until needed
 - Extensive third-party dependencies
 - Character sheet integration or detailed stat tracking
-- Resolving rules on the DM's behalf. Rolling *is* in scope where the app is
-  the natural place for it — initiative already rolls, and recharge would (see
-  the planned effects work) — but attack/damage/save resolution is not
+- Rolling dice during play, or resolving rules on the DM's behalf. The app
+  reminds the DM that a roll is owed and records the outcome they report; it
+  never rolls a save, a recharge, an attack, or damage. (Initiative is the one
+  exception, and it's a setup convenience — a value being filled in when a
+  combatant is added, not a ruling made during a turn.)
 - Network multiplayer (local single-device only)
 - Audio notifications or detailed sound design
 - Deep customization of rules or mechanics (keep it generic/system-agnostic)
