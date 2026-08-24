@@ -23,10 +23,11 @@ All notable changes to this project are documented here, newest first.
 
 ### Removed
 
-- **Restore Default Encounters.** An encounter is cheap enough to rebuild by hand
-  that the button was clutter. `EncounterStore.restoreMissingDefaults()` went
-  with it rather than being left as an API with no caller; the Creatures
-  equivalent stays
+- **Restore Defaults, on both screens.** It was a control whose only job was to
+  undo something the user had just deliberately done, and with the lists now
+  sorted into Yours and Included nothing goes mysteriously missing. Deleting a
+  default is now permanent. `restoreMissingDefaults()` went from both stores
+  rather than being left as an API with no caller
 
 ### Added — starter content
 
@@ -42,8 +43,6 @@ All notable changes to this project are documented here, newest first.
   than restating stats, with `DefaultContentTests` pinning that every line
   resolves — a typo would otherwise install an encounter whose combatants have no
   HP or AC, and nothing at runtime would notice
-- **Restore Default Encounters**, in the Encounters screen's options menu,
-  matching the one Creatures already had
 
 ### Fixed — defaults are additive, not all-or-nothing
 

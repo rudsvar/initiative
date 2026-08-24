@@ -176,38 +176,4 @@ final class PresetStoreTests: XCTestCase {
         XCTAssertEqual(goblins.first?.maxHP, 999)
     }
 
-    func testRestoreMissingDefaultsAddsBackMissingOnesWithoutTouchingExisting() {
-        store.upsert(name: "Custom Creature", maxHP: 20)
-        // Simulate a default that was already added and then customized —
-        // restoreMissingDefaults must not clobber it.
-        store.upsert(name: "Goblin", maxHP: 999)
-
-        store.restoreMissingDefaults()
-
-        let presets = store.listPresets()
-        XCTAssertEqual(presets.count, DefaultContent.creatures.count + 1, "should add every missing default plus keep the custom one")
-        XCTAssertEqual(presets.first { $0.name == "Goblin" }?.maxHP, 999, "existing preset with a default's name must not be overwritten")
-        XCTAssertNotNil(presets.first { $0.name == "Skeleton" }, "a default that was never added should now be present")
-    }
-
-    func testRestoreMissingDefaultsIsIdempotent() {
-        store.restoreMissingDefaults()
-        store.restoreMissingDefaults()
-
-        XCTAssertEqual(store.listPresets().count, DefaultContent.creatures.count, "running twice shouldn't duplicate defaults")
-    }
-
-    /// Restore is the one action allowed to override a deletion — but only that
-    /// once. Having brought a default back, the ledger must not then treat it as
-    /// deletable-and-restorable on every subsequent launch.
-    func testRestoreThenRelaunchDoesNotReinstallASubsequentDeletion() {
-        store.installNewDefaults()
-        store.restoreMissingDefaults()
-        let goblin = store.preset(named: "Goblin")!
-        store.delete(id: goblin.id)
-
-        relaunched().installNewDefaults()
-
-        XCTAssertNil(store.preset(named: "Goblin"))
-    }
 }

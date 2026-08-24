@@ -46,22 +46,6 @@ struct PresetListView: View {
                 }
                 .accessibilityLabel("New Creature")
             }
-            // Restore Defaults lives behind the menu, not as a bare bar button:
-            // it used to sit immediately beside Back, where a mistimed tap on the
-            // way out of the screen silently repopulated the list.
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Menu {
-                    Button {
-                        presetStore.restoreMissingDefaults()
-                        presets = presetStore.listPresets()
-                    } label: {
-                        Label("Restore Default Creatures", systemImage: "arrow.counterclockwise")
-                    }
-                } label: {
-                    Image(systemName: "line.3.horizontal")
-                }
-                .accessibilityLabel("Options")
-            }
         }
         .onAppear { presets = presetStore.listPresets() }
         .sheet(item: $editingPreset) { preset in

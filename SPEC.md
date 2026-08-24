@@ -443,38 +443,15 @@ list of presets (name + HP + AC + initiative bonus), tap to edit, swipe to
 delete (no confirmation dialog — swipe + tap is already two deliberate
 actions), a top-right "+" to create one directly (name/HP/AC/initiative
 bonus, same fields as editing) — presets don't have to originate from actually
-adding a combatant in a session; either path works — and a "Restore Default
-Creatures" item in the screen's top-right options menu
-(`PresetStore.restoreMissingDefaults()`). It lives behind the menu rather than
-as a bare bar button: it previously sat immediately beside Back, where a
-mistimed tap on the way out of the screen silently repopulated the list.
-
-**Why a separate restore action, distinct from the first-launch seed**:
-`seedDefaultsIfEmpty()` only ever fires once, on a genuinely empty store — if
-you add or edit even a single preset before ever opening this screen (or
-later delete a default you don't want), the rest of the defaults are gone
-for good with no way back. `restoreMissingDefaults()` adds back any default
-creature whose name isn't currently present, by name, case-insensitively,
-without touching or overwriting anything that already exists — including a
-preset that started as a default but was since customized.
+adding a combatant in a session; either path works. There is no restore action;
+see Default Content.
 
 **Default presets** (shipped so the list isn't empty on first launch) — generic
-archetypes, common across fantasy tabletop games generally, not tied to any one
-ruleset. HP values are researched to feel like plausible low-level creature
-toughness, described here in our own generic terms only:
-| Preset | Rough HP | Initiative Bonus | Notes |
-|---|---|---|---|
-| Goblin | 7 | +2 | small, fragile skirmisher archetype |
-| Skeleton | 13 | +2 | undead melee archetype, moderately tougher |
-| Thief | 11 | +3 | quick, lightly-armored humanoid archetype |
-| Orc | 15 | +1 | bulkier melee brute archetype |
-| Wolf | 11 | +2 | fast, fragile beast archetype |
-| Zombie | 22 | −2 | slow, tanky undead archetype |
-| Guard | 11 | +1 | armored humanoid archetype |
-| Ogre | 59 | −1 | big, slow brute archetype |
-| Giant Spider | 26 | +3 | ambush predator archetype |
-| Giant Rat | 7 | +2 | weak, swarming filler archetype |
-| Cultist | 9 | +1 | fragile low-level caster/minion archetype |
+folklore archetypes, common across fantasy tabletop games generally, not tied to
+any one ruleset, with HP/AC/initiative bonus chosen to feel plausible rather than
+copied. The roster itself is **not reproduced here** — it's ~70 entries and would
+be stale within a session; see `Stores/DefaultContent.swift`, and the Default
+Content section below for how it's installed and kept additive.
 
 **Explicitly out of scope for now**: preset categories/tags, importing/sharing
 preset packs, per-preset default effects, manual preset creation outside the
@@ -629,7 +606,7 @@ separates three cases that a simpler rule conflates:
 |---|---|
 | New default, not present | installed |
 | New default, user already has that name | left alone, recorded as offered — their version is never overwritten |
-| Previously offered, now absent | user deleted it; stays deleted |
+| Previously offered, now absent | user deleted it; stays deleted, permanently |
 
 The two rules this replaced were each wrong in one direction. "Seed only if the
 store is empty" meant defaults added in a later version never reached anyone who
@@ -638,12 +615,12 @@ permanently cost you the whole roster. "Install anything currently missing" woul
 have fixed that and resurrected everything you had deliberately deleted, on every
 launch.
 
-**Restore Default Creatures** (in the Creatures screen's options menu) is the
-sole override: it re-adds every default creature not currently present, including
-ones deleted on purpose. It's behind a menu rather than a bar button because it's
-the one action here that undoes a deliberate deletion. There is deliberately no
-equivalent for encounters — an encounter is cheap to rebuild by hand, and the
-button was removed as clutter.
+**There is deliberately no "Restore Defaults" action** on either screen. A
+deletion is final, which is the simpler rule to hold in your head, and both
+screens already sort what's left into Yours and Included so nothing is
+mysteriously absent. Restoring can be reintroduced if the need turns out to be
+real; until then it was a control that only ever undid something the user had
+just chosen to do.
 
 ### Browsing the libraries
 

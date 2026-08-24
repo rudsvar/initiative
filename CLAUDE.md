@@ -137,9 +137,9 @@ all-or-nothing**: `installNewDefaults()` runs on every launch and installs
 anything the `DefaultInstallLedger` has never offered before. Adding a creature
 or encounter to the table is all that's needed for it to reach existing
 installs — do *not* reintroduce "seed only if the store is empty", which is what
-prevented that. Deletions are respected (only the explicit "Restore Defaults"
-menu item overrides one), and a preset the user has edited is never overwritten
-by its default. Encounters name creatures rather than restating stats; keep it
+prevented that. Deletions are respected and permanent — there is no "Restore
+Defaults" action on either screen, deliberately — and a preset the user has
+edited is never overwritten by its default. Encounters name creatures rather than restating stats; keep it
 that way and `DefaultContentTests` will catch a typo'd name.
 
 - Consult the `ios-hig` skill (`<agent-config>/skills/ios-hig/SKILL.md`) before building new

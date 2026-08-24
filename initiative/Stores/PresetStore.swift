@@ -102,19 +102,6 @@ class PresetStore {
 
         ledger.markInstalled(offered)
     }
-
-    /// Adds back every default creature not currently present, without touching
-    /// existing presets (including ones that started as a default but were since
-    /// edited). This is the one thing that overrides a deliberate deletion, which
-    /// is why it's an explicit action behind the Creatures screen's menu rather
-    /// than anything automatic.
-    func restoreMissingDefaults() {
-        let existingNames = Set(listPresets().map { $0.name.lowercased() })
-        for creature in DefaultContent.creatures where !existingNames.contains(creature.name.lowercased()) {
-            save(creature.asPreset)
-        }
-        ledger.markInstalled(DefaultContent.creatures.map(\.name))
-    }
 }
 
 private extension DefaultContent.Creature {
