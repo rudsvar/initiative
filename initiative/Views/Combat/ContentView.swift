@@ -16,114 +16,43 @@ struct ContentView: View {
     }
 
     var body: some View {
-        ZStack {
-            Theme.background
-                .ignoresSafeArea()
-
-            VStack(spacing: 0) {
-                List {
-                    ForEach(session.sortedCombatants) { combatant in
-                        CombatantRow(
-                            combatant: combatant,
-                            isCurrent: session.currentCombatant?.id == combatant.id,
-                            playerViewEnabled: session.playerViewEnabled
-                        )
-                        .contentShape(Rectangle())
-                        .background(
-                            NavigationLink(destination: CombatantDetailView(session: session, combatantId: combatant.id)) {
-                                EmptyView()
-                            }
-                            .opacity(0)
-                        )
-                        .listRowSeparator(.hidden)
-                        .listRowInsets(EdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8))
-                        .listRowBackground(Color.clear)
-                        .swipeActions(edge: .trailing) {
-                            Button(role: .destructive) {
-                                pendingRemoveCombatant = combatant
-                            } label: {
-                                Label("Remove", systemImage: "trash")
-                            }
+        VStack(spacing: 0) {
+            List {
+                ForEach(session.sortedCombatants) { combatant in
+                    CombatantRow(
+                        combatant: combatant,
+                        isCurrent: session.currentCombatant?.id == combatant.id,
+                        playerViewEnabled: session.playerViewEnabled
+                    )
+                    .contentShape(Rectangle())
+                    .background(
+                        NavigationLink(destination: CombatantDetailView(session: session, combatantId: combatant.id)) {
+                            EmptyView()
+                        }
+                        .opacity(0)
+                    )
+                    .cardRowLayout()
+                    .swipeActions(edge: .trailing) {
+                        Button(role: .destructive) {
+                            pendingRemoveCombatant = combatant
+                        } label: {
+                            Label("Remove", systemImage: "trash")
                         }
                     }
-                }
-                .listStyle(.plain)
-                .scrollContentBackground(.hidden)
-
-                if #available(iOS 26.0, *) {
-                    GlassEffectContainer(spacing: 12) {
-                        HStack(spacing: 12) {
-                            Button(action: { session.previousTurn() }) {
-                                HStack(spacing: 4) {
-                                    Image(systemName: "chevron.left")
-                                    Text("Previous")
-                                }
-                                .font(.system(size: 14, weight: .semibold))
-                            }
-                            .buttonStyle(.glass)
-                            .disabled(!session.canGoToPreviousTurn)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-
-                            Button(action: { showAddCombatant = true }) {
-                                Image(systemName: "plus")
-                                    .font(.system(size: 26, weight: .bold))
-                            }
-                            .buttonStyle(.glass)
-                            .accessibilityLabel("Add Combatant")
-                            .frame(maxWidth: .infinity, alignment: .center)
-
-                            Button(action: { session.nextTurn() }) {
-                                HStack(spacing: 4) {
-                                    Text("Next")
-                                    Image(systemName: "chevron.right")
-                                }
-                                .font(.system(size: 14, weight: .semibold))
-                            }
-                            .buttonStyle(.glassProminent)
-                            .tint(Theme.accent)
-                            .disabled(session.sortedCombatants.isEmpty)
-                            .frame(maxWidth: .infinity, alignment: .trailing)
-                        }
-                        .padding(16)
-                    }
-                } else {
-                    HStack(spacing: 12) {
-                        Button(action: { session.previousTurn() }) {
-                            HStack(spacing: 4) {
-                                Image(systemName: "chevron.left")
-                                Text("Previous")
-                            }
-                            .font(.system(size: 14, weight: .semibold))
-                        }
-                        .foregroundColor(Theme.accent)
-                        .disabled(!session.canGoToPreviousTurn)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                        Button(action: { showAddCombatant = true }) {
-                            Image(systemName: "plus")
-                                .font(.system(size: 26, weight: .bold))
-                        }
-                        .foregroundColor(Theme.accent)
-                        .accessibilityLabel("Add Combatant")
-                        .frame(maxWidth: .infinity, alignment: .center)
-
-                        Button(action: { session.nextTurn() }) {
-                            HStack(spacing: 4) {
-                                Text("Next")
-                                Image(systemName: "chevron.right")
-                            }
-                            .font(.system(size: 14, weight: .semibold))
-                        }
-                        .foregroundColor(Theme.accent)
-                        .frame(maxWidth: .infinity, alignment: .trailing)
-                        .disabled(session.sortedCombatants.isEmpty)
-                    }
-                    .padding(16)
-                    .background(Theme.background)
-                    .borderTop(Theme.divider)
                 }
             }
+            .listStyle(.plain)
+            .scrollContentBackground(.hidden)
+
+            TurnControlBar(
+                canGoBack: session.canGoToPreviousTurn,
+                canAdvance: !session.sortedCombatants.isEmpty,
+                onPrevious: { session.previousTurn() },
+                onAdd: { showAddCombatant = true },
+                onNext: { session.nextTurn() }
+            )
         }
+        .themedScreen()
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .toolbar {
@@ -139,11 +68,16 @@ struct ContentView: View {
 
             ToolbarItem(placement: .principal) {
                 VStack(spacing: 2) {
-                    SelectAllTextField(text: nameBinding, placeholder: "Session Name")
-                        .frame(height: 20)
+                    SelectAllTextField(
+                        text: nameBinding,
+                        placeholder: "Session Name",
+                        font: .preferredFont(forTextStyle: .headline).serif
+                    )
+                    .frame(height: 20)
                     Text("Round \(session.roundNumber)")
-                        .font(.caption)
-                        .fontWeight(.semibold)
+                        .font(Theme.Typography.label)
+                        .textCase(.uppercase)
+                        .tracking(0.9)
                         .foregroundColor(Theme.accent)
                         .allowsHitTesting(false)
                 }
@@ -215,6 +149,106 @@ struct ContentView: View {
     }
 }
 
+/// Previous / Add / Next, pinned below the initiative list. Written once with the
+/// iOS 26 glass treatment applied conditionally, rather than as two near-identical
+/// copies of the whole bar — the layout is the same either way, only the button
+/// material differs.
+private struct TurnControlBar: View {
+    let canGoBack: Bool
+    let canAdvance: Bool
+    let onPrevious: () -> Void
+    let onAdd: () -> Void
+    let onNext: () -> Void
+
+    var body: some View {
+        if #available(iOS 26.0, *) {
+            GlassEffectContainer(spacing: Theme.Spacing.md) {
+                content(glass: true)
+            }
+        } else {
+            content(glass: false)
+                .background(Theme.background)
+                .overlay(alignment: .top) {
+                    Rectangle()
+                        .fill(Theme.border.opacity(0.5))
+                        .frame(height: Theme.hairline)
+                }
+        }
+    }
+
+    private func content(glass: Bool) -> some View {
+        HStack(spacing: Theme.Spacing.md) {
+            stepButton(
+                label: "Previous",
+                systemImage: "chevron.left",
+                iconLeading: true,
+                prominent: false,
+                glass: glass
+            ) { onPrevious() }
+            .disabled(!canGoBack)
+            .frame(maxWidth: .infinity, alignment: .leading)
+
+            addButton(glass: glass)
+                .frame(maxWidth: .infinity, alignment: .center)
+
+            stepButton(
+                label: "Next",
+                systemImage: "chevron.right",
+                iconLeading: false,
+                prominent: true,
+                glass: glass
+            ) { onNext() }
+            .disabled(!canAdvance)
+            .frame(maxWidth: .infinity, alignment: .trailing)
+        }
+        .padding(Theme.Spacing.lg)
+    }
+
+    @ViewBuilder
+    private func stepButton(
+        label: String,
+        systemImage: String,
+        iconLeading: Bool,
+        prominent: Bool,
+        glass: Bool,
+        action: @escaping () -> Void
+    ) -> some View {
+        let content = Button(action: action) {
+            HStack(spacing: Theme.Spacing.xs) {
+                if iconLeading { Image(systemName: systemImage) }
+                Text(label)
+                if !iconLeading { Image(systemName: systemImage) }
+            }
+            .font(Theme.Typography.bodyEmphasis)
+        }
+
+        if glass, #available(iOS 26.0, *) {
+            if prominent {
+                content.buttonStyle(.glassProminent).tint(Theme.accent)
+            } else {
+                content.buttonStyle(.glass)
+            }
+        } else {
+            content.foregroundColor(prominent ? Theme.accent : Theme.textSecondary)
+        }
+    }
+
+    @ViewBuilder
+    private func addButton(glass: Bool) -> some View {
+        let content = Button(action: onAdd) {
+            Image(systemName: "plus")
+                .font(.system(size: 26, weight: .bold))
+        }
+        .accessibilityLabel("Add Combatant")
+
+        if glass, #available(iOS 26.0, *) {
+            content.buttonStyle(.glass)
+        } else {
+            content.foregroundColor(Theme.accent)
+        }
+    }
+}
+
 struct CombatantRow: View {
     let combatant: Combatant
     let isCurrent: Bool
@@ -227,72 +261,77 @@ struct CombatantRow: View {
     // too-short row height and never re-measured, clipping wrapped chip rows.
     // Screen width minus the row's own fixed insets is deterministic up front.
     private var rowWidth: CGFloat {
-        UIScreen.main.bounds.width - 40 // 16 listRowInsets + 24 row padding
+        // 2 * Spacing.sm listRowInsets + 2 * Spacing.md cardRowStyle padding.
+        UIScreen.main.bounds.width - (2 * Theme.Spacing.sm + 2 * Theme.Spacing.md)
+    }
+
+    @ViewBuilder
+    private func statRow(systemImage: String, text: String, color: Color) -> some View {
+        HStack(spacing: Theme.Spacing.xs) {
+            Image(systemName: systemImage)
+                .font(.caption2)
+                .frame(width: 12)
+            Text(text)
+        }
+        .font(Theme.Typography.stat)
+        .foregroundColor(color)
     }
 
     @ViewBuilder
     private var healthRow: some View {
         if let current = combatant.currentHP, let max = combatant.maxHP {
-            let (text, color): (String, Color) = playerViewEnabled
-                ? {
-                    let band = StatusBand.health(current: current, max: max)
-                    return (band.label, band.color)
-                }()
-                : ("\(current)/\(max)", Theme.textSecondary)
-            HStack(spacing: 4) {
-                Image(systemName: "heart.fill").font(.caption2)
-                Text(text)
+            if playerViewEnabled {
+                let band = StatusBand.health(current: current, max: max)
+                statRow(systemImage: "heart.fill", text: band.label, color: band.color)
+            } else {
+                statRow(systemImage: "heart.fill", text: "\(current)/\(max)", color: Theme.textSecondary)
             }
-            .foregroundColor(color)
         }
     }
 
     @ViewBuilder
     private var armorClassRow: some View {
         if let ac = combatant.armorClass {
-            let (text, color): (String, Color) = playerViewEnabled
-                ? {
-                    let band = StatusBand.armorClass(ac)
-                    return (band.label, band.color)
-                }()
-                : ("\(ac)", Theme.textSecondary)
-            HStack(spacing: 4) {
-                Image(systemName: "shield.fill").font(.caption2)
-                Text(text)
+            if playerViewEnabled {
+                let band = StatusBand.armorClass(ac)
+                statRow(systemImage: "shield.fill", text: band.label, color: band.color)
+            } else {
+                statRow(systemImage: "shield.fill", text: "\(ac)", color: Theme.textSecondary)
             }
-            .foregroundColor(color)
         }
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 12) {
+        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+            HStack(spacing: Theme.Spacing.md) {
                 // Big and on the far left, its own column — not a small caption
                 // tucked under the name — so it reads immediately as the value the
-                // list is actually sorted by, not just incidental info about the
-                // combatant.
+                // list is actually sorted by. Tabular figures keep the column from
+                // shifting between one- and two-digit values. Only the current
+                // combatant's number is accent-colored: gold marks exactly one
+                // thing on this screen, and this is the screen's one thing.
                 Text("\(combatant.initiative)")
-                    .font(.system(size: 26, weight: .bold, design: .rounded))
-                    .foregroundColor(Theme.accent)
+                    .font(Theme.Typography.numeric(27))
+                    .foregroundColor(isCurrent ? Theme.accent : Theme.textSecondary)
                     .frame(width: 40, alignment: .center)
 
-                HStack(spacing: 6) {
+                HStack(spacing: Theme.Spacing.xs + 2) {
                     Text(combatant.name)
-                        .font(.headline)
+                        .font(Theme.Typography.rowTitle)
                         .foregroundColor(Theme.textPrimary)
                         .strikethrough(combatant.isDead)
 
                     if combatant.isDead {
                         Image(systemName: "skull.fill")
-                            .font(.caption)
-                            .foregroundColor(.white)
-                            .padding(4)
-                            .background(Color.black.opacity(0.7))
+                            .font(.caption2)
+                            .foregroundColor(Theme.textPrimary)
+                            .padding(Theme.Spacing.xs)
+                            .background(Theme.background.opacity(0.8))
                             .clipShape(Circle())
                     }
                 }
 
-                Spacer()
+                Spacer(minLength: Theme.Spacing.sm)
 
                 // Icon-led (heart/shield) instead of text labels ("14/20 HP"), and
                 // left-aligned within their own column so the icons themselves
@@ -301,7 +340,6 @@ struct CombatantRow: View {
                     healthRow
                     armorClassRow
                 }
-                .font(.caption)
             }
 
             // Glance-at-a-glance list, not the detail screen — a short label (e.g.
@@ -309,44 +347,53 @@ struct CombatantRow: View {
             // Reaction-used is just another status chip among the rest. FlowLayout
             // wraps to the next line on overflow instead of clipping.
             if combatant.reactionUsed || !combatant.visibleEffects.isEmpty {
-                FlowLayout(horizontalSpacing: 6, verticalSpacing: 6) {
+                FlowLayout {
                     if combatant.reactionUsed {
                         StatusChip(symbolName: "arrow.uturn.left", label: "Reaction", color: Theme.textTertiary)
                     }
                     ForEach(combatant.visibleEffects) { effect in
                         let condition = ConditionLibrary.matching(name: effect.name)
-                        StatusChip(symbolName: condition?.symbolName ?? "sparkles", label: effect.name, color: condition?.color ?? Theme.accent)
+                        StatusChip(
+                            symbolName: condition?.symbolName ?? "sparkles",
+                            label: effect.name,
+                            color: condition?.color ?? Theme.accent
+                        )
                     }
                 }
                 .frame(width: rowWidth, alignment: .leading)
             }
         }
         .cardRowStyle(isHighlighted: isCurrent)
-        .opacity(combatant.isDead ? 0.55 : 1)
+        .opacity(combatant.isDead ? 0.5 : 1)
     }
 }
 
-/// A single status symbol in its own small rounded, darker box — used for both
-/// reaction-used and effect condition icons in the combatant list, laid out via
-/// FlowLayout so several can sit side by side and wrap instead of clipping.
+/// A single status in its own small chip — used for both reaction-used and effect
+/// conditions in the combatant list, laid out via FlowLayout so several can sit
+/// side by side and wrap instead of clipping. The chip takes its own color from
+/// the condition's category (see `ConditionCategory`) at low opacity, so a row of
+/// chips is legible as a group without any one of them competing with the accent.
 private struct StatusChip: View {
     let symbolName: String
     let label: String
     let color: Color
 
     var body: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: Theme.Spacing.xs) {
             Image(systemName: symbolName)
-                .font(.system(size: 12))
+                .font(.system(size: 11))
             Text(label)
-                .font(.caption2)
-                .fontWeight(.semibold)
+                .font(Theme.Typography.label)
         }
         .foregroundColor(color)
-        .padding(.horizontal, 8)
+        .padding(.horizontal, Theme.Spacing.sm)
         .padding(.vertical, 5)
-        .background(Theme.divider.opacity(0.4))
-        .cornerRadius(6)
+        .background(color.opacity(0.13))
+        .overlay(
+            RoundedRectangle(cornerRadius: Theme.Radius.sm, style: .continuous)
+                .stroke(color.opacity(0.28), lineWidth: Theme.hairline)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.sm, style: .continuous))
     }
 }
 

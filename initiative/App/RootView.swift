@@ -12,6 +12,10 @@ enum Route: Hashable {
 /// PresetStore, and EncounterStore instances and the navigation path shared
 /// across screens.
 struct RootView: View {
+    init() {
+        Theme.applyNavigationBarAppearance()
+    }
+
     @State private var session = CombatSession()
     @State private var sessionStore = SessionStore()
     @State private var presetStore = PresetStore()

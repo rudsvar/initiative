@@ -23,7 +23,7 @@ struct LogView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Theme.background.ignoresSafeArea()
+                Theme.backgroundGradient.ignoresSafeArea()
 
                 if session.log.isEmpty {
                     ContentUnavailableView(
@@ -35,19 +35,19 @@ struct LogView: View {
                     ScrollViewReader { proxy in
                         List {
                             ForEach(roundsAscending, id: \.self) { round in
-                                Section("Round \(round)") {
+                                Section {
                                     ForEach(entries(forRound: round)) { entry in
                                         VStack(alignment: .leading, spacing: 2) {
                                             Text(entry.text)
-                                                .font(.subheadline)
+                                                .font(Theme.Typography.body)
                                                 .foregroundColor(Theme.textPrimary)
                                             Text(entry.timestamp.formatted(date: .omitted, time: .shortened))
-                                                .font(.caption)
+                                                .font(Theme.Typography.caption)
                                                 .foregroundColor(Theme.textTertiary)
                                         }
                                         .padding(.vertical, 2)
                                         .id(entry.id)
-                                        .listRowBackground(Theme.background)
+                                        .listRowBackground(Theme.surface)
                                         .swipeActions(edge: .trailing) {
                                             if entry.isDeletable {
                                                 Button(role: .destructive) {
@@ -58,6 +58,8 @@ struct LogView: View {
                                             }
                                         }
                                     }
+                                } header: {
+                                    Text("Round \(round)").sectionLabel()
                                 }
                             }
                         }

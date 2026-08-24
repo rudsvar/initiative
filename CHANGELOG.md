@@ -4,6 +4,90 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Changed — design system overhaul
+
+- **`Theme` is now a full token set, not just colors**: `Theme.Spacing` (4pt
+  scale), `Theme.Radius`, and `Theme.Typography` join the palette. Views no
+  longer carry literal padding numbers, corner radii or `.font(.headline)`
+  calls — the ad-hoc 6/8/12/14/16/26/32 spacing scattered across screens is
+  gone
+- **Real elevation ladder** replaces the single flat brown: `background`
+  (near-black warm ink) → `surface` (cards/rows) → `surfaceRaised`
+  (inputs/chips/current turn), plus a low-contrast warm `backgroundGradient`.
+  Deepening the base is what lets the candle-gold accent read as *light*;
+  previously the background sat close enough to the accent that gold never
+  glowed
+- **Borders are hairline** (`Theme.hairline`, 0.75pt at reduced opacity)
+  instead of full-weight 1pt strokes on everything, which is what made the UI
+  read as boxes drawn around things rather than as surfaces
+- **Accent is now spent on one thing per screen.** In the combatant list only
+  the *current* combatant's initiative numeral is gold; the rest are
+  `textSecondary`. The current-turn row is marked by a surface lift + accent
+  outline + a 3pt accent bar down its leading edge (the bar is what makes it
+  findable while scanning the initiative column) rather than by a tinted wash
+- **Typographic voice**: serif (`Typography.rowTitle`/`.title`/`.display`, and
+  the nav bar title) for anything that names something — screen titles,
+  combatant/creature/encounter names, card headings. Rounded *monospaced
+  digits* for initiative/HP/AC so the stat columns stop jittering between
+  one- and two-digit values. Tracked uppercase captions for field labels
+- **Condition colors are now semantic.** `StandardCondition` carries a
+  `ConditionCategory` (`sensory`/`mental`/`restraint`/`disabling`/`ongoing`)
+  and takes its color from that, replacing 10 raw SwiftUI system hues
+  (`.pink`, `.purple`, `.cyan`, `.indigo`, `.yellow`, …) that clashed with the
+  warm palette and told the DM nothing the label didn't. Chip color now says
+  *which kind* of trouble a combatant is in. The old "Stunned" yellow in
+  particular sat close enough to candle gold to compete with the current-turn
+  marker; a test now enforces that no category drifts back toward the accent
+- **Navigation bar is themed** via `Theme.applyNavigationBarAppearance()` from
+  `RootView.init` — `.preferredColorScheme(.dark)` alone left it on UIKit's
+  neutral system gray, which read as a foreign slab against the warm palette
+  (there is no SwiftUI-level way to set a nav bar background color)
+- **Main menu** leads with exactly one filled accent button — Resume when
+  there's something to resume, otherwise New Session — with the rest as quiet
+  surface rows. Decorative `.circle.fill` icon variants dropped throughout
+- **Combatant detail** groups into cards with proper heading hierarchy
+  (`Text.cardHeading()` for card titles vs `Text.sectionLabel()` for field
+  labels); Initiative and Armor Class now sit side by side instead of each
+  taking a full-width row; damage/heal/max buttons are matched tinted discs
+- **"Restore Default Creatures"** moved from a bare bar button beside Back —
+  where a mistimed tap on the way out silently repopulated the list — into the
+  Creatures screen's top-right options menu
+- Amount fields on the detail screen show `–` rather than `0` as placeholder,
+  which read as a real value
+
+### Added
+
+- `View.themedScreen()`, `cardRowLayout()`, `sectionCard()`,
+  `fieldStyle(width:)`, `Text.sectionLabel()` and `Text.cardHeading()` in
+  `ViewExtensions.swift` — the row/card/field/label chrome that had been
+  copy-pasted per screen (the detail screen alone repeated the same bordered
+  `TextField` treatment eight times) now has one definition each
+- `Theme.surface` / `.surfaceRaised` / `.backgroundLift` / `.backgroundGradient`
+  / `.ember` / `.accentSoft` / `.border` / `.hairline`
+- `UIFont.serif`, so `SelectAllTextField` (a UIKit bridge, and therefore
+  outside SwiftUI's font handling) can match the app's serif voice
+- **32 new tests** (113 → 145), covering three previously untested areas:
+  - `CodableCompatibilityTests` — saved sessions are a durable on-disk format
+    (see CLAUDE.md, "Session persistence compatibility") and had no tests at
+    all. Decodes *literal legacy JSON* rather than round-tripping through the
+    current encoder, so it still fails if a future change breaks yesterday's
+    files: retired `untilStartOfTargetTurn`/`untilEndOfTargetTurn` duration
+    kinds collapsing into owner-turn equivalents, missing `remainingTurns`
+    defaulting to 1, absent `isReactionMarker`/`roundNumber`/`log`/HP/AC
+    fields, and a full legacy `SessionRecord` loading end to end
+  - `StatusBandTests` — the player-facing health/armor bands, including the
+    strict `>50%` / `>25%` boundaries and the negative/zero-max edge cases
+  - `ConditionsTests` — case-insensitive lookup, unique names and symbols, and
+    the design constraint that no category color approaches `Theme.accent`
+- `NewSessionView` shows a per-encounter creature/combatant count, and reads
+  the encounter list once per appearance rather than hitting disk inside `body`
+
+### Fixed
+
+- `StatusBand.health` guards against a non-positive `max`, which would
+  otherwise produce a meaningless fraction (NaN at exactly zero, where every
+  comparison is false) instead of a sensible band
+
 ### Added
 - **New Session picker screen** (`NewSessionView`) replaces the earlier
   `confirmationDialog` action sheet for choosing Fresh Session vs. a saved

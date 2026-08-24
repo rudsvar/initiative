@@ -16,49 +16,57 @@ struct MainMenuView: View {
     @State private var canResume = false
 
     var body: some View {
-        ZStack {
-            Theme.background
-                .ignoresSafeArea()
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(spacing: Theme.Spacing.xxl) {
+                    Spacer(minLength: 0)
 
-            GeometryReader { proxy in
-                ScrollView {
-                    VStack(spacing: 32) {
-                        Text("Initiative")
-                            .font(.system(.largeTitle, design: .serif))
-                            .fontWeight(.bold)
-                            .foregroundColor(Theme.textPrimary)
-                            .multilineTextAlignment(.center)
+                    Text("Initiative")
+                        .font(Theme.Typography.display)
+                        .foregroundColor(Theme.textPrimary)
+                        .multilineTextAlignment(.center)
 
-                        VStack(spacing: 16) {
-                            if canResume {
-                                MenuButton(title: "Resume", systemImage: "play.circle.fill", isPrimary: true) {
-                                    resume()
-                                }
-                            }
-
-                            MenuButton(title: "New Session", systemImage: "plus.circle.fill") {
+                    VStack(spacing: Theme.Spacing.sm) {
+                        // Exactly one filled, accent-colored button on the screen:
+                        // whichever action the user most likely came here to take.
+                        // Everything else is a quiet surface row, so the primary
+                        // action is unmistakable without needing size or an icon
+                        // treatment to shout about it.
+                        if canResume {
+                            MenuButton(title: "Resume", systemImage: "play.fill", isPrimary: true, action: resume)
+                        } else {
+                            MenuButton(title: "New Session", systemImage: "plus", isPrimary: true) {
                                 path.append(Route.newSessionChooser)
                             }
+                        }
 
-                            MenuButton(title: "Load Session", systemImage: "folder.fill") {
-                                path.append(Route.sessionList)
-                            }
-
-                            MenuButton(title: "Encounters", systemImage: "shield.lefthalf.filled") {
-                                path.append(Route.encounterList)
-                            }
-
-                            MenuButton(title: "Creatures", systemImage: "pawprint.fill") {
-                                path.append(Route.presetList)
+                        if canResume {
+                            MenuButton(title: "New Session", systemImage: "plus") {
+                                path.append(Route.newSessionChooser)
                             }
                         }
-                        .padding(.horizontal, 32)
+
+                        MenuButton(title: "Load Session", systemImage: "clock.arrow.circlepath") {
+                            path.append(Route.sessionList)
+                        }
+
+                        MenuButton(title: "Encounters", systemImage: "shield.lefthalf.filled") {
+                            path.append(Route.encounterList)
+                        }
+
+                        MenuButton(title: "Creatures", systemImage: "pawprint") {
+                            path.append(Route.presetList)
+                        }
                     }
-                    .padding(.vertical, 40)
-                    .frame(minWidth: proxy.size.width, minHeight: proxy.size.height)
+
+                    Spacer(minLength: 0)
                 }
+                .padding(.horizontal, Theme.Spacing.xl)
+                .padding(.vertical, Theme.Spacing.xxl)
+                .frame(minWidth: proxy.size.width, minHeight: proxy.size.height)
             }
         }
+        .themedScreen()
         .navigationBarHidden(true)
         .onAppear { canResume = sessionStore.resumableSession() != nil }
     }
@@ -78,20 +86,32 @@ private struct MenuButton: View {
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 12) {
+            HStack(spacing: Theme.Spacing.md) {
                 Image(systemName: systemImage)
-                    .font(.body)
-                    .frame(width: 22, alignment: .center)
+                    .font(.system(size: 15))
+                    .frame(width: 20, alignment: .center)
+
                 Text(title)
-                    .font(.body.weight(.semibold))
+                    .font(isPrimary ? Theme.Typography.rowTitle : Theme.Typography.body)
+
                 Spacer()
+
+                if !isPrimary {
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(Theme.textTertiary)
+                }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 14)
-            .frame(minHeight: 44)
-            .background(isPrimary ? Theme.accent : Theme.divider.opacity(0.2))
-            .foregroundColor(isPrimary ? .white : Theme.textPrimary)
-            .cornerRadius(10)
+            .padding(.horizontal, Theme.Spacing.lg)
+            .padding(.vertical, Theme.Spacing.md)
+            .frame(minHeight: 48)
+            .foregroundColor(isPrimary ? Theme.background : Theme.textPrimary)
+            .background(isPrimary ? Theme.accent : Theme.surface)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous)
+                    .stroke(isPrimary ? Color.clear : Theme.border.opacity(0.5), lineWidth: Theme.hairline)
+            )
         }
     }
 }

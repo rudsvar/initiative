@@ -1,153 +1,23 @@
 import Foundation
 
-struct Combatant: Identifiable, Codable {
-    let id: UUID
-    var name: String
-    var initiative: Int
-    var effects: [Effect] = []
-    var maxHP: Int?
-    var currentHP: Int?
-    var armorClass: Int?
-
-    /// Reaction tracking is implemented as a regular effect (untilStartOfTheirTurn,
-    /// marked internal) rather than its own stored field, so it expires through the
-    /// same removeExpiredEffects mechanism as everything else instead of needing a
-    /// bespoke reset step in CombatSession.nextTurn(). See CombatSession.toggleReaction.
-    var reactionUsed: Bool {
-        effects.contains { $0.isReactionMarker == true }
-    }
-
-    /// Effects meant for user-facing display — excludes the internal reaction marker.
-    var visibleEffects: [Effect] {
-        effects.filter { $0.isReactionMarker != true }
-    }
-
-    /// Only meaningful once HP tracking is enabled (maxHP/currentHP non-nil).
-    var isDead: Bool {
-        guard let currentHP else { return false }
-        return currentHP <= 0
-    }
-
-    init(id: UUID = UUID(), name: String, initiative: Int, maxHP: Int? = nil, armorClass: Int? = nil) {
-        self.id = id
-        self.name = name
-        self.initiative = initiative
-        self.maxHP = maxHP
-        self.currentHP = maxHP
-        self.armorClass = armorClass
-    }
-}
-
-struct Effect: Identifiable, Codable {
-    let id: UUID
-    var name: String
-    var durationType: DurationType
-    /// Internal marker for the "reaction used" effect (see Combatant.reactionUsed) —
-    /// nil/false for every normal, user-created effect. Optional so old saved
-    /// sessions (from before this existed) still decode.
-    var isReactionMarker: Bool?
-
-    init(id: UUID = UUID(), name: String, durationType: DurationType, isReactionMarker: Bool? = nil) {
-        self.id = id
-        self.name = name
-        self.durationType = durationType
-        self.isReactionMarker = isReactionMarker
-    }
-}
-
-/// A structured HP change underlying a log entry's display text. Entries that carry
-/// one of these can be deleted from the log — deleting recomputes the affected
-/// combatant's current/max HP from scratch by replaying the remaining HP-operation
-/// entries for just that combatant, in order. Entries without one (turn changes,
-/// combatant added/removed, deaths) aren't deletable — there's no defined "undo"
-/// for them yet.
-enum HPOperation: Codable, Equatable {
-    case enableTracking(amount: Int)
-    case damage(amount: Int)
-    case healing(amount: Int)
-    case maxHPIncrease(amount: Int)
-}
-
-struct LogEntry: Identifiable, Codable {
-    let id: UUID
-    var text: String
-    var timestamp: Date
-    var roundNumber: Int
-    var combatantId: UUID?
-    var hpOperation: HPOperation?
-
-    /// Whether this entry can be swiped away in the log UI.
-    var isDeletable: Bool { hpOperation != nil }
-
-    init(
-        id: UUID = UUID(),
-        text: String,
-        timestamp: Date = Date(),
-        roundNumber: Int,
-        combatantId: UUID? = nil,
-        hpOperation: HPOperation? = nil
-    ) {
-        self.id = id
-        self.text = text
-        self.timestamp = timestamp
-        self.roundNumber = roundNumber
-        self.combatantId = combatantId
-        self.hpOperation = hpOperation
-    }
-}
-
-/// Effects are always self-applied by the DM to a combatant (there's no "target's
-/// turn" concept — if you want it to expire on someone else's turn, put it on them),
-/// so duration is just start/end of the owner's own turn, optionally repeated across
-/// several of their turns via `remainingTurns`.
-enum DurationType: Equatable, Codable {
-    case untilStartOfTheirTurn(remainingTurns: Int)
-    case untilEndOfTheirTurn(remainingTurns: Int)
-
-    var description: String {
-        switch self {
-        case .untilStartOfTheirTurn(let remaining):
-            return remaining > 1 ? "Until start of their turn (\(remaining) turns)" : "Until start of their next turn"
-        case .untilEndOfTheirTurn(let remaining):
-            return remaining > 1 ? "Until end of their turn (\(remaining) turns)" : "Until end of their next turn"
-        }
-    }
-
-    private enum Kind: String, Codable {
-        // untilStartOfTargetTurn/untilEndOfTargetTurn kept only so old saved sessions
-        // with target-based effects still decode — they collapse into the owner-turn
-        // equivalent since the target concept no longer exists.
-        case untilStartOfTheirTurn, untilEndOfTheirTurn, untilStartOfTargetTurn, untilEndOfTargetTurn
-    }
-
-    private enum CodingKeys: String, CodingKey {
-        case kind, remainingTurns
-    }
-
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        let remaining = try container.decodeIfPresent(Int.self, forKey: .remainingTurns) ?? 1
-        switch try container.decode(Kind.self, forKey: .kind) {
-        case .untilStartOfTheirTurn, .untilStartOfTargetTurn:
-            self = .untilStartOfTheirTurn(remainingTurns: remaining)
-        case .untilEndOfTheirTurn, .untilEndOfTargetTurn:
-            self = .untilEndOfTheirTurn(remainingTurns: remaining)
-        }
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        switch self {
-        case .untilStartOfTheirTurn(let remaining):
-            try container.encode(Kind.untilStartOfTheirTurn, forKey: .kind)
-            try container.encode(remaining, forKey: .remainingTurns)
-        case .untilEndOfTheirTurn(let remaining):
-            try container.encode(Kind.untilEndOfTheirTurn, forKey: .kind)
-            try container.encode(remaining, forKey: .remainingTurns)
-        }
-    }
-}
-
+/// One run of combat: the roster, whose turn it is, the round counter, and the
+/// event log — the app's single mutable domain object, owned by `RootView` and
+/// passed down to every screen.
+///
+/// Two design decisions shape most of what's below. First, **the log is the
+/// undo mechanism for HP**: damage/heal/max-increase each append a structured
+/// `HPOperation`, and deleting one of those entries recomputes that combatant's
+/// HP by replaying the rest, so there's no separate undo stack to keep in sync.
+/// Second, **anything that expires does so as an `Effect`** — including the
+/// "reaction used" marker, which is an ordinary internal effect rather than a
+/// stored flag, so it ages out through `removeExpiredEffects` like everything
+/// else instead of needing its own reset step in `nextTurn()`.
+///
+/// Deliberately kept as one type in one file rather than split across
+/// extensions: `history` and `log` are `private`, and Swift's file-scoped
+/// `private` means splitting into per-concern files would mean widening them to
+/// `internal` — trading real encapsulation for navigability. The `MARK` sections
+/// buy the navigability instead.
 @Observable
 class CombatSession {
     var combatants: [Combatant] = []
@@ -185,6 +55,8 @@ class CombatSession {
         formatter.timeStyle = .short
         return formatter.string(from: Date())
     }
+
+    // MARK: - Roster
 
     var canGoToPreviousTurn: Bool {
         !history.isEmpty
@@ -247,6 +119,8 @@ class CombatSession {
             }
         }
     }
+
+    // MARK: - Health
 
     func enableHPTracking(for id: UUID, maxHP: Int) {
         guard let index = combatants.firstIndex(where: { $0.id == id }), maxHP > 0 else { return }
@@ -339,6 +213,8 @@ class CombatSession {
         combatants[index].currentHP = currentHP
     }
 
+    // MARK: - Reaction
+
     private static let reactionEffectName = "Reaction Used"
 
     func useReaction(for id: UUID) {
@@ -372,6 +248,8 @@ class CombatSession {
         history.removeAll()
         appendLog("\(name) removed from combat")
     }
+
+    // MARK: - Turn order
 
     func nextTurn() {
         guard !combatants.isEmpty else { return }
@@ -418,6 +296,8 @@ class CombatSession {
         log = []
         history = []
     }
+
+    // MARK: - Persistence
 
     func makeRecord() -> SessionRecord {
         SessionRecord(id: id, name: name, combatants: combatants, currentTurnIndex: currentTurnIndex, roundNumber: roundNumber, log: log)

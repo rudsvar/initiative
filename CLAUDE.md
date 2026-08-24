@@ -43,7 +43,9 @@ automatically; just put a new file in the right group and regenerate.
 initiative/
 ├── App/              # initiativeApp.swift (@main), RootView.swift (nav root, owns
 │                        the shared CombatSession/SessionStore/PresetStore/EncounterStore)
-├── Models/           # Models.swift (CombatSession, Combatant, Effect, LogEntry, ...) + its tests
+├── Models/           # One file per type: Combatant, Effect (+ DurationType), LogEntry
+│                        (+ HPOperation), CombatSession — plus ModelsTests.swift and
+│                        CodableCompatibilityTests.swift
 ├── Stores/           # SessionStore/PresetStore/EncounterStore (JSON-file persistence) + tests
 ├── Views/
 │   ├── Combat/        # ContentView, CombatantDetailView, LogView, AddCombatantSheet, AddEffectView
@@ -51,8 +53,10 @@ initiative/
 │   ├── Presets/        # PresetListView (Main Menu -> Creatures)
 │   ├── Encounters/      # EncounterListView (+ its nested Edit/Add sheets)
 │   └── Sessions/       # SessionListView (Main Menu -> Load Session)
-├── Common/            # Theme.swift (colors, StatusBand, FlowLayout), Conditions.swift,
-│                        SelectAllTextField.swift, ViewExtensions.swift — shared across screens
+├── Common/            # Theme.swift (design tokens: color/spacing/radius/type),
+│                        ViewExtensions.swift (the shared view modifiers built on them),
+│                        Conditions.swift, StatusBand.swift, FlowLayout.swift,
+│                        SelectAllTextField.swift — shared across screens
 ├── Assets.xcassets/   # Images, colors, app icon
 project.yml            # XcodeGen configuration (regenerates .xcodeproj)
 .gitignore              # Excludes Xcode build artifacts, .DS_Store, etc.
@@ -73,16 +77,34 @@ project.yml            # XcodeGen configuration (regenerates .xcodeproj)
 - Use navigation containers (NavigationStack, TabView, etc.) for multi-screen navigation
 
 **Styling & Colors**:
-- **Theme applies app-wide — every screen must use `Theme.swift` colors, no
-  exceptions.** (Direction changed from an earlier "native iOS colors, custom
-  theme only selectively" stance — that's no longer current.) Prefer native
-  system *components* (`Form`/`Section`, `List`, `ContentUnavailableView`,
-  native swipe actions/confirmation dialogs) over hand-rolled containers —
-  that part hasn't changed — but their *colors* must come from `Theme.swift`
-  (`~/git/initiative/initiative/Common/Theme.swift`), not system defaults. A `Form`/
-  `List` is white by default; pair it with `Theme.background` +
-  `.scrollContentBackground(.hidden)` (see `ContentView.swift` for the
-  pattern) so it doesn't stand out as unthemed.
+- **Everything visual comes from tokens in `Common/Theme.swift`** — color,
+  `Theme.Spacing` (4pt scale), `Theme.Radius`, `Theme.Typography`. No literal
+  padding numbers, corner radii, `Color(red:...)`, or `.font(.headline)` in a
+  view; if a value is missing, add a token rather than a one-off. (Direction
+  changed from an earlier "native iOS colors, custom theme only selectively"
+  stance — that's no longer current.)
+- **Reach for the shared modifiers in `Common/ViewExtensions.swift` first**:
+  `themedScreen()` (full-screen backdrop), `cardRowStyle(isHighlighted:)` +
+  `cardRowLayout()` (every list row in the app), `sectionCard()` (a group of
+  controls on a detail screen), `fieldStyle(width:)` (text input chrome),
+  `Text.sectionLabel()` (tracked caps field label) and `Text.cardHeading()`
+  (serif card title). These exist because each was previously copy-pasted per
+  screen and drifted apart.
+- **The palette's rules, not just its values** — `Theme`'s doc comment is the
+  authority, but in short: surfaces come from the elevation ladder
+  (`background` → `surface` → `surfaceRaised`) rather than from borders, borders
+  are hairline (`Theme.hairline`), and **candle gold (`Theme.accent`) marks at
+  most one thing per screen**. Anything else that wants to stand out uses a
+  status/category color. `ConditionLibrary`'s five category hues are constrained
+  by a test (`ConditionsTests`) to stay clear of the accent.
+- Prefer native system *components* (`Form`/`Section`, `List`,
+  `ContentUnavailableView`, native swipe actions/confirmation dialogs) over
+  hand-rolled containers — that part hasn't changed — but their *colors* must
+  come from `Theme`, not system defaults. A `Form`/`List` is white by default;
+  pair it with `.scrollContentBackground(.hidden)` + `themedScreen()` (see
+  `ContentView.swift`) so it doesn't stand out as unthemed. The navigation bar
+  is the exception that can't be done in SwiftUI at all — it's set once via
+  `Theme.applyNavigationBarAppearance()` from `RootView.init`.
 - Consult the `ios-hig` skill (`<agent-config>/skills/ios-hig/SKILL.md`) before building new
   screens — practical Apple HIG checklist for this app.
 
@@ -127,12 +149,34 @@ a change done.** Run from the CLI (faster feedback than opening Xcode, and avoid
 device code-signing prompts):
 
 ```bash
-xcodebuild test -scheme initiative -destination "platform=iOS Simulator,name=phone 16 Pro"
+xcodebuild test -scheme initiative -destination "platform=iOS Simulator,id=<UDID>"
 ```
 
-If that destination isn't available, list available simulators with
-`xcrun simctl list devices available` and substitute one, or use
-`-destination "platform=iOS Simulator,id=<UDID>"`.
+Get a UDID from `xcrun simctl list devices available`. Prefer the `id=` form:
+the `name=phone 16 Pro` form has been observed to fail with "Unable to find a
+device matching the provided destination specifier" even when a simulator by
+that exact name is listed as available.
+
+**Looking at UI changes**: boot a simulator and drive it from the CLI rather
+than guessing from code —
+
+```bash
+xcrun simctl boot <UDID>
+xcodebuild build -scheme initiative -destination "platform=iOS Simulator,id=<UDID>"
+xcrun simctl install <UDID> "$(find ~/Library/Developer/Xcode/DerivedData/initiative-*/Build/Products/Debug-iphonesimulator -maxdepth 1 -iname 'initiative.app')"
+xcrun simctl launch <UDID> xyz.rudsvar.initiative
+xcrun simctl io <UDID> screenshot shot.png
+```
+
+There is no way to *tap* from the CLI here (no `cliclick`/`idb`, and System
+Events' `click at` fails against Simulator), so a screen behind navigation can't
+be reached by scripting taps. To see one, seed state and reach it directly:
+write a `SessionRecord` JSON into
+`$(xcrun simctl get_app_container <UDID> xyz.rudsvar.initiative data)/Documents/SavedSessions/`
+and set the last-active pointer with
+`xcrun simctl spawn <UDID> defaults write xyz.rudsvar.initiative lastActiveSessionID "<uuid>"`,
+then add a *temporary* launch-argument branch in `RootView` that pushes the
+route you want. Delete that branch before committing — it must not ship.
 
 **After significant changes, also build, install, and launch on the real phone**
 ("Umbra") if it's connected — catches device-only issues (letterboxing, signing,

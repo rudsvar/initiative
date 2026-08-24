@@ -100,20 +100,24 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 - Combatants auto-sort by initiative (descending; ties maintain insertion order)
 
 **Combatant Display**
-- Row layout uses the full row width: **initiative** is a large bold
-  far-left column (it's the value the list is sorted by, so it reads as the
-  primary at-a-glance number); **name** sits next to it; **HP/AC** (when
-  set) is a right-aligned, icon-led column — a heart icon for HP, a shield
+- Row layout uses the full row width: **initiative** is a large far-left
+  column in tabular figures (it's the value the list is sorted by, so it reads
+  as the primary at-a-glance number; monospaced digits keep the column from
+  shifting between one- and two-digit values). Only the *current* combatant's
+  number is accent-colored — the rest are `textSecondary`, since gold is
+  reserved for marking one thing per screen. **Name** sits next to it in the
+  app's serif face; **HP/AC** (when set) is a right-aligned, icon-led column — a heart icon for HP, a shield
   icon for AC, left-aligned within that column so the icons themselves line
   up regardless of digit count (exact numbers in DM view, approximate bands
   in player view, see §12)
-- No arrow/chevron icon marks the current-turn row — the row's own
-  background fill + accent-colored border (see below) is the sole indicator
+- No arrow/chevron icon marks the current-turn row — the row's own surface
+  lift + accent outline + accent leading edge bar (see below) is the sole
+  indicator
 - A wrapping row of small chips shows active statuses (reaction used +
   active effects) below the name/HP row — each status gets its own darker
   rounded box (`StatusChip`, `ContentView.swift`) with an icon plus a short
   label (e.g. "Stunned", "Reaction"), laid out via a custom `FlowLayout`
-  (`Theme.swift`, SwiftUI `Layout` protocol) so several sit side by side and
+  (`FlowLayout.swift`, SwiftUI `Layout` protocol) so several sit side by side and
   wrap to the next line on overflow. `FlowLayout`'s width is computed
   synchronously from the screen width (not measured via `GeometryReader` +
   `@State`) — `List` self-sizes a row once on first appearance, so a width
@@ -124,12 +128,15 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
   labeled "Reaction"), shown alongside effect condition icons — not visually
   special-cased or called out separately from the rest
 - List is always sorted highest to lowest initiative
-- Every row has a visible border; the current-turn row additionally gets an
-  accent-tinted background fill and a thicker accent-colored border. This
-  card look (`View.cardRowStyle(isHighlighted:)`, `ViewExtensions.swift`) is
-  shared with every other list in the app (Creatures, Encounters, Load
-  Session, New Session) so they all look consistent rather than each screen
-  reimplementing its own row chrome
+- Every row is a card on `Theme.surface` with a hairline border. The
+  current-turn row is marked three ways at once: lifted to `surfaceRaised`,
+  outlined in accent, and given a solid 3pt accent bar down its leading edge.
+  The bar is what makes the active row findable while scanning down the
+  initiative column, which a background tint alone doesn't do. This card look
+  (`View.cardRowStyle(isHighlighted:)` + `cardRowLayout()`,
+  `ViewExtensions.swift`) is shared with every other list in the app
+  (Creatures, Encounters, Load Session, New Session) so they all look
+  consistent rather than each screen reimplementing its own row chrome
 
 ### 2. Initiative Order & Turn Advancement
 
@@ -435,8 +442,11 @@ list of presets (name + HP + AC + initiative bonus), tap to edit, swipe to
 delete (no confirmation dialog — swipe + tap is already two deliberate
 actions), a top-right "+" to create one directly (name/HP/AC/initiative
 bonus, same fields as editing) — presets don't have to originate from actually
-adding a combatant in a session; either path works — and a top-left "Restore
-Defaults" button (`arrow.counterclockwise`, `PresetStore.restoreMissingDefaults()`).
+adding a combatant in a session; either path works — and a "Restore Default
+Creatures" item in the screen's top-right options menu
+(`PresetStore.restoreMissingDefaults()`). It lives behind the menu rather than
+as a bare bar button: it previously sat immediately beside Back, where a
+mistimed tap on the way out of the screen silently repopulated the list.
 
 **Why a separate restore action, distinct from the first-launch seed**:
 `seedDefaultsIfEmpty()` only ever fires once, on a genuinely empty store — if
@@ -522,7 +532,8 @@ systems — not trademarked, confirmed before adding this.
 `ConditionLibrary` (`Conditions.swift`) ships a fixed list of standard status
 conditions — Blinded, Charmed, Deafened, Frightened, Grappled, Incapacitated,
 Invisible, Paralyzed, Poisoned, Prone, Restrained, Stunned, Unconscious,
-Exhausted, Burning, Bleeding — each with an SF Symbol icon + color. Plain
+Exhausted, Burning, Bleeding — each with an SF Symbol icon and a
+`ConditionCategory`. Plain
 generic English condition words, not trademarked or ruleset-specific (single
 descriptive words like "stunned" aren't ownable), and SF Symbols are licensed
 for in-app UI use on Apple platforms (not for app icons/logos, which doesn't
@@ -535,6 +546,9 @@ apply here).
   look up the effect's name against the library (case-insensitive) and show
   the matching icon/color; unrecognized/custom effect names fall back to a
   generic sparkle icon in the theme accent color
+- **Color comes from the condition's category, not the condition** — see
+  "Condition colors are information, not decoration" under Design & Theming for
+  the five categories and why per-condition hues were dropped
 - No new duration mechanism — conditions use the same `DurationType` cases
   (and auto-expiry) as any other effect
 
@@ -598,54 +612,95 @@ it. `EncounterStore` persists one JSON file per encounter, mirroring `SessionSto
 
 ## Design & Theming
 
-**Theme applies app-wide.** Every screen reads its colors from `Theme.swift` —
-the single source of truth (`Theme.background`, `.accent`, `.textPrimary`,
-`.textSecondary`, `.textTertiary`, `.divider`, plus semantic status colors
-`.statusGood`/`.statusWarn`/`.statusBad`/`.statusNeutral`/`.statusInfo` for
-health/armor bands and the Damage/Heal/Increase-Max-HP buttons — muted/
-warm-toned versions of red/green/blue rather than raw SwiftUI `.red`/
-`.green`/`.blue`, which read as too saturated against the rest of the
-palette; and `.placeholderText`, a lighter warm tan for `TextField`
-placeholders specifically — SwiftUI's plain `TextField("placeholder",
-text:)` always renders its placeholder in a fixed system gray regardless of
-theme, so every placeholder-bearing field uses the `TextField(text:label:)`
-closure form instead, with an explicit `Text("...").foregroundColor(Theme.placeholderText)`
-label). No screen should fall back to system-default white/black — a `Form`/
-`List` is white by default and needs an explicit `Theme.background` +
-`.scrollContentBackground(.hidden)` to pick up the theme (see ContentView for
-the pattern). Native system *components* (`Form`/`Section`, `List`,
-`ContentUnavailableView`, native swipe actions/confirmation dialogs) are
-still preferred over hand-rolled containers — it's specifically *colors*
-that must come from `Theme`, not a mandate to reskin every control.
+**Everything visual comes from tokens.** `Common/Theme.swift` is the single
+source of truth for color, spacing (`Theme.Spacing`, a 4pt scale), corner radius
+(`Theme.Radius`) and type (`Theme.Typography`). A view must not contain literal
+padding numbers, corner radii, `Color(red:…)` values, or bare `.font(.headline)`
+calls — if a value is missing, a token gets added rather than a one-off written
+inline. `Common/ViewExtensions.swift` holds the shared modifiers built on those
+tokens (`themedScreen`, `cardRowStyle`/`cardRowLayout`, `sectionCard`,
+`fieldStyle`, `Text.sectionLabel`, `Text.cardHeading`); each exists because the
+same chrome had been copy-pasted across several screens and drifted apart.
 
-**Current palette: Tavern Candlelight** — a warm, dark, cozy look (picked
-after comparing 5 live options via a temporary in-app picker, since removed):
-- **Background**: dark warm brown (`#3A2A22`-ish)
-- **Accent**: amber/gold (`#D9A441`-ish) — highlights, active states, current
-  turn, initiative numbers
-- **Primary text**: warm off-white/cream — deliberately light-on-dark, not
-  the dark-on-light of the earlier "old paper" look
-- **Secondary/tertiary text**: muted tan, for less prominent labels
-- **Divider**: dark muted brown, for card/row separation
-- **Status colors**: warm-toned good/warn/bad/neutral (olive green, amber,
-  muted red, gray) instead of raw primary red/green/blue, so health/armor
-  bands don't clash with the warm background
+No screen falls back to system-default white/black — a `Form`/`List` is white by
+default and needs `.scrollContentBackground(.hidden)` + `themedScreen()` (see
+`ContentView`). Native system *components* (`Form`/`Section`, `List`,
+`ContentUnavailableView`, swipe actions, confirmation dialogs) are still
+preferred over hand-rolled containers; it's specifically *colors* that must come
+from `Theme`, not a mandate to reskin every control. The navigation bar is the
+one thing SwiftUI can't color at all, so it's set once through
+`Theme.applyNavigationBarAppearance()` from `RootView.init` — without it the bar
+stays on UIKit's neutral system gray and reads as a foreign slab.
 
-**Typography**
-- Clean, readable default iOS fonts (SF Pro); combatant names larger/bold
-- Initiative numbers: large, bold, accent-colored, own column (see §1)
-- Effects/status chips: smaller, secondary text color
+### Palette: Tavern Candlelight
 
-**Visual Elements**
-- Round corners on combatant cards/rows and status chips for softness
-- Accent-colored highlight/background for the current-turn combatant
-- Status chips (reaction + effects) use semantic status/condition colors,
-  not the accent color, so they're visually distinct from "this is the
-  active turn"
+The organising idea is **a dark room lit by one warm light source**. Two rules
+follow from it, and they're the load-bearing part of the design:
 
-**Spacing**
-- Generous padding around interactive elements for easy tapping
-- Clear visual hierarchy: title > combatant > effect
+1. **Depth comes from surfaces, not borders.** There's a real elevation ladder —
+   `background` (near-black warm ink) → `surface` (cards, list rows) →
+   `surfaceRaised` (inputs, chips, the current-turn row) — plus a very
+   low-contrast warm gradient (`backgroundGradient`) so a full screen doesn't
+   read as a flat block. Outlines are hairline weight (`Theme.hairline`, 0.75pt)
+   at reduced opacity; a full-weight 1pt stroke on every element is what makes a
+   UI read as "boxes drawn around things".
+2. **Candle gold marks at most one thing per screen.** `Theme.accent` is the
+   only saturated color in normal use, and it only reads as *light* if nothing
+   else competes with it. On the combat screen it's spent on the current turn
+   (initiative numeral, leading edge bar, outline) and the primary action;
+   non-current initiative numbers are `textSecondary`. Anything else that needs
+   to stand out uses a status or condition-category color, never the accent.
+   `Theme.ember` is the warm secondary for urgent/destructive affordances, so
+   "danger" stays in the same family instead of importing a system red.
+
+Semantic status colors (`statusGood`/`Warn`/`Bad`/`Neutral`/`Info`) carry
+health/armor bands and the Damage/Heal/Increase-Max-HP buttons — muted, warm
+versions of red/green/blue rather than raw SwiftUI `.red`/`.green`/`.blue`, which
+read as too saturated here. `placeholderText` exists because SwiftUI's plain
+`TextField("placeholder", text:)` always renders its placeholder in a fixed
+system gray regardless of theme; every placeholder-bearing field uses the
+`TextField(text:label:)` closure form so the placeholder can be recolored.
+
+### Condition colors are information, not decoration
+
+Each standard condition used to carry its own hue chosen to suit the word
+("Poisoned" green, "Charmed" pink, "Stunned" yellow, …). That meant a combatant
+with four effects showed four unrelated saturated colors, none of which told the
+DM anything the label didn't already say, and one of them (yellow) sat close
+enough to candle gold to compete with the current-turn marker.
+
+Conditions are now grouped into five `ConditionCategory` cases by *what they do
+to you* — `sensory`, `mental`, `restraint`, `disabling`, `ongoing` — and the
+color comes from the category. A glance at chip color says which kind of trouble
+a combatant is in, the palette stays small enough to sit inside the warm scheme,
+and `ConditionsTests` asserts that no category drifts back toward the accent.
+Icons stay per-condition and are asserted unique, since the glyph is what
+distinguishes conditions *within* a category.
+
+### Typography
+
+The voice is **a serif for anything that names something, tabular figures for
+anything numeric**:
+- Serif (`Typography.display`/`.title`/`.rowTitle`, and the nav bar title):
+  screen titles, combatant names, creature/encounter/session names, card
+  headings. This is what gives the app a character of its own instead of reading
+  as default-SF-everywhere.
+- Rounded monospaced digits (`Typography.numeric`/`.stat`/`.statLarge`):
+  initiative, HP, AC. Functional, not stylistic — these sit in columns, and
+  proportional digits make the columns visibly jitter between values.
+- Tracked uppercase captions (`Text.sectionLabel()`): field and section labels.
+  At caption size, letter-spaced caps read as a deliberate label rather than as
+  undersized body text. Card titles use `Text.cardHeading()` instead — a
+  different *kind* of type, not a brighter version of the same caps, so a card's
+  title never reads as one more field label inside it.
+- All styles build on Dynamic Type text styles, so they still scale with the
+  user's text size setting.
+
+### Spacing & shape
+
+- Every gap and inset comes from `Theme.Spacing` (4pt scale: 4/8/12/16/24/32).
+- Corner radii come from `Theme.Radius` (6/10/14), using `.continuous` style.
+- Tap targets stay at or above 44pt.
 
 ## Architecture Decision Record (ADR)
 

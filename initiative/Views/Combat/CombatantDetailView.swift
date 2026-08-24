@@ -72,273 +72,18 @@ struct CombatantDetailView: View {
     }
 
     var body: some View {
-        ZStack {
-            Theme.background
-                .ignoresSafeArea()
-
+        ScrollView {
             if let combatant = combatant {
-                VStack(spacing: 0) {
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 20) {
-                            VStack(alignment: .leading, spacing: 8) {
-                                Text("Name")
-                                    .font(.caption)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(Theme.textTertiary)
-                                TextField(text: nameBinding) {
-                                    Text("Name").foregroundColor(Theme.placeholderText)
-                                }
-                                    .font(.title2)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(Theme.textPrimary)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 8)
-                                    .background(Theme.inputBackground)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .stroke(Theme.divider, lineWidth: 1)
-                                    )
-
-                                Text("Initiative")
-                                    .font(.caption)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(Theme.textTertiary)
-                                TextField(text: initiativeBinding) {
-                                    Text("Initiative").foregroundColor(Theme.placeholderText)
-                                }
-                                    .keyboardType(.numberPad)
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(Theme.accent)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 8)
-                                    .frame(width: 88)
-                                    .background(Theme.inputBackground)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .stroke(Theme.divider, lineWidth: 1)
-                                    )
-
-                                Text("Armor Class")
-                                    .font(.caption)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(Theme.textTertiary)
-                                TextField(text: armorClassBinding) {
-                                    Text("Optional").foregroundColor(Theme.placeholderText)
-                                }
-                                    .keyboardType(.numberPad)
-                                    .font(.subheadline)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(Theme.accent)
-                                    .padding(.horizontal, 12)
-                                    .padding(.vertical, 8)
-                                    .frame(width: 88)
-                                    .background(Theme.inputBackground)
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 8)
-                                            .stroke(Theme.divider, lineWidth: 1)
-                                    )
-
-                                if combatant.isDead {
-                                    DeadBadge()
-                                }
-                            }
-                            .padding(16)
-                            .background(Theme.divider.opacity(0.2))
-                            .cornerRadius(8)
-
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("Health")
-                                    .font(.headline)
-                                    .foregroundColor(Theme.textPrimary)
-
-                                if combatant.maxHP != nil {
-                                    // Current above Max, each with its own inline
-                                    // Amount field + action button(s) right next to it
-                                    // — replaces a shared single Amount field feeding
-                                    // three buttons, which put Increase Max HP oddly
-                                    // far from the Max HP box it actually affects.
-                                    VStack(alignment: .leading, spacing: 16) {
-                                        HStack(alignment: .bottom, spacing: 10) {
-                                            VStack(alignment: .leading, spacing: 4) {
-                                                Text("Current")
-                                                    .font(.caption)
-                                                    .foregroundColor(Theme.textTertiary)
-                                                TextField(text: currentHPBinding) {
-                                                    Text("HP").foregroundColor(Theme.placeholderText)
-                                                }
-                                                    .keyboardType(.numberPad)
-                                                    .font(.title3)
-                                                    .fontWeight(.bold)
-                                                    .foregroundColor(combatant.isDead ? Theme.textTertiary : Theme.accent)
-                                                    .multilineTextAlignment(.center)
-                                                    .padding(.horizontal, 12)
-                                                    .padding(.vertical, 8)
-                                                    .frame(width: 72)
-                                                    .background(Theme.inputBackground)
-                                                    .overlay(
-                                                        RoundedRectangle(cornerRadius: 8)
-                                                            .stroke(Theme.divider, lineWidth: 1)
-                                                    )
-                                            }
-
-                                            VStack(alignment: .leading, spacing: 4) {
-                                                Text("Amount")
-                                                    .font(.caption)
-                                                    .foregroundColor(Theme.textTertiary)
-                                                TextField(text: $damageHealAmount) {
-                                                    Text("Amt").foregroundColor(Theme.placeholderText)
-                                                }
-                                                    .keyboardType(.numberPad)
-                                                    .font(.subheadline)
-                                                    .fontWeight(.semibold)
-                                                    .multilineTextAlignment(.center)
-                                                    .padding(.horizontal, 8)
-                                                    .padding(.vertical, 8)
-                                                    .frame(width: 60)
-                                                    .background(Theme.inputBackground)
-                                                    .overlay(
-                                                        RoundedRectangle(cornerRadius: 8)
-                                                            .stroke(Theme.divider, lineWidth: 1)
-                                                    )
-                                            }
-
-                                            Button(action: { applyDamage(to: combatant) }) {
-                                                Image(systemName: "minus.circle.fill")
-                                                    .font(.system(size: 28))
-                                            }
-                                            .foregroundColor(Theme.statusBad)
-                                            .disabled(Int(damageHealAmount) == nil)
-                                            .accessibilityLabel("Damage")
-
-                                            Button(action: { applyHealing(to: combatant) }) {
-                                                Image(systemName: "plus.circle.fill")
-                                                    .font(.system(size: 28))
-                                            }
-                                            .foregroundColor(Theme.statusGood)
-                                            .disabled(Int(damageHealAmount) == nil)
-                                            .accessibilityLabel("Heal")
-                                        }
-
-                                        HStack(alignment: .bottom, spacing: 10) {
-                                            VStack(alignment: .leading, spacing: 4) {
-                                                Text("Max")
-                                                    .font(.caption)
-                                                    .foregroundColor(Theme.textTertiary)
-                                                TextField(text: maxHPBinding) {
-                                                    Text("Max HP").foregroundColor(Theme.placeholderText)
-                                                }
-                                                    .keyboardType(.numberPad)
-                                                    .font(.title3)
-                                                    .fontWeight(.bold)
-                                                    .foregroundColor(Theme.textPrimary)
-                                                    .multilineTextAlignment(.center)
-                                                    .padding(.horizontal, 12)
-                                                    .padding(.vertical, 8)
-                                                    .frame(width: 72)
-                                                    .background(Theme.inputBackground)
-                                                    .overlay(
-                                                        RoundedRectangle(cornerRadius: 8)
-                                                            .stroke(Theme.divider, lineWidth: 1)
-                                                    )
-                                            }
-
-                                            VStack(alignment: .leading, spacing: 4) {
-                                                Text("Amount")
-                                                    .font(.caption)
-                                                    .foregroundColor(Theme.textTertiary)
-                                                TextField(text: $maxIncreaseAmount) {
-                                                    Text("Amt").foregroundColor(Theme.placeholderText)
-                                                }
-                                                    .keyboardType(.numberPad)
-                                                    .font(.subheadline)
-                                                    .fontWeight(.semibold)
-                                                    .multilineTextAlignment(.center)
-                                                    .padding(.horizontal, 8)
-                                                    .padding(.vertical, 8)
-                                                    .frame(width: 60)
-                                                    .background(Theme.inputBackground)
-                                                    .overlay(
-                                                        RoundedRectangle(cornerRadius: 8)
-                                                            .stroke(Theme.divider, lineWidth: 1)
-                                                    )
-                                            }
-
-                                            Button(action: { increaseMaxHP(for: combatant) }) {
-                                                Image(systemName: "arrow.up.heart.fill")
-                                                    .font(.system(size: 28))
-                                            }
-                                            .foregroundColor(Theme.statusInfo)
-                                            .disabled(Int(maxIncreaseAmount) == nil)
-                                            .accessibilityLabel("Increase Max HP")
-                                        }
-                                    }
-                                } else {
-                                    Button(action: { newMaxHPText = ""; showEnableHP = true }) {
-                                        Label("Track HP", systemImage: "heart.fill")
-                                            .font(.system(size: 14, weight: .semibold))
-                                            .foregroundColor(Theme.accent)
-                                    }
-                                }
-                            }
-                            .padding(16)
-                            .background(Theme.divider.opacity(0.2))
-                            .cornerRadius(8)
-
-                            VStack(alignment: .leading, spacing: 12) {
-                                Text("Reaction")
-                                    .font(.headline)
-                                    .foregroundColor(Theme.textPrimary)
-
-                                ReactionToggleView(
-                                    isUsed: combatant.reactionUsed,
-                                    onToggle: { toggleReaction(for: combatant) }
-                                )
-                            }
-
-                            VStack(alignment: .leading, spacing: 12) {
-                                HStack {
-                                    Text("Active Effects")
-                                        .font(.headline)
-                                        .foregroundColor(Theme.textPrimary)
-
-                                    Spacer()
-
-                                    Button(action: { showAddEffect = true }) {
-                                        Label("Add", systemImage: "plus.circle.fill")
-                                            .font(.system(size: 14, weight: .semibold))
-                                            .foregroundColor(Theme.accent)
-                                    }
-                                }
-
-                                if combatant.visibleEffects.isEmpty {
-                                    VStack(spacing: 8) {
-                                        Image(systemName: "sparkles")
-                                            .font(.system(size: 32))
-                                            .foregroundColor(Theme.divider)
-                                        Text("No active effects")
-                                            .font(.subheadline)
-                                            .foregroundColor(Theme.textTertiary)
-                                    }
-                                    .frame(maxWidth: .infinity, alignment: .center)
-                                    .padding(20)
-                                } else {
-                                    VStack(spacing: 8) {
-                                        ForEach(combatant.visibleEffects) { effect in
-                                            EffectRowView(
-                                                effect: effect,
-                                                onRemove: { removeEffect(effect, from: combatant) }
-                                            )
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                        .padding(16)
-                    }
+                VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
+                    identityCard(for: combatant)
+                    healthCard(for: combatant)
+                    reactionCard(for: combatant)
+                    effectsCard(for: combatant)
                 }
+                .padding(Theme.Spacing.lg)
             }
         }
+        .themedScreen()
         .navigationTitle("Combatant")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showAddEffect) {
@@ -354,7 +99,7 @@ struct CombatantDetailView: View {
             TextField(text: $newMaxHPText) {
                 Text("Max HP").foregroundColor(Theme.placeholderText)
             }
-                .keyboardType(.numberPad)
+            .keyboardType(.numberPad)
             Button("Start Tracking") {
                 if let value = Int(newMaxHPText), value > 0 {
                     session.enableHPTracking(for: combatantId, maxHP: value)
@@ -363,6 +108,220 @@ struct CombatantDetailView: View {
             Button("Cancel", role: .cancel) {}
         }
     }
+
+    // MARK: - Cards
+
+    /// Name on its own line (it's the long field), with initiative and armor
+    /// class side by side underneath — both are short numbers, and stacking them
+    /// in separate full-width rows wasted most of the screen's width.
+    private func identityCard(for combatant: Combatant) -> some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                Text("Name").sectionLabel()
+                TextField(text: nameBinding) {
+                    Text("Name").foregroundColor(Theme.placeholderText)
+                }
+                .font(Theme.Typography.title)
+                .foregroundColor(Theme.textPrimary)
+                .fieldStyle()
+            }
+
+            HStack(alignment: .top, spacing: Theme.Spacing.md) {
+                VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                    Text("Initiative").sectionLabel()
+                    TextField(text: initiativeBinding) {
+                        Text("—").foregroundColor(Theme.placeholderText)
+                    }
+                    .keyboardType(.numberPad)
+                    .font(Theme.Typography.statLarge)
+                    .foregroundColor(Theme.accent)
+                    .multilineTextAlignment(.center)
+                    .fieldStyle(width: 84)
+                }
+
+                VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                    Text("Armor Class").sectionLabel()
+                    TextField(text: armorClassBinding) {
+                        Text("—").foregroundColor(Theme.placeholderText)
+                    }
+                    .keyboardType(.numberPad)
+                    .font(Theme.Typography.statLarge)
+                    .foregroundColor(Theme.textPrimary)
+                    .multilineTextAlignment(.center)
+                    .fieldStyle(width: 84)
+                }
+
+                Spacer(minLength: 0)
+
+                if combatant.isDead {
+                    DeadBadge()
+                        .padding(.top, Theme.Spacing.lg)
+                }
+            }
+        }
+        .sectionCard()
+    }
+
+    private func healthCard(for combatant: Combatant) -> some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+            Text("Health").cardHeading()
+
+            if combatant.maxHP != nil {
+                // Current above Max, each with its own inline Amount field +
+                // action button(s) right next to it — replaces a shared single
+                // Amount field feeding three buttons, which put Increase Max HP
+                // oddly far from the Max HP box it actually affects.
+                VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
+                    HStack(alignment: .bottom, spacing: Theme.Spacing.sm) {
+                        labelledField(
+                            "Current",
+                            text: currentHPBinding,
+                            placeholder: "HP",
+                            color: combatant.isDead ? Theme.textTertiary : Theme.accent,
+                            width: 74
+                        )
+                        labelledField(
+                            "Amount",
+                            text: $damageHealAmount,
+                            placeholder: "–",
+                            color: Theme.textPrimary,
+                            width: 66
+                        )
+
+                        Spacer(minLength: 0)
+
+                        hpButton("minus", tint: Theme.statusBad, label: "Damage") {
+                            applyDamage(to: combatant)
+                        }
+                        .disabled(Int(damageHealAmount) == nil)
+
+                        hpButton("plus", tint: Theme.statusGood, label: "Heal") {
+                            applyHealing(to: combatant)
+                        }
+                        .disabled(Int(damageHealAmount) == nil)
+                    }
+
+                    HStack(alignment: .bottom, spacing: Theme.Spacing.sm) {
+                        labelledField(
+                            "Max",
+                            text: maxHPBinding,
+                            placeholder: "Max",
+                            color: Theme.textPrimary,
+                            width: 74
+                        )
+                        labelledField(
+                            "Amount",
+                            text: $maxIncreaseAmount,
+                            placeholder: "–",
+                            color: Theme.textPrimary,
+                            width: 66
+                        )
+
+                        Spacer(minLength: 0)
+
+                        hpButton("arrow.up", tint: Theme.statusInfo, label: "Increase Max HP") {
+                            increaseMaxHP(for: combatant)
+                        }
+                        .disabled(Int(maxIncreaseAmount) == nil)
+                    }
+                }
+            } else {
+                Button(action: { newMaxHPText = ""; showEnableHP = true }) {
+                    Label("Track HP", systemImage: "heart.fill")
+                        .font(Theme.Typography.bodyEmphasis)
+                        .foregroundColor(Theme.accent)
+                }
+            }
+        }
+        .sectionCard()
+    }
+
+    private func reactionCard(for combatant: Combatant) -> some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+            Text("Reaction").cardHeading()
+            ReactionToggleView(
+                isUsed: combatant.reactionUsed,
+                onToggle: { toggleReaction(for: combatant) }
+            )
+        }
+        .sectionCard()
+    }
+
+    private func effectsCard(for combatant: Combatant) -> some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+            HStack {
+                Text("Active Effects").cardHeading()
+                Spacer()
+                Button(action: { showAddEffect = true }) {
+                    Label("Add", systemImage: "plus")
+                        .font(Theme.Typography.label)
+                        .foregroundColor(Theme.accent)
+                }
+            }
+
+            if combatant.visibleEffects.isEmpty {
+                Text("None active.")
+                    .font(Theme.Typography.body)
+                    .foregroundColor(Theme.textTertiary)
+                    .padding(.vertical, Theme.Spacing.xs)
+            } else {
+                VStack(spacing: Theme.Spacing.sm) {
+                    ForEach(combatant.visibleEffects) { effect in
+                        EffectRowView(
+                            effect: effect,
+                            onRemove: { removeEffect(effect, from: combatant) }
+                        )
+                    }
+                }
+            }
+        }
+        .sectionCard()
+    }
+
+    // MARK: - Small building blocks
+
+    private func labelledField(
+        _ label: String,
+        text: Binding<String>,
+        placeholder: String,
+        color: Color,
+        width: CGFloat
+    ) -> some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+            Text(label).sectionLabel()
+            TextField(text: text) {
+                Text(placeholder).foregroundColor(Theme.placeholderText)
+            }
+            .keyboardType(.numberPad)
+            .font(Theme.Typography.statLarge)
+            .foregroundColor(color)
+            .multilineTextAlignment(.center)
+            .fieldStyle(width: width)
+        }
+    }
+
+    /// A tinted circular action button. The glyph is a bare `minus`/`plus`/`arrow`
+    /// on a tinted disc rather than a `.circle.fill` symbol so the disc size is
+    /// ours to control and all three buttons match regardless of glyph.
+    private func hpButton(
+        _ systemImage: String,
+        tint: Color,
+        label: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            Image(systemName: systemImage)
+                .font(.system(size: 16, weight: .bold))
+                .foregroundColor(tint)
+                .frame(width: 38, height: 38)
+                .background(tint.opacity(0.16))
+                .clipShape(Circle())
+                .overlay(Circle().stroke(tint.opacity(0.35), lineWidth: Theme.hairline))
+        }
+        .accessibilityLabel(label)
+    }
+
+    // MARK: - Actions
 
     private func applyDamage(to combatant: Combatant) {
         guard let amount = Int(damageHealAmount) else { return }
@@ -387,25 +346,28 @@ struct CombatantDetailView: View {
     }
 
     private func removeEffect(_ effect: Effect, from combatant: Combatant) {
-        if let pIndex = session.combatants.firstIndex(where: { $0.id == combatant.id }) {
-            session.combatants[pIndex].effects.removeAll { $0.id == effect.id }
+        if let index = session.combatants.firstIndex(where: { $0.id == combatant.id }) {
+            session.combatants[index].effects.removeAll { $0.id == effect.id }
         }
     }
 }
 
 struct DeadBadge: View {
     var body: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: Theme.Spacing.xs + 2) {
             Image(systemName: "skull.fill")
             Text("Dead")
-                .fontWeight(.bold)
+                .font(Theme.Typography.label)
+                .textCase(.uppercase)
+                .tracking(0.9)
         }
-        .font(.subheadline)
-        .foregroundColor(.white)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 4)
-        .background(Color.black.opacity(0.7))
-        .cornerRadius(6)
+        .font(.caption2)
+        .foregroundColor(Theme.textPrimary)
+        .padding(.horizontal, Theme.Spacing.sm)
+        .padding(.vertical, 5)
+        .background(Theme.background)
+        .clipShape(Capsule())
+        .overlay(Capsule().stroke(Theme.border, lineWidth: Theme.hairline))
     }
 }
 
@@ -415,32 +377,31 @@ struct ReactionToggleView: View {
 
     var body: some View {
         Button(action: onToggle) {
-            HStack(spacing: 12) {
+            HStack(spacing: Theme.Spacing.md) {
                 Image(systemName: "arrow.uturn.left")
-                    .font(.system(size: 18))
+                    .font(.system(size: 17))
                     .foregroundColor(isUsed ? Theme.textTertiary : Theme.accent)
                     .frame(width: 22)
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(isUsed ? "Reaction Used" : "Reaction Available")
-                        .font(.subheadline)
-                        .fontWeight(.semibold)
+                        .font(Theme.Typography.bodyEmphasis)
                         .foregroundColor(Theme.textPrimary)
 
-                    Text(isUsed ? "Mark as available" : "Mark as used")
-                        .font(.caption)
+                    Text(isUsed ? "Tap to mark available" : "Tap to mark used")
+                        .font(Theme.Typography.caption)
                         .foregroundColor(Theme.textTertiary)
                 }
 
                 Spacer()
-
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 12, weight: .semibold))
-                    .foregroundColor(Theme.divider)
             }
-            .padding(12)
-            .background(isUsed ? Theme.divider.opacity(0.2) : Theme.accent.opacity(0.1))
-            .cornerRadius(8)
+            .padding(Theme.Spacing.md)
+            .background(isUsed ? Theme.surfaceRaised : Theme.accentSoft)
+            .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.sm, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.Radius.sm, style: .continuous)
+                    .stroke(isUsed ? Theme.border.opacity(0.5) : Theme.accent.opacity(0.4), lineWidth: Theme.hairline)
+            )
         }
     }
 }
@@ -453,35 +414,41 @@ struct EffectRowView: View {
         ConditionLibrary.matching(name: effect.name)
     }
 
-    var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: condition?.symbolName ?? "sparkles")
-                .font(.system(size: 18))
-                .foregroundColor(condition?.color ?? Theme.accent)
-                .frame(width: 22)
+    private var tint: Color { condition?.color ?? Theme.accent }
 
-            VStack(alignment: .leading, spacing: 4) {
+    var body: some View {
+        HStack(spacing: Theme.Spacing.md) {
+            Image(systemName: condition?.symbolName ?? "sparkles")
+                .font(.system(size: 15))
+                .foregroundColor(tint)
+                .frame(width: 30, height: 30)
+                .background(tint.opacity(0.14))
+                .clipShape(Circle())
+
+            VStack(alignment: .leading, spacing: 2) {
                 Text(effect.name)
-                    .font(.subheadline)
-                    .fontWeight(.semibold)
+                    .font(Theme.Typography.bodyEmphasis)
                     .foregroundColor(Theme.textPrimary)
 
                 Text(effect.durationType.description)
-                    .font(.caption)
+                    .font(Theme.Typography.caption)
                     .foregroundColor(Theme.textTertiary)
             }
 
             Spacer()
 
             Button(action: onRemove) {
-                Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 16))
-                    .foregroundColor(Theme.divider)
+                Image(systemName: "xmark")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundColor(Theme.textTertiary)
+                    .padding(Theme.Spacing.sm)
             }
+            .accessibilityLabel("Remove \(effect.name)")
         }
-        .padding(12)
-        .background(Theme.divider.opacity(0.2))
-        .cornerRadius(8)
+        .padding(.horizontal, Theme.Spacing.md)
+        .padding(.vertical, Theme.Spacing.sm)
+        .background(Theme.surfaceRaised)
+        .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.sm, style: .continuous))
     }
 }
 

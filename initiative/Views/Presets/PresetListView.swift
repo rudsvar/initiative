@@ -10,9 +10,7 @@ struct PresetListView: View {
     @State private var editingPreset: CreaturePreset?
 
     var body: some View {
-        ZStack {
-            Theme.background.ignoresSafeArea()
-
+        Group {
             if presets.isEmpty {
                 ContentUnavailableView(
                     "No Creatures Yet",
@@ -23,34 +21,28 @@ struct PresetListView: View {
                 List {
                     ForEach(presets) { preset in
                         Button(action: { editingPreset = preset }) {
-                            HStack {
+                            HStack(spacing: Theme.Spacing.md) {
                                 Text(preset.name)
-                                    .font(.headline)
+                                    .font(Theme.Typography.rowTitle)
                                     .foregroundColor(Theme.textPrimary)
-                                Spacer()
-                                VStack(alignment: .trailing, spacing: 2) {
+                                Spacer(minLength: Theme.Spacing.sm)
+                                // Same icon-led stat column as the combatant row,
+                                // so a creature reads the same wherever it appears.
+                                VStack(alignment: .leading, spacing: 2) {
                                     if let maxHP = preset.maxHP {
-                                        Text("\(maxHP) HP")
-                                            .font(.subheadline)
-                                            .foregroundColor(Theme.textTertiary)
+                                        statRow("heart.fill", "\(maxHP)")
                                     }
                                     if let armorClass = preset.armorClass {
-                                        Text("AC \(armorClass)")
-                                            .font(.subheadline)
-                                            .foregroundColor(Theme.textTertiary)
+                                        statRow("shield.fill", "\(armorClass)")
                                     }
-                                    if let bonus = preset.initiativeBonus {
-                                        Text("Initiative Bonus \(bonus >= 0 ? "+" : "")\(bonus)")
-                                            .font(.caption)
-                                            .foregroundColor(Theme.textTertiary)
+                                    if let bonus = preset.initiativeBonus, bonus != 0 {
+                                        statRow("die.face.5.fill", "\(bonus >= 0 ? "+" : "")\(bonus)")
                                     }
                                 }
                             }
                         }
                         .cardRowStyle()
-                        .listRowSeparator(.hidden)
-                        .listRowInsets(EdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8))
-                        .listRowBackground(Color.clear)
+                        .cardRowLayout()
                         .swipeActions(edge: .trailing) {
                             // No extra confirmation dialog: swipe-to-reveal + tap
                             // Delete is already two deliberate actions.
@@ -67,23 +59,31 @@ struct PresetListView: View {
                 .scrollContentBackground(.hidden)
             }
         }
+        .themedScreen()
         .navigationTitle("Creatures")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button(action: {
-                    presetStore.restoreMissingDefaults()
-                    presets = presetStore.listPresets()
-                }) {
-                    Image(systemName: "arrow.counterclockwise")
-                }
-                .accessibilityLabel("Restore Default Creatures")
-            }
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: { editingPreset = CreaturePreset(name: "") }) {
                     Image(systemName: "plus")
                 }
                 .accessibilityLabel("New Creature")
+            }
+            // Restore Defaults lives behind the menu, not as a bare bar button:
+            // it used to sit immediately beside Back, where a mistimed tap on the
+            // way out of the screen silently repopulated the list.
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Menu {
+                    Button {
+                        presetStore.restoreMissingDefaults()
+                        presets = presetStore.listPresets()
+                    } label: {
+                        Label("Restore Default Creatures", systemImage: "arrow.counterclockwise")
+                    }
+                } label: {
+                    Image(systemName: "line.3.horizontal")
+                }
+                .accessibilityLabel("Options")
             }
         }
         .onAppear { presets = presetStore.listPresets() }
@@ -92,6 +92,17 @@ struct PresetListView: View {
                 presets = presetStore.listPresets()
             }
         }
+    }
+
+    private func statRow(_ systemImage: String, _ text: String) -> some View {
+        HStack(spacing: Theme.Spacing.xs) {
+            Image(systemName: systemImage)
+                .font(.caption2)
+                .frame(width: 12)
+            Text(text)
+        }
+        .font(Theme.Typography.stat)
+        .foregroundColor(Theme.textSecondary)
     }
 }
 
@@ -119,7 +130,7 @@ private struct EditPresetView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Theme.background.ignoresSafeArea()
+                Theme.backgroundGradient.ignoresSafeArea()
                 Form {
                     Section("Name") {
                         TextField(text: $name) {
@@ -146,7 +157,7 @@ private struct EditPresetView: View {
                     }
                 }
                 .scrollContentBackground(.hidden)
-                .listRowBackground(Theme.inputBackground)
+                .listRowBackground(Theme.surfaceRaised)
             }
             .navigationTitle(preset.name.isEmpty ? "New Creature" : "Edit Creature")
             .navigationBarTitleDisplayMode(.inline)

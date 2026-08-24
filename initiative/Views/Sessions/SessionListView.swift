@@ -8,9 +8,7 @@ struct SessionListView: View {
     @State private var records: [SessionRecord] = []
 
     var body: some View {
-        ZStack {
-            Theme.background.ignoresSafeArea()
-
+        Group {
             if records.isEmpty {
                 ContentUnavailableView(
                     "No Saved Sessions",
@@ -21,19 +19,17 @@ struct SessionListView: View {
                 List {
                     ForEach(records) { record in
                         Button(action: { load(record) }) {
-                            VStack(alignment: .leading, spacing: 4) {
+                            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                                 Text(record.name)
-                                    .font(.headline)
+                                    .font(Theme.Typography.rowTitle)
                                     .foregroundColor(Theme.textPrimary)
                                 Text("\(record.combatants.count) combatants · \(record.savedAt.formatted(date: .abbreviated, time: .shortened))")
-                                    .font(.caption)
+                                    .font(Theme.Typography.caption)
                                     .foregroundColor(Theme.textTertiary)
                             }
                         }
                         .cardRowStyle()
-                        .listRowSeparator(.hidden)
-                        .listRowInsets(EdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8))
-                        .listRowBackground(Color.clear)
+                        .cardRowLayout()
                         .swipeActions(edge: .trailing) {
                             // No extra confirmation dialog here: swipe-to-reveal + tap
                             // Delete is already two deliberate actions.
@@ -50,6 +46,7 @@ struct SessionListView: View {
                 .scrollContentBackground(.hidden)
             }
         }
+        .themedScreen()
         .navigationTitle("Load Session")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { records = sessionStore.listSavedSessions() }

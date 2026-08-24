@@ -9,50 +9,82 @@ struct NewSessionView: View {
     let encounterStore: EncounterStore
     @Binding var path: NavigationPath
 
-    var body: some View {
-        ZStack {
-            Theme.background.ignoresSafeArea()
+    // Read once per appearance rather than inside `body`: listEncounters() hits
+    // disk, and body can re-run any number of times per frame.
+    @State private var encounters: [Encounter] = []
 
-            List {
+    var body: some View {
+        List {
+            Section {
                 Button(action: startFreshSession) {
-                    HStack {
-                        Image(systemName: "plus.circle.fill")
-                            .foregroundColor(Theme.accent)
-                        Text("Fresh Session")
-                            .font(.headline)
-                            .foregroundColor(Theme.textPrimary)
-                        Spacer()
-                    }
-                    .padding(.vertical, 4)
+                    row(
+                        icon: "plus",
+                        title: "Fresh Session",
+                        subtitle: "Start empty and add combatants as you go"
+                    )
                 }
                 .cardRowStyle()
-                .listRowSeparator(.hidden)
-                .listRowInsets(EdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8))
-                .listRowBackground(Color.clear)
+                .cardRowLayout()
+            }
 
-                ForEach(encounterStore.listEncounters()) { encounter in
-                    Button(action: { startSession(from: encounter) }) {
-                        HStack {
-                            Image(systemName: "shield.lefthalf.filled")
-                                .foregroundColor(Theme.accent)
-                            Text(encounter.name)
-                                .font(.headline)
-                                .foregroundColor(Theme.textPrimary)
-                            Spacer()
+            if !encounters.isEmpty {
+                Section {
+                    ForEach(encounters) { encounter in
+                        Button(action: { startSession(from: encounter) }) {
+                            row(
+                                icon: "shield.lefthalf.filled",
+                                title: encounter.name,
+                                subtitle: entryDescription(for: encounter)
+                            )
                         }
-                        .padding(.vertical, 4)
+                        .cardRowStyle()
+                        .cardRowLayout()
                     }
-                    .cardRowStyle()
-                    .listRowSeparator(.hidden)
-                    .listRowInsets(EdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8))
-                    .listRowBackground(Color.clear)
+                } header: {
+                    Text("From an Encounter")
+                        .sectionLabel()
+                        .listRowInsets(EdgeInsets(
+                            top: Theme.Spacing.lg,
+                            leading: Theme.Spacing.md,
+                            bottom: Theme.Spacing.xs,
+                            trailing: Theme.Spacing.md
+                        ))
                 }
             }
-            .listStyle(.plain)
-            .scrollContentBackground(.hidden)
         }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .themedScreen()
         .navigationTitle("New Session")
         .navigationBarTitleDisplayMode(.inline)
+        .onAppear { encounters = encounterStore.listEncounters() }
+    }
+
+    private func row(icon: String, title: String, subtitle: String) -> some View {
+        HStack(spacing: Theme.Spacing.md) {
+            Image(systemName: icon)
+                .font(.system(size: 15))
+                .foregroundColor(Theme.accent)
+                .frame(width: 20)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(Theme.Typography.rowTitle)
+                    .foregroundColor(Theme.textPrimary)
+                Text(subtitle)
+                    .font(Theme.Typography.caption)
+                    .foregroundColor(Theme.textTertiary)
+            }
+
+            Spacer()
+        }
+    }
+
+    private func entryDescription(for encounter: Encounter) -> String {
+        let creatures = encounter.entries.count
+        let total = encounter.entries.reduce(0) { $0 + $1.count }
+        let creatureWord = creatures == 1 ? "creature" : "creatures"
+        return "\(creatures) \(creatureWord) · \(total) combatants"
     }
 
     private func startFreshSession() {

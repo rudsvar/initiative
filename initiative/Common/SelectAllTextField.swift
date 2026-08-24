@@ -64,3 +64,14 @@ struct SelectAllTextField: UIViewRepresentable {
         }
     }
 }
+
+extension UIFont {
+    /// The serif companion to a UIKit text style, so a `SelectAllTextField` can
+    /// match `Theme.Typography`'s serif voice. SwiftUI expresses this as
+    /// `.system(_, design: .serif)`; UIKit needs the descriptor dance, and falls
+    /// back to the original font if the serif design isn't available.
+    var serif: UIFont {
+        guard let descriptor = fontDescriptor.withDesign(.serif) else { return self }
+        return UIFont(descriptor: descriptor, size: pointSize)
+    }
+}

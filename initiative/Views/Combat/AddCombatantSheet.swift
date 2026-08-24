@@ -20,7 +20,7 @@ struct AddCombatantSheet: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Theme.background.ignoresSafeArea()
+                Theme.backgroundGradient.ignoresSafeArea()
                 Form {
                     if !presets.isEmpty {
                         Section("Creature") {
@@ -90,7 +90,7 @@ struct AddCombatantSheet: View {
                     }
                 }
                 .scrollContentBackground(.hidden)
-                .listRowBackground(Theme.inputBackground)
+                .listRowBackground(Theme.surfaceRaised)
             }
             .navigationTitle("Add Combatant")
             .navigationBarTitleDisplayMode(.inline)

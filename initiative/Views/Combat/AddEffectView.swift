@@ -11,7 +11,7 @@ struct AddEffectView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Theme.background.ignoresSafeArea()
+                Theme.backgroundGradient.ignoresSafeArea()
                 Form {
                     Section("Condition") {
                         Menu {
@@ -55,7 +55,7 @@ struct AddEffectView: View {
                     }
                 }
                 .scrollContentBackground(.hidden)
-                .listRowBackground(Theme.inputBackground)
+                .listRowBackground(Theme.surfaceRaised)
             }
             .navigationTitle("Add Effect")
             .navigationBarTitleDisplayMode(.inline)

@@ -12,9 +12,7 @@ struct EncounterListView: View {
     @State private var editingEncounter: Encounter?
 
     var body: some View {
-        ZStack {
-            Theme.background.ignoresSafeArea()
-
+        Group {
             if encounters.isEmpty {
                 ContentUnavailableView(
                     "No Encounters Yet",
@@ -25,19 +23,19 @@ struct EncounterListView: View {
                 List {
                     ForEach(encounters) { encounter in
                         Button(action: { editingEncounter = encounter }) {
-                            VStack(alignment: .leading, spacing: 4) {
+                            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                                 Text(encounter.name)
-                                    .font(.headline)
+                                    .font(Theme.Typography.rowTitle)
                                     .foregroundColor(Theme.textPrimary)
                                 Text(summary(for: encounter))
-                                    .font(.caption)
+                                    .font(Theme.Typography.caption)
                                     .foregroundColor(Theme.textTertiary)
+                                    .lineLimit(2)
+                                    .multilineTextAlignment(.leading)
                             }
                         }
                         .cardRowStyle()
-                        .listRowSeparator(.hidden)
-                        .listRowInsets(EdgeInsets(top: 6, leading: 8, bottom: 6, trailing: 8))
-                        .listRowBackground(Color.clear)
+                        .cardRowLayout()
                         .swipeActions(edge: .trailing) {
                             Button(role: .destructive) {
                                 encounterStore.delete(id: encounter.id)
@@ -52,6 +50,7 @@ struct EncounterListView: View {
                 .scrollContentBackground(.hidden)
             }
         }
+        .themedScreen()
         .navigationTitle("Encounters")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -97,7 +96,7 @@ private struct EditEncounterView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Theme.background.ignoresSafeArea()
+                Theme.backgroundGradient.ignoresSafeArea()
                 Form {
                     Section("Name") {
                         TextField(text: $encounter.name) {
@@ -125,12 +124,12 @@ private struct EditEncounterView: View {
                         }
 
                         Button(action: { showAddEntry = true }) {
-                            Label("Add Creature", systemImage: "plus.circle.fill")
+                            Label("Add Creature", systemImage: "plus")
                         }
                     }
                 }
                 .scrollContentBackground(.hidden)
-                .listRowBackground(Theme.inputBackground)
+                .listRowBackground(Theme.surfaceRaised)
             }
             .navigationTitle("Edit Encounter")
             .navigationBarTitleDisplayMode(.inline)
@@ -175,7 +174,7 @@ private struct AddEncounterEntryView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Theme.background.ignoresSafeArea()
+                Theme.backgroundGradient.ignoresSafeArea()
                 Form {
                     if !presets.isEmpty {
                         Section("Creature") {
@@ -222,7 +221,7 @@ private struct AddEncounterEntryView: View {
                     }
                 }
                 .scrollContentBackground(.hidden)
-                .listRowBackground(Theme.inputBackground)
+                .listRowBackground(Theme.surfaceRaised)
             }
             .navigationTitle("Add Creature")
             .navigationBarTitleDisplayMode(.inline)
