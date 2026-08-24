@@ -16,10 +16,13 @@
 		41724A9D8898DA716DFF4960 /* StatusBand.swift in Sources */ = {isa = PBXBuildFile; fileRef = 74CF92255CFA4102CC5F52CE /* StatusBand.swift */; };
 		4697377DC3C5B1DBFC20A648 /* AddEffectView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E125BD4E004500C246337CC /* AddEffectView.swift */; };
 		494371ED7B27C47A81A55FA0 /* EncounterListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2D4E292B2659AF52763DAC9 /* EncounterListView.swift */; };
+		497810B3563B071D9F877FB7 /* DefaultContent.swift in Sources */ = {isa = PBXBuildFile; fileRef = FA68DB47192CE2E8140091B6 /* DefaultContent.swift */; };
+		4D5AF4D833355B9CDA7A42CE /* DefaultContentTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBABE4259F27970917C4A30D /* DefaultContentTests.swift */; };
 		4FF9E43276141E472EAC151B /* ViewExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18C53D0D096702F8E279A268 /* ViewExtensions.swift */; };
 		516C78B264911745A7A371AA /* MainMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A505C34833BAA007D103BF7 /* MainMenuView.swift */; };
 		52F968B9382EEE7057F6E34D /* CombatantDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AB92BFBD1A901C57446D6A5 /* CombatantDetailView.swift */; };
 		594492A79BD283DE55245AAC /* NewSessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43FC7996489BBF4E0E1170E1 /* NewSessionView.swift */; };
+		5DDEB5B6BC076ED132C2F47C /* DefaultInstallLedger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0F9D98D798B722C11F643CCD /* DefaultInstallLedger.swift */; };
 		69ADF2074766356C68EFDEEB /* CodableCompatibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 236012BD8426FA8D17541295 /* CodableCompatibilityTests.swift */; };
 		6DA1B43A72527F8A95AF7ACE /* PresetListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F82F2EA03A7A61F03D982C7 /* PresetListView.swift */; };
 		753B7A6563DA08CED59C9981 /* EncounterStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A418113952E8ECEE42D913AA /* EncounterStore.swift */; };
@@ -58,6 +61,7 @@
 
 /* Begin PBXFileReference section */
 		0B266DEA642A436C6B0171B6 /* Combatant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Combatant.swift; sourceTree = "<group>"; };
+		0F9D98D798B722C11F643CCD /* DefaultInstallLedger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultInstallLedger.swift; sourceTree = "<group>"; };
 		173E70DAD215FA1517F8B1AF /* initiativeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = initiativeApp.swift; sourceTree = "<group>"; };
 		18C53D0D096702F8E279A268 /* ViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewExtensions.swift; sourceTree = "<group>"; };
 		1A7840FBA3A62622584D6A22 /* ThemeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeController.swift; sourceTree = "<group>"; };
@@ -89,12 +93,14 @@
 		A2D4E292B2659AF52763DAC9 /* EncounterListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncounterListView.swift; sourceTree = "<group>"; };
 		A418113952E8ECEE42D913AA /* EncounterStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncounterStore.swift; sourceTree = "<group>"; };
 		AE5F2E9E2F63F368EE903186 /* LogEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEntry.swift; sourceTree = "<group>"; };
+		BBABE4259F27970917C4A30D /* DefaultContentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultContentTests.swift; sourceTree = "<group>"; };
 		C155049E0F660B15183A193A /* PresetStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetStoreTests.swift; sourceTree = "<group>"; };
 		D21AAC93B6F1C0C492D21EF5 /* Conditions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Conditions.swift; sourceTree = "<group>"; };
 		D2DB99B4AEE2D59113761B9B /* SessionStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStoreTests.swift; sourceTree = "<group>"; };
 		D970AC13228D90BB0630DD34 /* AppearanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceView.swift; sourceTree = "<group>"; };
 		F700581D6670C2CC2D6A5112 /* SelectAllTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectAllTextField.swift; sourceTree = "<group>"; };
 		F7082DB36F1CEF76E4B26086 /* initiative.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = initiative.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		FA68DB47192CE2E8140091B6 /* DefaultContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultContent.swift; sourceTree = "<group>"; };
 		FE0E8595FB2990C1DF76AD4C /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -230,6 +236,9 @@
 		DFCB7D5F4A5DDAC1BF4A2C97 /* Stores */ = {
 			isa = PBXGroup;
 			children = (
+				FA68DB47192CE2E8140091B6 /* DefaultContent.swift */,
+				BBABE4259F27970917C4A30D /* DefaultContentTests.swift */,
+				0F9D98D798B722C11F643CCD /* DefaultInstallLedger.swift */,
 				A418113952E8ECEE42D913AA /* EncounterStore.swift */,
 				650EB50016E0916FF6F37644 /* EncounterStoreTests.swift */,
 				2F1E593E997D394D860933FA /* PresetStore.swift */,
@@ -337,6 +346,8 @@
 				52F968B9382EEE7057F6E34D /* CombatantDetailView.swift in Sources */,
 				DDE914D718EDD7290930CEBC /* Conditions.swift in Sources */,
 				E2AC405FFEE29743B570354D /* ContentView.swift in Sources */,
+				497810B3563B071D9F877FB7 /* DefaultContent.swift in Sources */,
+				5DDEB5B6BC076ED132C2F47C /* DefaultInstallLedger.swift in Sources */,
 				7B78D0FA978026999015844A /* Effect.swift in Sources */,
 				494371ED7B27C47A81A55FA0 /* EncounterListView.swift in Sources */,
 				753B7A6563DA08CED59C9981 /* EncounterStore.swift in Sources */,
@@ -366,6 +377,7 @@
 			files = (
 				69ADF2074766356C68EFDEEB /* CodableCompatibilityTests.swift in Sources */,
 				76A17EE0A69324524CE36DCD /* ConditionsTests.swift in Sources */,
+				4D5AF4D833355B9CDA7A42CE /* DefaultContentTests.swift in Sources */,
 				1A85F56E1359778680CB6BE8 /* EncounterStoreTests.swift in Sources */,
 				3E634FE120E1F078B6C1172F /* ModelsTests.swift in Sources */,
 				E34D5503DBD8A4402F2825AA /* PresetStoreTests.swift in Sources */,

@@ -10,7 +10,7 @@ import SwiftUI
 /// A palette is a complete set — there are no optional or defaulted fields on
 /// purpose. Adding a token means every palette has to answer for it, which is the
 /// only reliable way to stop a new color from silently looking correct in the
-/// palette it was designed against and wrong in the other three.
+/// palette it was designed against and wrong in all the others.
 struct ThemePalette: Equatable {
 
     // MARK: - Surfaces
@@ -85,15 +85,23 @@ struct ThemePalette: Equatable {
 /// The selectable themes. Each is a complete `ThemePalette` plus the name and
 /// one-line description shown in the appearance picker.
 ///
-/// All four share the same *structure* — elevation ladder, hairline borders, one
+/// They all share the same *structure* — elevation ladder, hairline borders, one
 /// accent per screen, five condition categories — and differ only in hue. That's
 /// deliberate: the structure is what makes the app legible mid-combat, so it
 /// isn't something a theme gets to opt out of.
+///
+/// Order matters: this is the order the picker lists them in, dark themes first,
+/// so `allCases` is the running order and not an arbitrary one.
 enum ThemeIdentifier: String, CaseIterable, Identifiable, Codable {
     case tavernCandlelight
     case inkAndCinnabar
     case slateAndBrass
+    case verdigris
+    case abyssal
+    case nightshade
+    case highContrast
     case parchment
+    case vellum
 
     var id: String { rawValue }
 
@@ -102,7 +110,12 @@ enum ThemeIdentifier: String, CaseIterable, Identifiable, Codable {
         case .tavernCandlelight: return "Tavern Candlelight"
         case .inkAndCinnabar: return "Ink & Cinnabar"
         case .slateAndBrass: return "Slate & Brass"
+        case .verdigris: return "Verdigris"
+        case .abyssal: return "Abyssal"
+        case .nightshade: return "Nightshade"
+        case .highContrast: return "High Contrast"
         case .parchment: return "Parchment"
+        case .vellum: return "Vellum"
         }
     }
 
@@ -111,16 +124,30 @@ enum ThemeIdentifier: String, CaseIterable, Identifiable, Codable {
         case .tavernCandlelight: return "A dark room lit by one warm flame."
         case .inkAndCinnabar: return "Cool black page, warm paper ink, one red mark."
         case .slateAndBrass: return "Cold stone and worn brass. Quiet and legible."
+        case .verdigris: return "Damp stone and oxidised copper."
+        case .abyssal: return "Deep water. Cold dark, one cold light."
+        case .nightshade: return "Violet-black, and something luminous in it."
+        case .highContrast: return "Maximum legibility. For bad light and tired eyes."
         case .parchment: return "Light. Printed-page black on warm paper."
+        case .vellum: return "Light and cool. Grey paper, deep teal ink."
         }
     }
+
+    /// Whether the theme is built for a lit room or a dark one. Used to group the
+    /// picker, since that's the first thing a person is actually choosing.
+    var isLight: Bool { palette.colorScheme == .light }
 
     var palette: ThemePalette {
         switch self {
         case .tavernCandlelight: return .tavernCandlelight
         case .inkAndCinnabar: return .inkAndCinnabar
         case .slateAndBrass: return .slateAndBrass
+        case .verdigris: return .verdigris
+        case .abyssal: return .abyssal
+        case .nightshade: return .nightshade
+        case .highContrast: return .highContrast
         case .parchment: return .parchment
+        case .vellum: return .vellum
         }
     }
 }
@@ -240,6 +267,146 @@ extension ThemePalette {
         colorScheme: .dark
     )
 
+    /// Damp stone and oxidised copper. The green accent is the point: with a cool
+    /// grey-green ground, an accent from the same family but far more saturated
+    /// reads as *the metal in the wall* rather than as a colour laid on top.
+    /// `conditionDisabling` gives up its usual teal here — teal is the accent's
+    /// own neighbourhood — and takes magenta instead.
+    static let verdigris = ThemePalette(
+        background: Color(red: 0.085, green: 0.098, blue: 0.095),
+        backgroundLift: Color(red: 0.115, green: 0.132, blue: 0.128),
+        surface: Color(red: 0.128, green: 0.146, blue: 0.142),
+        surfaceRaised: Color(red: 0.178, green: 0.200, blue: 0.194),
+        border: Color(red: 0.31, green: 0.345, blue: 0.335),
+
+        accent: Color(red: 0.36, green: 0.78, blue: 0.66),
+        accentForeground: Color(red: 0.05, green: 0.060, blue: 0.058),
+
+        textPrimary: Color(red: 0.92, green: 0.94, blue: 0.93),
+        textSecondary: Color(red: 0.70, green: 0.74, blue: 0.72),
+        textTertiary: Color(red: 0.50, green: 0.535, blue: 0.52),
+        placeholderText: Color(red: 0.58, green: 0.615, blue: 0.60),
+
+        statusGood: Color(red: 0.56, green: 0.72, blue: 0.36),
+        statusWarn: Color(red: 0.90, green: 0.62, blue: 0.24),
+        statusBad: Color(red: 0.86, green: 0.32, blue: 0.30),
+        statusNeutral: Color(red: 0.53, green: 0.56, blue: 0.55),
+        statusInfo: Color(red: 0.44, green: 0.60, blue: 0.80),
+
+        conditionSensory: Color(red: 0.52, green: 0.60, blue: 0.72),
+        conditionMental: Color(red: 0.68, green: 0.50, blue: 0.82),
+        conditionRestraint: Color(red: 0.78, green: 0.56, blue: 0.36),
+        conditionDisabling: Color(red: 0.86, green: 0.44, blue: 0.62),
+        conditionOngoing: Color(red: 0.88, green: 0.48, blue: 0.20),
+
+        colorScheme: .dark
+    )
+
+    /// Deep water: a blue-black that keeps getting bluer as it lifts, and one
+    /// cold bioluminescent light. The only palette whose accent is *colder* than
+    /// its ground — worth having precisely because every other theme here warms
+    /// up to mark the current turn.
+    static let abyssal = ThemePalette(
+        background: Color(red: 0.055, green: 0.075, blue: 0.098),
+        backgroundLift: Color(red: 0.082, green: 0.108, blue: 0.138),
+        surface: Color(red: 0.095, green: 0.122, blue: 0.155),
+        surfaceRaised: Color(red: 0.135, green: 0.170, blue: 0.212),
+        border: Color(red: 0.28, green: 0.33, blue: 0.40),
+
+        accent: Color(red: 0.34, green: 0.78, blue: 0.86),
+        accentForeground: Color(red: 0.04, green: 0.055, blue: 0.07),
+
+        textPrimary: Color(red: 0.90, green: 0.93, blue: 0.96),
+        textSecondary: Color(red: 0.68, green: 0.73, blue: 0.79),
+        textTertiary: Color(red: 0.48, green: 0.53, blue: 0.60),
+        placeholderText: Color(red: 0.56, green: 0.61, blue: 0.68),
+
+        statusGood: Color(red: 0.40, green: 0.70, blue: 0.44),
+        statusWarn: Color(red: 0.92, green: 0.64, blue: 0.24),
+        statusBad: Color(red: 0.88, green: 0.34, blue: 0.40),
+        statusNeutral: Color(red: 0.52, green: 0.56, blue: 0.62),
+        statusInfo: Color(red: 0.58, green: 0.60, blue: 0.90),
+
+        conditionSensory: Color(red: 0.60, green: 0.66, blue: 0.78),
+        conditionMental: Color(red: 0.66, green: 0.50, blue: 0.90),
+        conditionRestraint: Color(red: 0.76, green: 0.58, blue: 0.42),
+        conditionDisabling: Color(red: 0.52, green: 0.84, blue: 0.52),
+        conditionOngoing: Color(red: 0.92, green: 0.50, blue: 0.34),
+
+        colorScheme: .dark
+    )
+
+    /// Violet-black with a luminous green in it. Green is the complement of the
+    /// ground rather than a brighter version of it, which is what stops the
+    /// accent disappearing into the scheme the way a magenta accent would here.
+    /// `conditionMental` is pushed hard toward pink for the same reason — violet
+    /// is the *room's* colour in this palette, so a violet chip says nothing.
+    static let nightshade = ThemePalette(
+        background: Color(red: 0.078, green: 0.062, blue: 0.098),
+        backgroundLift: Color(red: 0.108, green: 0.088, blue: 0.135),
+        surface: Color(red: 0.122, green: 0.100, blue: 0.152),
+        surfaceRaised: Color(red: 0.190, green: 0.160, blue: 0.232),
+        border: Color(red: 0.33, green: 0.29, blue: 0.39),
+
+        accent: Color(red: 0.60, green: 0.85, blue: 0.40),
+        accentForeground: Color(red: 0.05, green: 0.040, blue: 0.065),
+
+        textPrimary: Color(red: 0.94, green: 0.92, blue: 0.96),
+        textSecondary: Color(red: 0.73, green: 0.70, blue: 0.78),
+        textTertiary: Color(red: 0.53, green: 0.50, blue: 0.58),
+        placeholderText: Color(red: 0.61, green: 0.58, blue: 0.66),
+
+        statusGood: Color(red: 0.36, green: 0.72, blue: 0.62),
+        statusWarn: Color(red: 0.92, green: 0.62, blue: 0.22),
+        statusBad: Color(red: 0.88, green: 0.30, blue: 0.42),
+        statusNeutral: Color(red: 0.56, green: 0.53, blue: 0.60),
+        statusInfo: Color(red: 0.48, green: 0.62, blue: 0.86),
+
+        conditionSensory: Color(red: 0.54, green: 0.62, blue: 0.76),
+        conditionMental: Color(red: 0.80, green: 0.56, blue: 0.90),
+        conditionRestraint: Color(red: 0.80, green: 0.58, blue: 0.40),
+        conditionDisabling: Color(red: 0.42, green: 0.72, blue: 0.80),
+        conditionOngoing: Color(red: 0.92, green: 0.42, blue: 0.52),
+
+        colorScheme: .dark
+    )
+
+    /// Pure black, pure white, saturated everything. Not a mood — a legibility
+    /// setting, for a badly lit table or tired eyes. It's the one palette that
+    /// deliberately breaks the "muted, warm versions of red/green/blue" house
+    /// rule, because muting is exactly what it's trading away; borders are
+    /// stronger here too, since at this contrast an edge is information rather
+    /// than decoration.
+    static let highContrast = ThemePalette(
+        background: Color(red: 0.0, green: 0.0, blue: 0.0),
+        backgroundLift: Color(red: 0.055, green: 0.055, blue: 0.055),
+        surface: Color(red: 0.105, green: 0.105, blue: 0.105),
+        surfaceRaised: Color(red: 0.20, green: 0.20, blue: 0.20),
+        border: Color(red: 0.55, green: 0.55, blue: 0.55),
+
+        accent: Color(red: 1.00, green: 0.85, blue: 0.20),
+        accentForeground: Color(red: 0.0, green: 0.0, blue: 0.0),
+
+        textPrimary: Color(red: 1.0, green: 1.0, blue: 1.0),
+        textSecondary: Color(red: 0.85, green: 0.85, blue: 0.85),
+        textTertiary: Color(red: 0.68, green: 0.68, blue: 0.68),
+        placeholderText: Color(red: 0.75, green: 0.75, blue: 0.75),
+
+        statusGood: Color(red: 0.30, green: 0.95, blue: 0.45),
+        statusWarn: Color(red: 1.00, green: 0.55, blue: 0.10),
+        statusBad: Color(red: 1.00, green: 0.35, blue: 0.35),
+        statusNeutral: Color(red: 0.70, green: 0.70, blue: 0.70),
+        statusInfo: Color(red: 0.40, green: 0.75, blue: 1.00),
+
+        conditionSensory: Color(red: 0.55, green: 0.80, blue: 1.00),
+        conditionMental: Color(red: 0.85, green: 0.55, blue: 1.00),
+        conditionRestraint: Color(red: 1.00, green: 0.65, blue: 0.45),
+        conditionDisabling: Color(red: 0.30, green: 0.95, blue: 0.85),
+        conditionOngoing: Color(red: 1.00, green: 0.45, blue: 0.60),
+
+        colorScheme: .dark
+    )
+
     /// The contrarian one: warm paper, near-black serif, one oxblood accent.
     /// Nothing about a light fantasy tool reads as generated, because dark is the
     /// default assumption — but a white phone at a dimly lit table is a
@@ -280,6 +447,43 @@ extension ThemePalette {
         conditionRestraint: Color(red: 0.46, green: 0.36, blue: 0.14),
         conditionDisabling: Color(red: 0.10, green: 0.42, blue: 0.40),
         conditionOngoing: Color(red: 0.36, green: 0.48, blue: 0.06),
+
+        colorScheme: .light
+    )
+}
+
+extension ThemePalette {
+    /// Light but cool — grey paper and deep teal ink, where Parchment is warm
+    /// paper and oxblood. Two light themes earn their place because the choice
+    /// between them isn't decorative: paper white and screen white read as
+    /// different materials, and which one a room's lighting flatters varies.
+    static let vellum = ThemePalette(
+        background: Color(red: 0.855, green: 0.862, blue: 0.868),
+        backgroundLift: Color(red: 0.895, green: 0.902, blue: 0.908),
+        surface: Color(red: 0.922, green: 0.928, blue: 0.934),
+        surfaceRaised: Color(red: 0.988, green: 0.991, blue: 0.995),
+        border: Color(red: 0.66, green: 0.672, blue: 0.685),
+
+        accent: Color(red: 0.06, green: 0.36, blue: 0.42),
+        accentForeground: Color(red: 0.96, green: 0.975, blue: 0.98),
+
+        textPrimary: Color(red: 0.10, green: 0.108, blue: 0.118),
+        textSecondary: Color(red: 0.30, green: 0.315, blue: 0.335),
+        textTertiary: Color(red: 0.44, green: 0.455, blue: 0.478),
+        placeholderText: Color(red: 0.50, green: 0.515, blue: 0.538),
+
+        statusGood: Color(red: 0.16, green: 0.44, blue: 0.18),
+        statusWarn: Color(red: 0.64, green: 0.44, blue: 0.04),
+        statusBad: Color(red: 0.72, green: 0.16, blue: 0.14),
+        statusNeutral: Color(red: 0.42, green: 0.435, blue: 0.45),
+        statusInfo: Color(red: 0.20, green: 0.30, blue: 0.68),
+
+        conditionSensory: Color(red: 0.32, green: 0.38, blue: 0.60),
+        conditionMental: Color(red: 0.44, green: 0.24, blue: 0.58),
+        conditionRestraint: Color(red: 0.50, green: 0.34, blue: 0.12),
+        // Magenta rather than the usual teal: teal *is* the accent here.
+        conditionDisabling: Color(red: 0.58, green: 0.20, blue: 0.42),
+        conditionOngoing: Color(red: 0.38, green: 0.44, blue: 0.08),
 
         colorScheme: .light
     )

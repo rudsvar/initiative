@@ -9,7 +9,22 @@ struct AppearanceView: View {
 
     var body: some View {
         List {
-            ForEach(ThemeIdentifier.allCases) { theme in
+            // Split dark from light, because that's the first decision a person
+            // is really making — a table with the lights down rules out half the
+            // list before any question of taste comes up.
+            section("For a dark room", themes: ThemeIdentifier.allCases.filter { !$0.isLight })
+            section("For a lit room", themes: ThemeIdentifier.allCases.filter(\.isLight))
+        }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
+        .themedScreen()
+        .navigationTitle("Appearance")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private func section(_ title: String, themes: [ThemeIdentifier]) -> some View {
+        Section {
+            ForEach(themes) { theme in
                 Button {
                     controller.selection = theme
                 } label: {
@@ -18,12 +33,9 @@ struct AppearanceView: View {
                 .cardRowStyle(isHighlighted: controller.selection == theme)
                 .cardRowLayout()
             }
+        } header: {
+            Text(title).sectionLabel()
         }
-        .listStyle(.plain)
-        .scrollContentBackground(.hidden)
-        .themedScreen()
-        .navigationTitle("Appearance")
-        .navigationBarTitleDisplayMode(.inline)
     }
 }
 

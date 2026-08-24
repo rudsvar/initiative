@@ -74,7 +74,10 @@ final class ThemeControllerTests: XCTestCase {
     func testRawValuesArePinned() {
         XCTAssertEqual(
             ThemeIdentifier.allCases.map(\.rawValue),
-            ["tavernCandlelight", "inkAndCinnabar", "slateAndBrass", "parchment"],
+            [
+                "tavernCandlelight", "inkAndCinnabar", "slateAndBrass", "verdigris",
+                "abyssal", "nightshade", "highContrast", "parchment", "vellum",
+            ],
             "Renaming a case orphans every saved preference pointing at it"
         )
     }

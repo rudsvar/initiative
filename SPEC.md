@@ -56,7 +56,8 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
 ### Phase 4: Preset Creatures
 - ✅ Every combatant added auto-saves as a reusable preset by name — no explicit
   "save as preset" step
-- ✅ A handful of built-in default presets to start from
+- ✅ A built-in default roster to start from, installed additively so later
+  versions' additions reach existing installs (see Default Content)
 - ✅ Presets are viewed/edited/deleted from Main Menu → Creatures, not from the
   add-combatant flow
 
@@ -610,6 +611,38 @@ it. `EncounterStore` persists one JSON file per encounter, mirroring `SessionSto
 - **Clear feedback**: Visual distinction for current turn, effect status, reaction availability
 - **Scalable**: Works with 2–20+ combatants without performance degradation
 
+## Default Content
+
+`Stores/DefaultContent.swift` holds the starter creature roster and the ready-made
+encounters, as one table each. Encounters name their creatures and the stats are
+resolved at install time rather than restated, so there's one place a stat is
+written down; `DefaultContentTests` fails if an encounter names a creature that
+isn't in the roster, which would otherwise install combatants with no HP or AC
+and nothing at runtime would object.
+
+**Defaults are additive, never all-or-nothing.** `installNewDefaults()` runs on
+every launch on both stores and installs anything a `DefaultInstallLedger` has
+never *offered* before. The ledger — a list of names in `UserDefaults` — is what
+separates three cases that a simpler rule conflates:
+
+| Situation | Behaviour |
+|---|---|
+| New default, not present | installed |
+| New default, user already has that name | left alone, recorded as offered — their version is never overwritten |
+| Previously offered, now absent | user deleted it; stays deleted |
+
+The two rules this replaced were each wrong in one direction. "Seed only if the
+store is empty" meant defaults added in a later version never reached anyone who
+had already used the app, and a single custom creature made before first launch
+permanently cost you the whole roster. "Install anything currently missing" would
+have fixed that and resurrected everything you had deliberately deleted, on every
+launch.
+
+**Restore Defaults** (in the options menu on both the Creatures and Encounters
+screens) is the sole override: it re-adds every default not currently present,
+including ones deleted on purpose. It's behind a menu rather than a bar button
+because it's the one action here that undoes a deliberate deletion.
+
 ## Design & Theming
 
 **Everything visual comes from tokens.** `Common/Theme.swift` is the single
@@ -656,7 +689,7 @@ of either** — they're what makes the app readable mid-combat:
 ### Themes
 
 Colors are values, not constants: `ThemePalette` holds the whole set,
-`ThemeIdentifier` enumerates the four selectable ones, and `Theme`'s color
+`ThemeIdentifier` enumerates the selectable ones, and `Theme`'s color
 accessors forward to whichever `ThemeController` has selected. Views never name a
 palette — they say `Theme.surface` and get re-rendered on change automatically,
 because `ThemeController` is `@Observable` and SwiftUI tracks observable reads
@@ -668,7 +701,12 @@ view to thread an environment value through.
 | **Tavern Candlelight** (default) | warm near-black | candle gold | The original. A dark room lit by one flame. |
 | **Ink & Cinnabar** | cool blue-black | cinnabar red | Warm off-white text on a cool ground — a printed-page relationship rather than a screen one, which is what carries the serif without reading as generic-fantasy. Red already means urgency, so `conditionOngoing` moves to a cold acid green to keep red meaning one thing. |
 | **Slate & Brass** | blue-grey stone | muted brass | The quiet one; least flavour, most legible. `conditionRestraint` is clay rather than the bronze the warm palettes use, since bronze is indistinguishable from brass. |
+| **Verdigris** | dark grey-green | oxidised copper | An accent from the ground's own family but far more saturated, so it reads as metal in the wall. `conditionDisabling` gives up teal here — teal is the accent's neighbourhood — and takes magenta. |
+| **Abyssal** | blue-black | bioluminescent cyan | The only palette whose accent is *colder* than its ground, which is worth having precisely because every other theme warms up to mark the current turn. |
+| **Nightshade** | violet-black | luminous green | Green is the ground's complement rather than a brighter version of it. `conditionMental` is pushed hard toward pink, since violet is the room's colour here and a violet chip would say nothing. |
+| **High Contrast** | pure black | bright yellow | Not a mood — a legibility setting for a badly lit table or tired eyes. The one palette that deliberately breaks the muted-colors rule, with stronger borders too. |
 | **Parchment** | warm paper (light) | oxblood | Offered, never the default: a white phone at a dim table is a flashlight in everyone's face. Status and condition colors are darkened across the board — mid-tones that work on black wash out on paper. |
+| **Vellum** | cool grey paper (light) | deep teal | The second light theme earns its place because paper white and screen white read as different materials, and which one a room flatters varies. |
 
 A palette also declares its `colorScheme`, forced app-wide from `RootView`, so
 everything system-drawn (keyboard, native toolbar chrome, `Form`/`List` defaults)
@@ -676,7 +714,9 @@ follows the theme rather than the device setting. Selection persists in
 `UserDefaults` under `selectedTheme`; an unrecognised stored value falls back to
 the default rather than failing. The picker is **Main Menu → Appearance**
 (`AppearanceView`), which draws each option in its own colors — a palette is the
-one setting whose label genuinely can't describe the choice.
+one setting whose label genuinely can't describe the choice — and splits dark
+from light, since a table with the lights down rules out half the list before
+taste enters into it.
 
 **`ThemePaletteTests` checks the design rules against every palette**, not just
 the selected one: the elevation ladder is monotonic and each step perceptible,

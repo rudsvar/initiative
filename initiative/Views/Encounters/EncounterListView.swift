@@ -60,6 +60,22 @@ struct EncounterListView: View {
                 }
                 .accessibilityLabel("New Encounter")
             }
+            // Behind the menu rather than as a bare bar button, for the same
+            // reason as the Creatures screen: it's the one action that overrides
+            // a deliberate deletion, so it shouldn't be a mistimed tap away.
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Menu {
+                    Button {
+                        encounterStore.restoreMissingDefaults()
+                        encounters = encounterStore.listEncounters()
+                    } label: {
+                        Label("Restore Default Encounters", systemImage: "arrow.counterclockwise")
+                    }
+                } label: {
+                    Image(systemName: "line.3.horizontal")
+                }
+                .accessibilityLabel("Options")
+            }
         }
         .onAppear { encounters = encounterStore.listEncounters() }
         .sheet(item: $editingEncounter) { encounter in

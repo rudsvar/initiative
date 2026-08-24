@@ -49,7 +49,13 @@ struct RootView: View {
                 }
             }
         }
-        .onAppear { presetStore.seedDefaultsIfEmpty() }
+        // Runs on every launch, not just the first: default content is additive,
+        // so creatures and encounters added in a later version reach people who
+        // have already been using the app. See DefaultInstallLedger.
+        .onAppear {
+            presetStore.installNewDefaults()
+            encounterStore.installNewDefaults()
+        }
         // Forcing the selected palette's appearance makes every system-provided
         // color (Form/List default backgrounds, .primary/.secondary text,
         // placeholder text, native toolbar chrome, the keyboard) follow it
@@ -62,6 +68,7 @@ struct RootView: View {
         .preferredColorScheme(Theme.colorScheme)
         .tint(Theme.accent)
     }
+
 }
 
 #Preview {

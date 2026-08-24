@@ -19,6 +19,12 @@ extension View {
     func cardRowStyle(isHighlighted: Bool = false) -> some View {
         self
             .padding(Theme.Spacing.md)
+            // Full row width regardless of content. Without this a row whose
+            // content doesn't happen to contain a Spacer shrink-wraps, and a list
+            // of them reads as a ragged right edge — which is what the Encounters
+            // list looked like until the card style was made to claim the width
+            // itself rather than relying on each caller to do it.
+            .frame(maxWidth: .infinity, alignment: .leading)
             .background(isHighlighted ? Theme.surfaceRaised : Theme.surface)
             .overlay(alignment: .leading) {
                 if isHighlighted {

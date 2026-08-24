@@ -4,6 +4,37 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Added — starter content
+
+- **The default creature roster grew from 11 to 71** — beasts, people, warbands,
+  the restless dead and monsters, with HP/AC/initiative bonus across the whole
+  range from a 7 HP minion to a 178 HP session-ender. Names stay generic folklore
+  and the numbers are plausible rather than copied
+- **Ten ready-made encounters** (`Goblin Ambush`, `Toll Bridge`, `The Crypt
+  Stirs`, `The Wyrm's Approach`, …), ordered easiest first. Each is a *shape* — a
+  swarm of weak things, a leader with escorts, one large threat — so it's usable
+  as-is or as a starting point to edit
+- Both live in one `DefaultContent` table. Encounters name their creatures rather
+  than restating stats, with `DefaultContentTests` pinning that every line
+  resolves — a typo would otherwise install an encounter whose combatants have no
+  HP or AC, and nothing at runtime would notice
+- **Restore Default Encounters**, in the Encounters screen's options menu,
+  matching the one Creatures already had
+
+### Fixed — defaults are additive, not all-or-nothing
+
+- **Default content added in a later version now actually reaches you.** Seeding
+  ran only when the store was completely empty, so anyone who had already used
+  the app would never have received the 60 new creatures or any of the
+  encounters. A `DefaultInstallLedger` records what has ever been *offered*, so
+  something new gets installed, something deleted on purpose stays deleted, and a
+  preset you've edited is never overwritten by its default
+- Related: a single custom creature created before the first launch used to cost
+  you the entire starter roster permanently
+- **List rows shrink-wrapped instead of filling the row** unless their content
+  happened to contain a `Spacer` — visible as a ragged right edge down the whole
+  Encounters list. `cardRowStyle` now claims the width itself
+
 ### Added — selectable themes
 
 - **Four themes, picked from Main Menu → Appearance** (`AppearanceView`), each
@@ -15,7 +46,17 @@ All notable changes to this project are documented here, newest first.
     relationship rather than a screen one, which carries the serif without
     reading as generic fantasy
   - **Slate & Brass** — blue-grey stone, muted brass. The quiet one
+  - **Verdigris** — damp stone and oxidised copper
+  - **Abyssal** — deep water; the one palette whose accent is colder than its
+    ground
+  - **Nightshade** — violet-black with a luminous green complement
+  - **High Contrast** — pure black/white and saturated status colors; a
+    legibility setting rather than a mood, and the one palette that deliberately
+    breaks the muted-colors house rule
   - **Parchment** — light: warm paper, near-black serif, oxblood accent
+  - **Vellum** — light and cool: grey paper, deep teal ink
+- The picker splits dark from light, since that's the first decision a person is
+  actually making
 - **`ThemePalette` / `ThemeIdentifier` / `ThemeController`**: colors moved out of
   `Theme` into a value type, with `Theme`'s accessors forwarding to the selected
   palette. No view was edited to support this — because `ThemeController` is

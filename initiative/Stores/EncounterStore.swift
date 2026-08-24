@@ -47,13 +47,15 @@ struct Encounter: Identifiable, Codable, Equatable {
 class EncounterStore {
     private let fileManager = FileManager.default
     private let baseDirectory: URL
+    private let ledger: DefaultInstallLedger
 
-    init(baseDirectory: URL? = nil) {
+    init(baseDirectory: URL? = nil, defaults: UserDefaults = .standard) {
         let directory = baseDirectory
             ?? FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
                 .appendingPathComponent("Encounters", isDirectory: true)
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         self.baseDirectory = directory
+        self.ledger = DefaultInstallLedger(defaults: defaults, key: "installedDefaultEncounters")
     }
 
     func listEncounters() -> [Encounter] {
@@ -77,5 +79,32 @@ class EncounterStore {
     func delete(id: UUID) {
         let url = baseDirectory.appendingPathComponent("\(id.uuidString).json")
         try? fileManager.removeItem(at: url)
+    }
+
+    /// Installs any default encounter this install has never been offered before,
+    /// alongside whatever the user has built themselves. Same three-case rule as
+    /// `PresetStore.installNewDefaults()` — see `DefaultInstallLedger`.
+    func installNewDefaults() {
+        let existingNames = Set(listEncounters().map { $0.name.lowercased() })
+        var offered: [String] = []
+
+        for template in DefaultContent.encounters where !ledger.contains(template.name) {
+            offered.append(template.name)
+            guard !existingNames.contains(template.name.lowercased()) else { continue }
+            save(DefaultContent.encounter(from: template))
+        }
+
+        ledger.markInstalled(offered)
+    }
+
+    /// Adds back every default encounter not currently present, leaving existing
+    /// ones (edited or not) untouched. Explicit action only — it's the one thing
+    /// that overrides a deliberate deletion.
+    func restoreMissingDefaults() {
+        let existingNames = Set(listEncounters().map { $0.name.lowercased() })
+        for template in DefaultContent.encounters where !existingNames.contains(template.name.lowercased()) {
+            save(DefaultContent.encounter(from: template))
+        }
+        ledger.markInstalled(DefaultContent.encounters.map(\.name))
     }
 }

@@ -26,13 +26,15 @@ struct CreaturePreset: Identifiable, Codable, Equatable {
 class PresetStore {
     private let fileManager = FileManager.default
     private let baseDirectory: URL
+    private let ledger: DefaultInstallLedger
 
-    init(baseDirectory: URL? = nil) {
+    init(baseDirectory: URL? = nil, defaults: UserDefaults = .standard) {
         let directory = baseDirectory
             ?? FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
                 .appendingPathComponent("Presets", isDirectory: true)
         try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         self.baseDirectory = directory
+        self.ledger = DefaultInstallLedger(defaults: defaults, key: "installedDefaultCreatures")
     }
 
     func listPresets() -> [CreaturePreset] {
@@ -80,56 +82,43 @@ class PresetStore {
         }
     }
 
-    /// Populates the store with generic starter presets, but only if it's currently
-    /// empty — never overwrites presets a person has already accumulated/edited.
-    func seedDefaultsIfEmpty() {
-        guard listPresets().isEmpty else { return }
-        for defaultPreset in CreaturePreset.defaults {
-            save(CreaturePreset(
-                name: defaultPreset.name,
-                maxHP: defaultPreset.maxHP,
-                armorClass: defaultPreset.armorClass,
-                initiativeBonus: defaultPreset.initiativeBonus
-            ))
+    /// Installs any default creature this install has never been offered before,
+    /// **in addition to** whatever the user already has. Called on every launch.
+    ///
+    /// Three cases, all deliberate (see `DefaultInstallLedger`):
+    /// - never offered, not present → installed
+    /// - never offered, but the user already has a preset by that name → left
+    ///   alone and recorded as offered, so their version is never overwritten
+    /// - offered before but now absent → the user deleted it; stays deleted
+    func installNewDefaults() {
+        let existingNames = Set(listPresets().map { $0.name.lowercased() })
+        var offered: [String] = []
+
+        for creature in DefaultContent.creatures where !ledger.contains(creature.name) {
+            offered.append(creature.name)
+            guard !existingNames.contains(creature.name.lowercased()) else { continue }
+            save(creature.asPreset)
         }
+
+        ledger.markInstalled(offered)
     }
 
-    /// Adds back any default creature whose name isn't currently present, without
-    /// touching existing presets (including ones that started as a default but were
-    /// since edited). Unlike `seedDefaultsIfEmpty`, runs regardless of store
-    /// contents — for the "Restore Defaults" button, since `seedDefaultsIfEmpty`
-    /// only ever fires once, on a truly empty store: adding or editing even one
-    /// preset before that first launch (or deleting a default later) permanently
-    /// loses the rest, with no way back short of this.
+    /// Adds back every default creature not currently present, without touching
+    /// existing presets (including ones that started as a default but were since
+    /// edited). This is the one thing that overrides a deliberate deletion, which
+    /// is why it's an explicit action behind the Creatures screen's menu rather
+    /// than anything automatic.
     func restoreMissingDefaults() {
         let existingNames = Set(listPresets().map { $0.name.lowercased() })
-        for defaultPreset in CreaturePreset.defaults where !existingNames.contains(defaultPreset.name.lowercased()) {
-            save(CreaturePreset(
-                name: defaultPreset.name,
-                maxHP: defaultPreset.maxHP,
-                armorClass: defaultPreset.armorClass,
-                initiativeBonus: defaultPreset.initiativeBonus
-            ))
+        for creature in DefaultContent.creatures where !existingNames.contains(creature.name.lowercased()) {
+            save(creature.asPreset)
         }
+        ledger.markInstalled(DefaultContent.creatures.map(\.name))
     }
 }
 
-extension CreaturePreset {
-    /// Generic fantasy-archetype starter presets — HP, AC, and initiative bonus
-    /// figures chosen to feel like plausible low-level creature stats, expressed
-    /// only in our own generic terms (no naming/reference to any specific
-    /// tabletop ruleset).
-    static let defaults: [(name: String, maxHP: Int, armorClass: Int, initiativeBonus: Int)] = [
-        ("Goblin", 7, 15, 2),
-        ("Skeleton", 13, 13, 2),
-        ("Thief", 11, 12, 3),
-        ("Orc", 15, 13, 1),
-        ("Wolf", 11, 13, 2),
-        ("Zombie", 22, 8, -2),
-        ("Guard", 11, 16, 1),
-        ("Ogre", 59, 11, -1),
-        ("Giant Spider", 26, 14, 3),
-        ("Giant Rat", 7, 12, 2),
-        ("Cultist", 9, 12, 1),
-    ]
+private extension DefaultContent.Creature {
+    var asPreset: CreaturePreset {
+        CreaturePreset(name: name, maxHP: maxHP, armorClass: armorClass, initiativeBonus: initiativeBonus)
+    }
 }

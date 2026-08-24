@@ -46,7 +46,9 @@ initiative/
 ├── Models/           # One file per type: Combatant, Effect (+ DurationType), LogEntry
 │                        (+ HPOperation), CombatSession — plus ModelsTests.swift and
 │                        CodableCompatibilityTests.swift
-├── Stores/           # SessionStore/PresetStore/EncounterStore (JSON-file persistence) + tests
+├── Stores/           # SessionStore/PresetStore/EncounterStore (JSON-file persistence),
+│                        DefaultContent.swift (the starter creature roster + encounters),
+│                        DefaultInstallLedger.swift (how defaults stay additive) + tests
 ├── Views/
 │   ├── Combat/        # ContentView, CombatantDetailView, LogView, AddCombatantSheet, AddEffectView
 │   ├── MainMenu/       # MainMenuView
@@ -55,7 +57,7 @@ initiative/
 │   ├── Sessions/       # SessionListView (Main Menu -> Load Session)
 │   └── Settings/        # AppearanceView (Main Menu -> Appearance, theme picker)
 ├── Common/            # Theme.swift (the token vocabulary: color/spacing/radius/type),
-│                        ThemePalette.swift (the four palettes' actual values),
+│                        ThemePalette.swift (every palette's actual values),
 │                        ThemeController.swift (which one is selected + persistence),
 │                        ViewExtensions.swift (the shared view modifiers built on them),
 │                        Conditions.swift, StatusBand.swift, FlowLayout.swift,
@@ -100,7 +102,7 @@ project.yml            # XcodeGen configuration (regenerates .xcodeproj)
   per screen**. Anything else that wants to stand out uses a status/category
   color.
 - **Colors are themeable; the structure is not.** The values live in
-  `ThemePalette` (four of them, see `ThemeIdentifier`), `ThemeController` owns the
+  `ThemePalette` (nine of them, see `ThemeIdentifier`), `ThemeController` owns the
   selection, and `Theme`'s color accessors forward to it. **Never name a palette
   in a view** — say `Theme.surface`; SwiftUI re-renders on theme change because
   `ThemeController` is `@Observable` and observation tracking follows reads
@@ -109,7 +111,7 @@ project.yml            # XcodeGen configuration (regenerates .xcodeproj)
   re-applied by hand on change — see `Theme.applyNavigationBarAppearance()`,
   which also walks live windows because `UINavigationBar.appearance()` only
   affects bars created after it's set.
-- **`ThemePaletteTests` enforces the design rules across all four palettes** —
+- **`ThemePaletteTests` enforces the design rules across every palette** —
   monotonic, perceptible elevation ladder; WCAG contrast for each text level on
   each surface; `accentForeground` legible on `accent`; declared `colorScheme`
   matching how the palette paints; nothing within 0.3 RGB of the accent. Run it
@@ -123,6 +125,16 @@ project.yml            # XcodeGen configuration (regenerates .xcodeproj)
   `ContentView.swift`) so it doesn't stand out as unthemed. The navigation bar
   is the exception that can't be done in SwiftUI at all — it's set once via
   `Theme.applyNavigationBarAppearance()` from `RootView.init`.
+**Default content** (`Stores/DefaultContent.swift`) is **additive, never
+all-or-nothing**: `installNewDefaults()` runs on every launch and installs
+anything the `DefaultInstallLedger` has never offered before. Adding a creature
+or encounter to the table is all that's needed for it to reach existing
+installs — do *not* reintroduce "seed only if the store is empty", which is what
+prevented that. Deletions are respected (only the explicit "Restore Defaults"
+menu item overrides one), and a preset the user has edited is never overwritten
+by its default. Encounters name creatures rather than restating stats; keep it
+that way and `DefaultContentTests` will catch a typo'd name.
+
 - Consult the `ios-hig` skill (`<agent-config>/skills/ios-hig/SKILL.md`) before building new
   screens — practical Apple HIG checklist for this app.
 
