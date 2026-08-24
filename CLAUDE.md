@@ -43,9 +43,9 @@ automatically; just put a new file in the right group and regenerate.
 initiative/
 ├── App/              # initiativeApp.swift (@main), RootView.swift (nav root, owns
 │                        the shared CombatSession/SessionStore/PresetStore/EncounterStore)
-├── Models/           # One file per type: Combatant, Effect (+ DurationType), LogEntry
-│                        (+ HPOperation), CombatSession — plus ModelsTests.swift and
-│                        CodableCompatibilityTests.swift
+├── Models/           # One file per type: Combatant, Effect (+ EffectKind/DurationType),
+│                        DeathSaves, TurnPrompt, LogEntry (+ HPOperation),
+│                        CombatSession — plus their tests
 ├── Stores/           # SessionStore/PresetStore/EncounterStore (JSON-file persistence),
 │                        DefaultContent.swift (the starter creature roster + encounters),
 │                        (installed on every launch; built-ins are read-only) + tests
@@ -247,6 +247,13 @@ generic/platform=iOS` (device build) with "requires a development team". If Xcod
 reassigns a different team ID, check `~/Library/Preferences/com.apple.dt.Xcode.plist`
 (`IDEProvisioningTeamByIdentifier`) or a device build's `project.pbxproj` for the
 current value and update `project.yml` to match — don't leave it blank.
+
+**Adding a field to a saved type** (`Combatant`, `Effect`, `CreaturePreset`):
+Swift's *synthesized* `Codable` does **not** fall back to a property's declared
+default when the key is missing, so a new non-optional field silently breaks
+every previously saved session. Those three types therefore have hand-written
+`init(from:)` decoders that use `decodeIfPresent(...) ?? default`. Keep it that
+way, and add a literal-JSON case to `CodableCompatibilityTests` for anything new.
 
 ## Session persistence compatibility
 

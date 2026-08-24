@@ -10,6 +10,9 @@ struct ContentView: View {
     @State private var pendingRemoveCombatant: Combatant?
     @State private var showAddCombatant = false
     @State private var showLog = false
+    /// Non-empty while the turn is waiting on answers. Advancing is gated on it —
+    /// see TurnPromptView for why the prompt can't be dismissed.
+    @State private var pendingPrompts: [TurnPrompt] = []
 
     private var nameBinding: Binding<String> {
         Binding(get: { session.name }, set: { session.name = $0 })
@@ -51,7 +54,7 @@ struct ContentView: View {
                 onPrevious: { session.previousTurn() },
                 onTogglePlayerView: { session.playerViewEnabled.toggle() },
                 onShowLog: { showLog = true },
-                onNext: { session.nextTurn() }
+                onNext: { advanceTurn() }
             )
         }
         .themedScreen()
@@ -127,6 +130,27 @@ struct ContentView: View {
         }
         .sheet(isPresented: $showLog) {
             LogView(session: session)
+        }
+        .sheet(isPresented: Binding(
+            get: { !pendingPrompts.isEmpty },
+            set: { if !$0 { pendingPrompts = [] } }
+        )) {
+            TurnPromptView(prompts: pendingPrompts) { answers in
+                pendingPrompts = []
+                session.nextTurn(resolving: answers)
+            }
+        }
+    }
+
+    /// Rolls owed at this boundary are asked before the turn moves, and the
+    /// answers are handed to `nextTurn` rather than applied separately — that puts
+    /// them inside the same undo step as the advance itself.
+    private func advanceTurn() {
+        let prompts = session.pendingTurnPrompts()
+        if prompts.isEmpty {
+            session.nextTurn()
+        } else {
+            pendingPrompts = prompts
         }
     }
 
@@ -274,6 +298,15 @@ struct CombatantRow: View {
         UIScreen.main.bounds.width - (2 * Theme.Spacing.sm + 2 * Theme.Spacing.md)
     }
 
+    private func stateBadge(_ systemImage: String, tint: Color) -> some View {
+        Image(systemName: systemImage)
+            .font(Theme.Typography.iconInline)
+            .foregroundColor(tint)
+            .padding(Theme.Spacing.xs)
+            .background(Theme.background.opacity(0.8))
+            .clipShape(Circle())
+    }
+
     @ViewBuilder
     private func statRow(systemImage: String, text: String, color: Color) -> some View {
         HStack(spacing: Theme.Spacing.xs) {
@@ -331,12 +364,14 @@ struct CombatantRow: View {
                         .strikethrough(combatant.isDead)
 
                     if combatant.isDead {
-                        Image(systemName: "skull.fill")
-                            .font(Theme.Typography.iconInline)
-                            .foregroundColor(Theme.textPrimary)
-                            .padding(Theme.Spacing.xs)
-                            .background(Theme.background.opacity(0.8))
-                            .clipShape(Circle())
+                        stateBadge("skull.fill", tint: Theme.textPrimary)
+                    } else if combatant.isDying {
+                        // A dying combatant is the most time-critical thing on
+                        // this screen, so it gets the one treatment nothing else
+                        // in the row uses: a filled status colour, not a tint.
+                        stateBadge("heart.slash.fill", tint: Theme.statusBad)
+                    } else if combatant.isStabilised {
+                        stateBadge("bandage.fill", tint: Theme.statusWarn)
                     }
                 }
 
@@ -363,9 +398,15 @@ struct CombatantRow: View {
                     ForEach(combatant.visibleEffects) { effect in
                         let condition = ConditionLibrary.matching(name: effect.name)
                         StatusChip(
-                            symbolName: condition?.symbolName ?? "sparkles",
+                            symbolName: effect.kind == .cooldown
+                                ? (effect.durationType.awaitsRoll ? "hourglass" : "clock")
+                                : (condition?.symbolName ?? "sparkles"),
                             label: effect.name,
-                            color: condition?.color ?? Theme.accent
+                            // A cooldown is something you can't do, not something
+                            // wrong with you — quiet, like the reaction chip.
+                            color: effect.kind == .cooldown
+                                ? Theme.textTertiary
+                                : (condition?.color ?? Theme.accent)
                         )
                     }
                 }
@@ -373,6 +414,8 @@ struct CombatantRow: View {
             }
         }
         .cardRowStyle(isHighlighted: isCurrent)
+        // Dying combatants stay at full strength: they're the ones that need
+        // attention, and fading them would say the opposite.
         .opacity(combatant.isDead ? 0.5 : 1)
     }
 }

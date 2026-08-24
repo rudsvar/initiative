@@ -9,13 +9,45 @@ struct CreaturePreset: Identifiable, Codable, Equatable {
     /// Flat modifier added to a random 1...20 roll when spawning from this preset.
     /// Only applies when initiative is rolled, never on top of an explicit value.
     var initiativeBonus: Int?
+    /// Whether combatants spawned from this are party members rather than
+    /// something the party is fighting. Defaults to **true** for anything the user
+    /// creates by hand: the built-in roster already covers the bestiary, so a
+    /// creature typed in from scratch is most often a player. Every built-in is
+    /// explicitly `false`.
+    var isPlayer: Bool = true
 
-    init(id: UUID = UUID(), name: String, maxHP: Int? = nil, armorClass: Int? = nil, initiativeBonus: Int? = nil) {
+    init(
+        id: UUID = UUID(),
+        name: String,
+        maxHP: Int? = nil,
+        armorClass: Int? = nil,
+        initiativeBonus: Int? = nil,
+        isPlayer: Bool = true
+    ) {
         self.id = id
         self.name = name
         self.maxHP = maxHP
         self.armorClass = armorClass
         self.initiativeBonus = initiativeBonus
+        self.isPlayer = isPlayer
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, name, maxHP, armorClass, initiativeBonus, isPlayer
+    }
+
+    /// Hand-written so presets saved before this field existed still decode. They
+    /// predate the distinction entirely, and the safe reading of "unknown" is
+    /// **not a player**: an NPC behaves exactly as everything did before death
+    /// saves existed.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        maxHP = try container.decodeIfPresent(Int.self, forKey: .maxHP)
+        armorClass = try container.decodeIfPresent(Int.self, forKey: .armorClass)
+        initiativeBonus = try container.decodeIfPresent(Int.self, forKey: .initiativeBonus)
+        isPlayer = try container.decodeIfPresent(Bool.self, forKey: .isPlayer) ?? false
     }
 }
 
@@ -73,7 +105,7 @@ class PresetStore {
     /// Goblin's stats — an edit to read-only content through the back door.
     /// Nothing is saved in that case; to keep customised stats, copy the built-in
     /// and name the copy.
-    func upsert(name: String, maxHP: Int?, armorClass: Int? = nil, initiativeBonus: Int? = nil) {
+    func upsert(name: String, maxHP: Int?, armorClass: Int? = nil, initiativeBonus: Int? = nil, isPlayer: Bool = true) {
         let trimmed = name.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { return }
         if var existing = preset(named: trimmed) {
@@ -83,7 +115,7 @@ class PresetStore {
             existing.initiativeBonus = initiativeBonus ?? existing.initiativeBonus
             save(existing)
         } else {
-            save(CreaturePreset(name: trimmed, maxHP: maxHP, armorClass: armorClass, initiativeBonus: initiativeBonus))
+            save(CreaturePreset(name: trimmed, maxHP: maxHP, armorClass: armorClass, initiativeBonus: initiativeBonus, isPlayer: isPlayer))
         }
     }
 
@@ -95,7 +127,8 @@ class PresetStore {
             name: UniqueName.forCopy(of: preset.name, avoiding: listPresets().map(\.name)),
             maxHP: preset.maxHP,
             armorClass: preset.armorClass,
-            initiativeBonus: preset.initiativeBonus
+            initiativeBonus: preset.initiativeBonus,
+            isPlayer: preset.isPlayer
         )
         save(copy)
         return copy
@@ -122,6 +155,7 @@ class PresetStore {
 
 private extension DefaultContent.Creature {
     var asPreset: CreaturePreset {
-        CreaturePreset(name: name, maxHP: maxHP, armorClass: armorClass, initiativeBonus: initiativeBonus)
+        // Every built-in is something the party fights, never one of them.
+        CreaturePreset(name: name, maxHP: maxHP, armorClass: armorClass, initiativeBonus: initiativeBonus, isPlayer: false)
     }
 }

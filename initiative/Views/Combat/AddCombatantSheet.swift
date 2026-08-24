@@ -14,6 +14,10 @@ struct AddCombatantSheet: View {
     @State private var acText = ""
     @State private var countText = ""
     @State private var matchedPresetBonus: Int?
+    /// Defaults to NPC — most of what a DM adds mid-combat is something the party
+    /// is fighting. Picking or typing a known creature's name adopts that
+    /// creature's setting instead (see prefillFromPreset).
+    @State private var isPlayer = false
     @State private var presets: [CreaturePreset] = []
     @FocusState private var nameFieldFocused: Bool
 
@@ -61,6 +65,20 @@ struct AddCombatantSheet: View {
                             Text("Optional").foregroundColor(Theme.placeholderText)
                         }
                             .keyboardType(.numberPad)
+                    }
+
+                    Section("Type") {
+                        // Visible at the moment of creation rather than inferred
+                        // later. The tempting heuristic — "count > 1 means
+                        // monsters" — would be right often enough to be trusted
+                        // and wrong often enough to hurt.
+                        Toggle("Player character", isOn: $isPlayer)
+                            .tint(Theme.accent)
+                        if isPlayer {
+                            Text("Rolls death saves at 0 HP instead of dying outright.")
+                                .font(Theme.Typography.caption)
+                                .foregroundColor(Theme.textTertiary)
+                        }
                     }
 
                     Section("Count") {
@@ -116,6 +134,7 @@ struct AddCombatantSheet: View {
         hpText = preset.maxHP.map(String.init) ?? ""
         acText = preset.armorClass.map(String.init) ?? ""
         matchedPresetBonus = preset.initiativeBonus
+        isPlayer = preset.isPlayer
     }
 
     private func prefillFromPreset(named newName: String) {
@@ -132,6 +151,7 @@ struct AddCombatantSheet: View {
         // Initiative bonus isn't a visible field here (edited only from Main Menu ->
         // Combatants) — it's applied silently to random rolls for a matched preset.
         matchedPresetBonus = preset.initiativeBonus
+        isPlayer = preset.isPlayer
     }
 
     private func addCombatant() {
@@ -145,11 +165,11 @@ struct AddCombatantSheet: View {
         let bonus = matchedPresetBonus ?? 0
 
         if count > 1 {
-            session.addCombatants(name: trimmedName, initiative: initiative, maxHP: maxHP, armorClass: armorClass, count: count, initiativeBonus: bonus)
+            session.addCombatants(name: trimmedName, initiative: initiative, maxHP: maxHP, armorClass: armorClass, count: count, initiativeBonus: bonus, isPlayer: isPlayer)
         } else {
-            session.addCombatant(name: trimmedName, initiative: initiative, maxHP: maxHP, armorClass: armorClass, initiativeBonus: bonus)
+            session.addCombatant(name: trimmedName, initiative: initiative, maxHP: maxHP, armorClass: armorClass, initiativeBonus: bonus, isPlayer: isPlayer)
         }
-        presetStore.upsert(name: trimmedName, maxHP: maxHP, armorClass: armorClass)
+        presetStore.upsert(name: trimmedName, maxHP: maxHP, armorClass: armorClass, isPlayer: isPlayer)
 
         isPresented = false
     }

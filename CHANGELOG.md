@@ -4,22 +4,35 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
-### Planned
+### Added — recharges, save-ends conditions, and death saves
 
-- **One mechanism for everything that ticks** (SPEC → "Planned"). Recharge
-  abilities (a dragon's breath, "recharge 5–6"), save-ends conditions, ongoing
-  damage and concentration are the same shape as the effects already in the app,
-  not four new features: a named thing on a combatant that resolves at a turn
-  boundary by one of a few rules. The app reminds the DM that a roll is owed and
-  records the answer — it never rolls, which is what collapses recharge and
-  save-ends into a single rule rather than two. Death saves reuse the same turn
-  prompt (one tap, Success or Failure, at the start of the dying combatant's
-  turn) but keep their own state — three successes stabilises, three failures
-  kills, and neither is expressible as a duration. The prompt must be answered
-  rather than dismissed, with an **Auto** button that rolls where the app can
-  evaluate the whole roll itself. Adds a player/NPC tag on creatures and
-  combatants, which is what makes auto-starting death saves correct. Supersedes
-  the three separate proposals previously recorded. Nothing implemented yet
+- **Effects can now wait on a roll instead of a countdown.**
+  `DurationType.untilRollSucceeds(at:hint:)` never ages out — it sits there until
+  the DM says the roll succeeded. A dragon's recharging breath weapon and a
+  save-ends condition are the same rule from two sides; only the verb differs,
+  which the new `EffectKind` (`.condition` / `.cooldown`) supplies. That
+  collapse is a direct consequence of the app not rolling
+- **The turn prompt**: rolls owed at a turn boundary are asked once, together,
+  and **must be answered** — the turn doesn't advance until they are. End-of-turn
+  rolls for the combatant finishing and start-of-turn rolls for the one starting
+  appear in the same sheet, since it's one interruption at the boundary rather
+  than two either side of it
+- Answers ride inside the same undo step as the advance, so **Previous rewinds
+  the save you just recorded** along with the turn it belonged to
+- **Death saves.** A player at 0 HP starts rolling; one tap per turn for Success
+  or Failure, three of either resolving it. Healing above 0 ends it, and so does
+  deleting the log entry for the blow that caused it. Stabilised is a real third
+  state — 0 HP, not rolling, explicitly not dead — and the row shows dying,
+  stabilised and dead differently
+- **A player/NPC tag** on creatures and combatants. Built-ins are NPCs, hand-made
+  creatures default to player, and the toggle is visible in the Add Combatant
+  sheet at the moment of creation. An NPC at 0 HP still simply dies, which is the
+  whole reason the tag exists — otherwise every killed goblin would acquire a
+  three-turn clock
+- Cooldown quick-picks (`StandardCooldown`: Recharge 5–6, 6, 4–6, Once per
+  encounter) so the common cases are one tap, and cooldown chips take the quiet
+  treatment the reaction chip already uses
+- **The app still never rolls.** Its job is remembering that a roll is owed
 
 ### Added — searching and sectioning the libraries
 

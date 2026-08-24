@@ -145,6 +145,7 @@ private struct EditPresetView: View {
     @State private var hpText: String
     @State private var acText: String
     @State private var bonusText: String
+    @State private var isPlayer: Bool
 
     private var isReadOnly: Bool { preset.isBuiltIn }
 
@@ -156,6 +157,7 @@ private struct EditPresetView: View {
         _hpText = State(initialValue: preset.maxHP.map(String.init) ?? "")
         _acText = State(initialValue: preset.armorClass.map(String.init) ?? "")
         _bonusText = State(initialValue: preset.initiativeBonus.map(String.init) ?? "")
+        _isPlayer = State(initialValue: preset.isPlayer)
     }
 
     var body: some View {
@@ -180,6 +182,14 @@ private struct EditPresetView: View {
                         }
                             .keyboardType(.numberPad)
                     }
+                    Section("Type") {
+                        Toggle("Player character", isOn: $isPlayer)
+                            .tint(Theme.accent)
+                        Text("Players roll death saves at 0 HP; anything else simply dies.")
+                            .font(Theme.Typography.caption)
+                            .foregroundColor(Theme.textTertiary)
+                    }
+
                     Section("Initiative Bonus") {
                         TextField(text: $bonusText) {
                             Text("Optional, added to random rolls").foregroundColor(Theme.placeholderText)
@@ -214,6 +224,7 @@ private struct EditPresetView: View {
                         updated.maxHP = Int(hpText)
                         updated.armorClass = Int(acText)
                         updated.initiativeBonus = Int(bonusText)
+                        updated.isPlayer = isPlayer
                         guard !updated.name.isEmpty else { return }
                         presetStore.save(updated)
                         onSave()

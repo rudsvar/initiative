@@ -172,3 +172,75 @@ final class CodableCompatibilityTests: XCTestCase {
         )
     }
 }
+
+// MARK: - Fields added after the format shipped
+
+extension CodableCompatibilityTests {
+
+    /// Combatants saved before the player/NPC distinction existed must decode as
+    /// NPCs — that's the reading under which they behave exactly as they did.
+    func testCombatantWithoutIsPlayerDecodesAsNPC() throws {
+        let json = """
+        {"id":"\(UUID().uuidString)","name":"Goblin","initiative":12,"effects":[]}
+        """.data(using: .utf8)!
+
+        let combatant = try JSONDecoder().decode(Combatant.self, from: json)
+
+        XCTAssertFalse(combatant.isPlayer)
+        XCTAssertNil(combatant.deathSaves)
+        XCTAssertFalse(combatant.isDying)
+    }
+
+    /// A missing `effects` key used to be a decode failure waiting to happen:
+    /// Swift's synthesized decoder ignores declared defaults.
+    func testCombatantWithoutEffectsDecodes() throws {
+        let json = """
+        {"id":"\(UUID().uuidString)","name":"Goblin","initiative":12}
+        """.data(using: .utf8)!
+
+        XCTAssertEqual(try JSONDecoder().decode(Combatant.self, from: json).effects.count, 0)
+    }
+
+    func testEffectWithoutKindDecodesAsCondition() throws {
+        let json = """
+        {"id":"\(UUID().uuidString)","name":"Stunned",
+         "durationType":{"kind":"untilEndOfTheirTurn","remainingTurns":2}}
+        """.data(using: .utf8)!
+
+        XCTAssertEqual(try JSONDecoder().decode(Effect.self, from: json).kind, .condition)
+    }
+
+    func testRollRequiredDurationRoundTrips() throws {
+        let original = Effect(
+            name: "Breath Weapon",
+            durationType: .untilRollSucceeds(at: .startOfTurn, hint: "5–6 on a d6"),
+            kind: .cooldown
+        )
+
+        let decoded = try JSONDecoder().decode(Effect.self, from: JSONEncoder().encode(original))
+
+        XCTAssertEqual(decoded.durationType, .untilRollSucceeds(at: .startOfTurn, hint: "5–6 on a d6"))
+        XCTAssertEqual(decoded.kind, .cooldown)
+    }
+
+    /// A boundary written by some future version that this one doesn't recognise
+    /// shouldn't lose the effect entirely.
+    func testRollRequiredDurationWithoutABoundaryDefaultsToStartOfTurn() throws {
+        let json = """
+        {"kind":"untilRollSucceeds"}
+        """.data(using: .utf8)!
+
+        XCTAssertEqual(
+            try JSONDecoder().decode(DurationType.self, from: json),
+            .untilRollSucceeds(at: .startOfTurn, hint: nil)
+        )
+    }
+
+    func testPresetWithoutIsPlayerDecodesAsNPC() throws {
+        let json = """
+        {"id":"\(UUID().uuidString)","name":"Goblin","maxHP":7}
+        """.data(using: .utf8)!
+
+        XCTAssertFalse(try JSONDecoder().decode(CreaturePreset.self, from: json).isPlayer)
+    }
+}

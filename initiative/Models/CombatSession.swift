@@ -74,9 +74,9 @@ class CombatSession {
     /// `initiative: nil` rolls 1...20 plus `initiativeBonus` (a flat modifier, e.g. from
     /// a creature preset). An explicit `initiative` value is used exactly as given —
     /// the bonus only applies to random rolls, never on top of a deliberate value.
-    func addCombatant(name: String, initiative: Int? = nil, maxHP: Int? = nil, armorClass: Int? = nil, initiativeBonus: Int = 0) {
+    func addCombatant(name: String, initiative: Int? = nil, maxHP: Int? = nil, armorClass: Int? = nil, initiativeBonus: Int = 0, isPlayer: Bool = false) {
         let resolvedInitiative = initiative ?? (Int.random(in: 1...20) + initiativeBonus)
-        let combatant = Combatant(name: name, initiative: resolvedInitiative, maxHP: maxHP, armorClass: armorClass)
+        let combatant = Combatant(name: name, initiative: resolvedInitiative, maxHP: maxHP, armorClass: armorClass, isPlayer: isPlayer)
         combatants.append(combatant)
         combatants.sort { $0.initiative > $1.initiative }
         appendLog("\(name) added to combat (initiative \(resolvedInitiative))")
@@ -96,13 +96,13 @@ class CombatSession {
     /// used as-is for every copy (no per-copy randomization — if you typed a number,
     /// that's what they all get). Names get a numeric suffix ("Goblin 1", "Goblin 2",
     /// ...) when count > 1.
-    func addCombatants(name: String, initiative: Int?, maxHP: Int?, armorClass: Int? = nil, count: Int, initiativeBonus: Int = 0) {
+    func addCombatants(name: String, initiative: Int?, maxHP: Int?, armorClass: Int? = nil, count: Int, initiativeBonus: Int = 0, isPlayer: Bool = false) {
         guard count > 0 else { return }
         var spawned: [Combatant] = []
         for i in 1...count {
             let resolvedInitiative = initiative ?? (Int.random(in: 1...20) + initiativeBonus)
             let displayName = count > 1 ? "\(name) \(i)" : name
-            spawned.append(Combatant(name: displayName, initiative: resolvedInitiative, maxHP: maxHP, armorClass: armorClass))
+            spawned.append(Combatant(name: displayName, initiative: resolvedInitiative, maxHP: maxHP, armorClass: armorClass, isPlayer: isPlayer))
         }
         combatants.append(contentsOf: spawned)
         combatants.sort { $0.initiative > $1.initiative }
@@ -142,9 +142,7 @@ class CombatSession {
             combatantId: id,
             hpOperation: .damage(amount: amount)
         )
-        if combatants[index].isDead {
-            appendLog("\(combatants[index].name) died", combatantId: id)
-        }
+        startDyingOrDieIfNeeded(at: index)
     }
 
     func applyHealing(to id: UUID, amount: Int) {
@@ -157,6 +155,31 @@ class CombatSession {
             combatantId: id,
             hpOperation: .healing(amount: amount)
         )
+        clearDeathSavesIfAboveZero(at: index)
+    }
+
+    /// A player who hits 0 starts rolling death saves; anything else is simply
+    /// dead, exactly as before this existed. That distinction is the entire
+    /// reason `Combatant.isPlayer` exists — without it, auto-starting death saves
+    /// would put a three-turn clock on every goblin the party kills.
+    private func startDyingOrDieIfNeeded(at index: Int) {
+        guard combatants[index].currentHP == 0 else { return }
+        if combatants[index].isPlayer {
+            guard combatants[index].deathSaves == nil else { return }
+            combatants[index].deathSaves = DeathSaves()
+            appendLog("\(combatants[index].name) is dying", combatantId: combatants[index].id)
+        } else if combatants[index].isDead {
+            appendLog("\(combatants[index].name) died", combatantId: combatants[index].id)
+        }
+    }
+
+    /// Any healing above 0 ends the situation outright — including a resolved
+    /// tally, so someone who died and was then brought back doesn't stay flagged.
+    private func clearDeathSavesIfAboveZero(at index: Int) {
+        guard let current = combatants[index].currentHP, current > 0,
+              combatants[index].deathSaves != nil else { return }
+        combatants[index].deathSaves = nil
+        appendLog("\(combatants[index].name) is no longer dying", combatantId: combatants[index].id)
     }
 
     /// Raises both max and current HP by `amount` (a temporary buff, leveling up,
@@ -211,6 +234,11 @@ class CombatSession {
         }
         combatants[index].maxHP = maxHP
         combatants[index].currentHP = currentHP
+        // Deleting the log entry that dropped someone to 0 has to take the death
+        // saves with it, or they'd be left rolling at full health.
+        if let currentHP, currentHP > 0 {
+            combatants[index].deathSaves = nil
+        }
     }
 
     // MARK: - Reaction
@@ -251,10 +279,104 @@ class CombatSession {
 
     // MARK: - Turn order
 
-    func nextTurn() {
+    /// Everything the DM has to answer before this turn can end: rolls owed by
+    /// the combatant whose turn is finishing, then rolls and death saves owed by
+    /// the one whose turn is about to start.
+    ///
+    /// Both belong to the same tap on Next even though they belong to different
+    /// combatants, and showing them together is deliberate — it's one interruption
+    /// at the boundary rather than two either side of it.
+    func pendingTurnPrompts() -> [TurnPrompt] {
+        guard combatants.count > 0, combatants.indices.contains(currentTurnIndex) else { return [] }
+
+        let ending = combatants[currentTurnIndex]
+        let starting = combatants[(currentTurnIndex + 1) % combatants.count]
+
+        var prompts = rollPrompts(for: ending, at: .endOfTurn)
+        prompts += rollPrompts(for: starting, at: .startOfTurn)
+        if let saves = starting.deathSaves, !saves.isResolved {
+            prompts.append(
+                TurnPrompt(
+                    id: starting.id,
+                    combatantID: starting.id,
+                    combatantName: starting.name,
+                    subject: .deathSave,
+                    title: "Death save",
+                    hint: nil,
+                    deathSaves: saves
+                )
+            )
+        }
+        return prompts
+    }
+
+    private func rollPrompts(for combatant: Combatant, at boundary: TurnBoundary) -> [TurnPrompt] {
+        combatant.effects.compactMap { effect in
+            guard case .untilRollSucceeds(let effectBoundary, let hint) = effect.durationType,
+                  effectBoundary == boundary else { return nil }
+            return TurnPrompt(
+                id: effect.id,
+                combatantID: combatant.id,
+                combatantName: combatant.name,
+                subject: .effect(id: effect.id),
+                title: effect.kind == .cooldown ? "Roll to recharge \(effect.name)" : "Roll a save vs \(effect.name)",
+                hint: hint,
+                deathSaves: nil
+            )
+        }
+    }
+
+    /// Applies one prompt's outcome. Success removes the effect; for a death save
+    /// both outcomes count toward their own total. The DM decides — nothing here
+    /// rolls anything.
+    private func apply(_ prompt: TurnPrompt, succeeded: Bool) {
+        guard let index = combatants.firstIndex(where: { $0.id == prompt.combatantID }) else { return }
+
+        switch prompt.subject {
+        case .effect(let effectID):
+            guard let effect = combatants[index].effects.first(where: { $0.id == effectID }) else { return }
+            if succeeded {
+                combatants[index].effects.removeAll { $0.id == effectID }
+                appendLog(
+                    effect.kind == .cooldown
+                        ? "\(combatants[index].name) recharged \(effect.name)"
+                        : "\(combatants[index].name) shook off \(effect.name)",
+                    combatantId: combatants[index].id
+                )
+            } else {
+                appendLog("\(combatants[index].name) failed the roll for \(effect.name)", combatantId: combatants[index].id)
+            }
+
+        case .deathSave:
+            guard combatants[index].deathSaves != nil else { return }
+            combatants[index].deathSaves?.record(success: succeeded)
+            guard let saves = combatants[index].deathSaves else { return }
+            appendLog(
+                "\(combatants[index].name) \(succeeded ? "made" : "failed") a death save (\(saves.successes) made, \(saves.failures) failed)",
+                combatantId: combatants[index].id
+            )
+            if saves.isStable {
+                appendLog("\(combatants[index].name) stabilised", combatantId: combatants[index].id)
+            } else if saves.isDead {
+                appendLog("\(combatants[index].name) died", combatantId: combatants[index].id)
+            }
+        }
+    }
+
+    /// Advances the turn, first applying any prompt answers the DM gave.
+    ///
+    /// The answers are applied **after** the history snapshot and before the
+    /// advance, deliberately: that puts them inside the same undo step, so
+    /// Previous rewinds the save you just recorded along with the turn it
+    /// belonged to, rather than leaving it stranded.
+    func nextTurn(resolving answers: [TurnPrompt: Bool] = [:]) {
         guard !combatants.isEmpty else { return }
 
         history.append((combatants: combatants, currentTurnIndex: currentTurnIndex, roundNumber: roundNumber, logCount: log.count))
+
+        for (prompt, succeeded) in answers.sorted(by: { $0.key.combatantName < $1.key.combatantName }) {
+            apply(prompt, succeeded: succeeded)
+        }
 
         let endingCombatantId = combatants[currentTurnIndex].id
         let wrapped = currentTurnIndex == combatants.count - 1
@@ -324,6 +446,10 @@ class CombatSession {
                 case .untilStartOfTheirTurn(let remaining):
                     guard ownerId == turnStartingCombatantId else { return effect }
                     return Self.tick(effect, remaining: remaining, makeDuration: DurationType.untilStartOfTheirTurn)
+                case .untilRollSucceeds:
+                    // Never ages out. It leaves when the DM says the roll
+                    // succeeded — see pendingTurnPrompts.
+                    return effect
                 }
             }
         }

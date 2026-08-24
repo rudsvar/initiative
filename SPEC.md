@@ -816,163 +816,96 @@ anything numeric**:
 
 **Impact**: Every view should have a `#Preview` block; test UI visually during development.
 
-## Planned: one mechanism for everything that ticks
+## Effects, prompts and death saves
 
-**Not implemented.** This supersedes the earlier separate proposals for
-caster-anchored durations, recharge timers and save-based reminders — they turned
-out to be the same feature seen from three angles.
+### One mechanism for everything that ticks
 
-### The observation
+The app has one shape for temporary state: **a named thing on a combatant that
+resolves at a turn boundary**. An effect, the reaction marker, a recharging
+ability and a save-ends condition are all that shape with a different rule for
+how they resolve — which is why they're one mechanism rather than a feature
+each. `Effect` carries a `kind` (`.condition` — something wrong with you —
+or `.cooldown` — something you can't do yet), which changes only wording and
+weight: cooldown chips take the quiet `textTertiary` treatment the reaction chip
+already uses, because "Breath Weapon" shouldn't shout in the same colour as
+"Burning".
 
-The app already has three things that are secretly one thing:
+`DurationType.untilRollSucceeds(at:hint:)` is the case that doesn't count down.
+It sits there until the DM says a roll succeeded, and `removeExpiredEffects`
+deliberately passes it over. **A recharge and a save-ends condition are the same
+thing seen from two sides** — *at this boundary, something gets rolled, and on a
+success this goes away* — differing only in the verb, which `kind` supplies. That
+is entirely a consequence of the app not rolling: had it rolled, the two would
+have needed separate rules for evaluating and reporting.
 
-- an **effect** (a name that expires after N turn boundaries),
-- the **reaction marker** (an effect with a flag on it), and
-- anything the DM currently tracks in their head because the app can't hold it.
-
-Everything in that third category has the same shape: *a named thing attached to
-a combatant, which resolves at a particular turn boundary, by one of a small
-number of rules.* A dragon's breath weapon isn't a new feature — it's an effect
-whose resolution rule happens to be "roll a d6 and see" instead of "count down
-from 1". Building recharge, save-ends, ongoing damage and concentration as four
-separate features is exactly how this screen would get cluttered; building one
-mechanism with four resolution rules is how it doesn't.
-
-### The shape
-
-Two fields on `Effect`, both orthogonal, neither multiplying the other's cases:
-
-```swift
-struct Effect {
-    var name: String
-    var kind: EffectKind          // .condition | .cooldown        (new, defaults .condition)
-    var anchorID: UUID?           // whose turn it keys off; nil = the owner  (new)
-    var durationType: DurationType
-}
-
-enum DurationType {
-    case untilStartOfTheirTurn(remainingTurns: Int)   // today, unchanged
-    case untilEndOfTheirTurn(remainingTurns: Int)     // today, unchanged
-    case untilRollSucceeds(at: TurnBoundary, roll: RollTarget?)  // prompts; never auto-expires
-    case manual                                       // sits until removed by hand
-}
-```
-
-**The app does not roll.** It reminds the DM to, and records what they say. That
-single decision collapses what looked like two features into one: a recharge and
-a save-ends condition are both "at this boundary, the DM rolls something, and on
-a success this goes away". They differ only in the verb, which `kind` already
-carries — *roll to recharge* for a cooldown, *roll a save* for a condition. Hence
-one case rather than a `.recharge` and a `.untilSaveSucceeds`.
-
-`roll` says **what** to roll — a die and a target where the app can evaluate it
-("5–6 on a d6"), or just a label where it can't ("DC 13 Con"). Shown in the
-prompt and nowhere else, so chips stay short. See *The turn prompt* for why that
-distinction decides whether the DM is offered an **Auto** button.
-
-**`anchorID` is a field, not more enum cases.** The earlier proposal folded the
-anchor into the duration (`.untilStartOfCombatantTurn(anchorID:…)`), which
-doubles the case count for a concern that varies independently of how the effect
-resolves. As a field it composes: any resolution rule can key off anyone's turn.
-`nil` means the owner, so every existing effect keeps its meaning and the common
-case needs no UI.
-
-**`kind` exists only to change wording and weight**, not behaviour. A *condition*
-is something wrong with you; a *cooldown* is something you can't do yet. They
-expire identically, but "Breath Weapon" shouldn't shout in the same red as
-"Burning" — cooldown chips take the quiet `textTertiary` treatment the reaction
-chip already uses. It also retires `isReactionMarker`: reaction-used becomes a
-cooldown with a one-turn duration, which is what it always was.
-
-### What this then supports
-
-| Mechanic | Expressed as |
-|---|---|
-| Reaction used | cooldown, `.untilStartOfTheirTurn(1)` — what it already is |
-| **Dragon's breath, recharge 5–6** | cooldown, `.untilRollSucceeds(at: .startOfTurn, roll: d6 on 5+)` |
-| Once per encounter | cooldown, `.manual` |
-| Stunned, save ends | condition, `.untilRollSucceeds(at: .endOfTurn, roll: label "DC 14 Con")` |
-| Blinded for 3 rounds | condition, `.untilEndOfTheirTurn(3)` — what it already is |
-| Held by a spell the caster maintains | condition on the target, `anchorID` = caster |
+`hint` is free text (`"5–6 on a d6"`, `"DC 14 Con"`), shown in the prompt and
+nowhere else so chips stay short. It is never parsed. `StandardCooldown` offers
+the common recharges as one-tap quick-picks so the extra capability stays out of
+the way until it's wanted.
 
 ### The turn prompt
 
-The second half, and the part that makes it usable rather than merely
-expressible: when a combatant's turn begins, everything of theirs needing
-attention is surfaced **once, together**, not as badges to notice.
+Rolls owed at a turn boundary are asked **once, together, and must be answered**
+(`TurnPromptView`). Not dismissible, no Cancel, and the turn doesn't advance
+until every line has an answer — these are precisely the things that get
+forgotten mid-combat, and a prompt you can wave away is one you will wave away.
+Nothing appears when nothing is owed, which is most turns.
 
-**It has to be answered.** Not dismissible, not a banner that fades — the whole
-point is that these are the things that get forgotten mid-combat, and a prompt
-you can wave away is one you will wave away. Turn advancement waits on it.
-Nothing appears when nothing is pending, which is most turns, so the cost of
-being insistent is paid only when there's a real reason.
+- End-of-turn rolls for the combatant whose turn is finishing and start-of-turn
+  rolls for the one whose turn is beginning are shown **together**, even though
+  they belong to different combatants: it's one interruption at the boundary
+  rather than two either side of it.
+- Answers are handed to `nextTurn(resolving:)` rather than applied separately, so
+  they land **inside the same undo step** as the advance. Previous rewinds the
+  save you just recorded along with the turn it belonged to.
+- Chosen answers stay visible and re-tappable until Continue — a mistap on the
+  first of three prompts shouldn't be unfixable before you've committed.
+- **The app never rolls and never decides.** Its job is remembering that a roll is
+  owed. Everything the DM answers goes through the log, so it's visible and
+  undoable like any other event.
 
-- Each item is one line, answered in one tap. *"Bog Hulk — roll to recharge
-  Breath Weapon (5–6 on a d6)"* and *"Wren — roll a save vs Frightened (DC 14
-  Con)"* offer **Made it** / **Not yet**. A death save offers **Success** /
-  **Failure**, because there both outcomes count for something.
-- Two kinds of thing land here: something needing an answer
-  (`.untilRollSucceeds`, death saves) and something with an amount to apply
-  (ongoing damage). Ordinary countdowns stay out — every Blinded and Restrained
-  in the game reporting "still blinded" would bury the two lines that actually
-  want a decision.
+### Player and NPC combatants
 
-**Roll for me.** Alongside the answer buttons, an item may offer **Auto**, which
-rolls the die and applies the result. This is not a retreat from "the app doesn't
-roll" — the rule was always that the app doesn't roll *on its own*, and this is
-the DM delegating a specific roll, once, by pressing a button that says so. The
-roll and its outcome go through the existing log, so it's visible and one undo
-from gone.
+`isPlayer` on both `CreaturePreset` and `Combatant`. Built-in creatures are NPCs;
+anything the user creates by hand defaults to **player**, since the built-in
+roster already covers the bestiary and a creature typed in from scratch is most
+often a party member. The toggle is visible in the Add Combatant sheet at the
+moment of creation rather than inferred later — the tempting heuristic ("count >
+1 means monsters") would be right often enough to be trusted and wrong often
+enough to hurt.
 
-**Auto is only offered where the app can honestly evaluate the roll**, which is a
-sharper line than it first looks:
+Only death saves use it today, but it's a property of the combatant rather than a
+flag on that feature because it's the same distinction player view will want in
+order to hide the monsters' numbers and not the party's.
 
-| Prompt | Auto? | Why |
-|---|---|---|
-| Recharge 5–6 | yes | a bare die check against a fixed number — the app knows everything involved |
-| Death save | yes | d20 against 10, and nothing the app doesn't hold |
-| Save vs DC 14 Con | **no** | needs the creature's modifier, which the app doesn't track and shouldn't start tracking |
+### Death saves
 
-That means the roll target has to be structured rather than free text, so that
-`hint` becomes:
+**A player** who hits 0 HP starts rolling death saves. **An NPC** at 0 HP is
+simply dead, exactly as before — which is the entire reason the tag exists, since
+otherwise every killed goblin would acquire a clock.
 
-```swift
-case untilRollSucceeds(at: TurnBoundary, roll: RollTarget?)
+At the start of a dying combatant's turn the prompt asks for the outcome, one
+tap: **Success** or **Failure**. Three successes stabilises, three failures
+kills. Both are tracked because both count — you can fail twice and be healed, or
+succeed three times and stabilise.
 
-struct RollTarget {
-    var die: Int?          // e.g. 6 — nil when it isn't a plain die check
-    var succeedsOn: Int?   // e.g. 5
-    var label: String?     // e.g. "DC 14 Con" — always shown, never evaluated
-}
-```
+This is the one piece of temporary state that deliberately **isn't** an `Effect`.
+Everything else resolves one way; here both outcomes matter, and bending
+`DurationType` to carry two tallies plus a death-on-failure rule would give it a
+case with five associated values that exactly one thing uses. What *is* shared is
+the turn prompt.
 
-`die` and `succeedsOn` present → **Auto** appears. Label only → the DM answers.
-A recharge quick-pick fills in the numbers; a save DC is typed as a label and
-stays a label.
+Three states have to stay distinguishable, and the row shows each differently:
+**dying** (a filled `statusBad` badge, at full opacity — it's the most
+time-critical thing on the screen, and fading it would say the opposite),
+**stabilised** (0 HP, not rolling, explicitly not dead), and **dead**. Healing
+above 0 ends the situation outright; so does deleting the log entry for the blow
+that caused it, since the log is the HP undo mechanism and leaving someone
+rolling death saves at full health would be worse than either.
 
-### Keeping it uncluttered
+## Planned: the rest of it
 
-Four rules, and they're the whole reason this is one feature and not six:
-
-1. **One mechanism, not one feature per mechanic.** Anything that ticks is an
-   effect with a resolution rule. New mechanics should arrive as new rules, and
-   if a mechanic can't be expressed as one, that's a signal to reconsider it
-   rather than to add a parallel system. Note how much smaller this got once the
-   app stopped rolling: two mechanics, one rule.
-2. **The default path doesn't change.** Adding "Stunned for 2 turns" involves
-   exactly the taps it does today. `kind` defaults to `.condition`, `anchorID`
-   defaults to the owner.
-3. **Complexity is quick-picked, not configured.** A small `CooldownLibrary`
-   (Recharge 5–6, Recharge 6, Recharge 4–6, Once per encounter) sits beside the
-   existing condition chips, so the common cases are one tap. The anchor picker
-   and a custom die live behind an **Advanced** disclosure that is closed by
-   default and that most sessions never open.
-4. **Nothing new on the combat list unless it's live.** Chips already work this
-   way; cooldowns join them in the quiet treatment rather than adding a row.
-
-### Also worth having, in rough priority order
-
-Each is a resolution rule or a small field, not a subsystem:
+Still unimplemented. The mechanism above is the foundation each of these sits on.
 
 1. **Ongoing damage** — "5 fire at the start of your turn". An amount on an
    effect, surfaced in the same turn prompt with a one-tap **Apply** that goes
@@ -982,111 +915,26 @@ Each is a resolution rule or a small field, not a subsystem:
    exists and currently only means a colour; this makes it mean something.
    Cheapest real win on this list.
 2. **Concentration** — a link from an effect to the caster maintaining it, so
-   that dropping or ending concentration clears everything it holds up. Needs
-   `anchorID` plus a prompt when the anchor takes damage. Common enough at the
+   that dropping or ending concentration clears everything it holds up. Needs an
+   anchor-combatant field on `Effect` plus a prompt when the anchor takes damage. Common enough at the
    table to be worth it.
 3. **Limited uses** — "3 charges left", a counter that decrements on tap. Fits as
-   a `.manual` cooldown carrying a count.
-4. **Death saves** — see below. Reuses the turn prompt, but keeps its own state;
-   it's the one item here that genuinely doesn't fold into the effect mechanism.
-5. **Temporary HP** — absorbs damage before real HP. A field on `Combatant` and a
+   a cooldown carrying a count.
+4. **Temporary HP** — absorbs damage before real HP. A field on `Combatant` and a
    change to how damage applies; touches the HP log's undo, so not free.
-6. **Player-aware player view** — with the tag above, "show player view" could
+5. **Player-aware player view** — with the tag above, "show player view" could
    hide the monsters' numbers while leaving the party's visible, which is what a
    DM actually wants when turning the phone around. Today it hides everyone's.
-7. **Round-anchored effects** — "at the start of round 4, the bridge collapses",
+6. **Round-anchored effects** — "at the start of round 4, the bridge collapses",
    or an environmental effect on a fixed initiative count. Anchored to the round
-   rather than to any combatant; would need `anchorID` to become an enum
-   (`.combatant(UUID)` / `.round`) rather than an optional.
+   rather than to any combatant; would need that anchor to be an
+   enum (`.combatant(UUID)` / `.round`) rather than a combatant id.
 
 **Declined**, for the same reasons as before: auras and zones (needs a map, and
 this app deliberately has no spatial model), legendary and lair actions as
 first-class mechanics (excluded on direct instruction; a lair action is
 expressible as a round-anchored effect if item 6 ever lands), and anything that
 resolves a rule rather than reminding the DM to.
-
-### Player and NPC combatants
-
-A one-bit distinction that several things want, and which the app currently
-lacks:
-
-```swift
-// on CreaturePreset and on Combatant
-var isPlayer: Bool
-```
-
-**Defaults, chosen so the common case needs no thought:**
-
-- **Built-in creatures: NPC.** The whole roster is monsters; there's no ambiguity.
-- **Creatures you make yourself: player.** If you're typing a creature in by
-  hand, it's most often a party member — the built-ins already cover the bestiary.
-- **A combatant added from a preset inherits the preset's setting**, and either
-  can be flipped: a checkbox in the create/edit form, and a toggle on the
-  combatant detail screen for the case that only matters this once.
-
-The toggle is visible **at the moment of creation**, in the Add Combatant sheet,
-rather than inferred later. The tempting heuristic — "count > 1 means monsters" —
-would be right often enough to be trusted and wrong often enough to hurt, and a
-visible default that's one tap to change beats a clever guess.
-
-**What it's for**, beyond death saves: player view already hides HP from the
-table, and knowing which combatants are the players is what would let it hide
-the *right* ones rather than all of them. Not built yet, but it's the reason this
-is a property of the combatant rather than a flag on the death-save feature.
-
-### Death saves
-
-**At the start of a dying combatant's turn**, the prompt asks for the roll's
-outcome, and it's one tap: **Success** or **Failure**. Three successes and
-they're stable; three failures and they're dead. Start of turn rather than end,
-because that's when the turn arrives and the roll is owed — and it's the same
-boundary the rest of the prompt fires at, so a downed character's whole situation
-is on one screen at one moment rather than split across their turn.
-
-```swift
-// on Combatant
-var deathSaves: DeathSaves?          // nil unless dying
-
-struct DeathSaves: Codable, Equatable {
-    var successes: Int               // 3 → stable, effect clears
-    var failures: Int                // 3 → dead
-}
-```
-
-**This one does not fold into the effect mechanism, and shouldn't be forced to.**
-Two earlier drafts of this section got it wrong in opposite directions — first as
-a standalone counter with no reuse, then as a plain three-turn countdown. The
-countdown version is wrong because the outcome of each roll matters: you can fail
-twice and be healed, or succeed three times and stabilise, and a timer can
-express neither. Bending `DurationType` to carry two tallies and a
-death-on-failure rule would give it a case with five associated values that
-exactly one thing uses, which is worse than a small honest special case.
-
-What *is* shared is the part worth sharing: the turn prompt. Death saves are one
-more line in it, next to recharges and save-ends, using the same reminder
-infrastructure and the same never-block rule.
-
-- **Answered, not dismissed** — like everything else in the prompt. **Auto** is
-  available here (d20 against 10), since nothing outside the app is involved.
-- **Healing above 0 clears it.** So does removing it by hand — that's
-  "stabilised".
-- Every change goes through the existing log, so a mistapped Failure is one
-  undo away.
-
-**When does dying start?** Automatically, at 0 HP — but **only for players**. An
-NPC at 0 HP is dead exactly as it is today, so the six goblins you just killed
-stay killed and nothing new appears. This was the open question in the previous
-draft, and the player/NPC tag settles it: the reason auto-starting looked wrong
-was never the automation, it was that the app couldn't tell a party member from a
-goblin.
-
-### Migration note
-
-`Effect` and `DurationType` are a durable on-disk format
-(`CodableCompatibilityTests` guards this). New fields must decode as absent —
-`kind` → `.condition`, `anchorID` → `nil` — and the existing `isReactionMarker`
-has to keep decoding until the cooldown kind can be relied on to have replaced
-it. That's a decode-side alias, not a data migration.
 
 ## Non-Goals
 
