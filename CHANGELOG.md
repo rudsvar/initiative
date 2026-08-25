@@ -6,8 +6,16 @@ All notable changes to this project are documented here, newest first.
 
 ### To do
 
-- Ongoing damage amounts, limited uses, linked concentration, player-aware
-  player view, round-anchored effects (SPEC → "Planned: the rest of it")
+- Round-anchored effects — the one shape the effect mechanism still can't
+  express (SPEC → "Planned: round-anchored effects"). Ongoing damage, limited
+  uses and linked concentration were dropped rather than deferred
+
+### Fixed
+
+- **Player view was hiding the party's numbers too.** The combatant tag existed
+  but player view never consulted it — it's for turning the screen around, and
+  the party already know their own hit points; it's the monsters' numbers that
+  need hiding
 
 ### Added — concentration and temporary HP
 

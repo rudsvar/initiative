@@ -37,6 +37,7 @@
 		80BCE9718AFE7BA8F8B33537 /* EffectsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C3275643314ADC31D5B3EB6 /* EffectsView.swift */; };
 		87F1E56B91FF848A9C5E7C29 /* PresetStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F1E593E997D394D860933FA /* PresetStore.swift */; };
 		8D5002435663177D3D860CF4 /* FlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6427D74AA5360A780F88C8 /* FlowLayout.swift */; };
+		9FE8D77649E294094C52166C /* PlayerViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C86540C34D5CD3C7378276D /* PlayerViewTests.swift */; };
 		A487A5D42B5F78867A371A4C /* StatusBandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6636EDC413749080974CA625 /* StatusBandTests.swift */; };
 		A846E1C8F6638A7F4F7591BA /* TurnPromptTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3FB96497CF923A7DB11289 /* TurnPromptTests.swift */; };
 		ADCD3ABB889BB6011688D66E /* ThemePalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9059D28D057C9E7FD6B83705 /* ThemePalette.swift */; };
@@ -111,6 +112,7 @@
 		74CF92255CFA4102CC5F52CE /* StatusBand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBand.swift; sourceTree = "<group>"; };
 		7DF8601F37841A579037DFC0 /* DeathSaves.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeathSaves.swift; sourceTree = "<group>"; };
 		7F6ECF4848029671F86C86AA /* CombatSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CombatSession.swift; sourceTree = "<group>"; };
+		8C86540C34D5CD3C7378276D /* PlayerViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerViewTests.swift; sourceTree = "<group>"; };
 		8F82F2EA03A7A61F03D982C7 /* PresetListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetListView.swift; sourceTree = "<group>"; };
 		9059D28D057C9E7FD6B83705 /* ThemePalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemePalette.swift; sourceTree = "<group>"; };
 		99DA66AE6B5F5BF1053F2262 /* ThemePaletteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemePaletteTests.swift; sourceTree = "<group>"; };
@@ -229,6 +231,7 @@
 				D4F6E0061994D32447464ED0 /* EffectEditorView.swift */,
 				2C3275643314ADC31D5B3EB6 /* EffectsView.swift */,
 				FE0E8595FB2990C1DF76AD4C /* LogView.swift */,
+				8C86540C34D5CD3C7378276D /* PlayerViewTests.swift */,
 				54DD0236F790EE085E97A432 /* TurnPromptView.swift */,
 			);
 			path = Combat;
@@ -433,6 +436,7 @@
 				1A85F56E1359778680CB6BE8 /* EncounterStoreTests.swift in Sources */,
 				39A9BA2DDE7B0C7A9C00E552 /* ListSectionsTests.swift in Sources */,
 				3E634FE120E1F078B6C1172F /* ModelsTests.swift in Sources */,
+				9FE8D77649E294094C52166C /* PlayerViewTests.swift in Sources */,
 				E34D5503DBD8A4402F2825AA /* PresetStoreTests.swift in Sources */,
 				E6FA4267FD3E97214D764D71 /* SessionStoreTests.swift in Sources */,
 				A487A5D42B5F78867A371A4C /* StatusBandTests.swift in Sources */,

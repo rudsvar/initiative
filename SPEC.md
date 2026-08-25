@@ -903,38 +903,46 @@ above 0 ends the situation outright; so does deleting the log entry for the blow
 that caused it, since the log is the HP undo mechanism and leaving someone
 rolling death saves at full health would be worse than either.
 
-## Planned: the rest of it
+## Planned: round-anchored effects
 
-Still unimplemented. The mechanism above is the foundation each of these sits on.
+The one thing left on the list, and the only shape the effect mechanism still
+can't express.
 
-1. **Ongoing damage** — "5 fire at the start of your turn". An amount on an
-   effect, surfaced in the same turn prompt with a one-tap **Apply** that goes
-   through the existing HP log, so it's undoable and reads like any other damage.
-   Applying is one tap rather than automatic for the same reason the app doesn't
-   roll: the DM might rule otherwise. The `ongoing` condition category already
-   exists and currently only means a colour; this makes it mean something.
-   Cheapest real win on this list.
-2. **Concentration** — a link from an effect to the caster maintaining it, so
-   that dropping or ending concentration clears everything it holds up. Needs an
-   anchor-combatant field on `Effect` plus a prompt when the anchor takes damage. Common enough at the
-   table to be worth it.
-3. **Limited uses** — "3 charges left", a counter that decrements on tap. Fits as
-   a cooldown carrying a count.
-4. **Temporary HP** — absorbs damage before real HP. A field on `Combatant` and a
-   change to how damage applies; touches the HP log's undo, so not free.
-5. **Player-aware player view** — with the tag above, "show player view" could
-   hide the monsters' numbers while leaving the party's visible, which is what a
-   DM actually wants when turning the phone around. Today it hides everyone's.
-5. **Round-anchored effects** — "at the start of round 4, the bridge collapses",
-   or an environmental effect on a fixed initiative count. Anchored to the round
-   rather than to any combatant; would need that anchor to be an
-   enum (`.combatant(UUID)` / `.round`) rather than a combatant id.
+Every duration today is anchored to **some combatant's own turn** — that's what
+"until the end of their turn" means, and it's why an effect has to live on a
+combatant at all. Anything that belongs to the *round* rather than to a creature
+has nowhere to go:
 
-**Declined**, for the same reasons as before: auras and zones (needs a map, and
-this app deliberately has no spatial model), legendary and lair actions as
-first-class mechanics (excluded on direct instruction; a lair action is
-expressible as a round-anchored effect if item 5 ever lands), and anything that
-resolves a rule rather than reminding the DM to.
+- "At the start of round 4, the bridge collapses."
+- An environmental effect that fires on a fixed initiative count each round.
+- "This lasts three full rounds regardless of whose turn it is."
+
+The workaround is to pin it to whichever combatant is handy, which is wrong in a
+way that bites: the effect vanishes if that combatant dies or is removed, and it
+fires on their turn rather than at the top of the round.
+
+**Shape**: the anchor becomes an enum — `.combatant(UUID)` / `.round` — rather
+than being implicit in the effect's owner, and a round-anchored effect lives on
+the session instead of on a combatant. `pendingTurnPrompts` already fires at turn
+boundaries and knows when the round has just rolled over, so surfacing one is a
+small addition to machinery that exists.
+
+**Not started.** Also the last remaining route to lair-action-style mechanics,
+which were declined as a first-class feature but would be expressible this way.
+
+### Declined
+
+Deliberately not building, each considered and dropped:
+
+- **Ongoing damage amounts**, **limited-use counters**, and **linked
+  concentration** (losing concentration clearing the effects it held up) — all
+  three were on the list and are no longer wanted. The mechanism could carry
+  them; the appetite isn't there, and an unwanted feature costs the same to
+  maintain as a wanted one.
+- **Auras and zones** — needs a spatial model, and this app deliberately has none.
+- **Legendary and lair actions** as first-class mechanics — excluded on direct
+  instruction.
+- **Anything that resolves a rule** rather than reminding the DM to.
 
 ## Non-Goals
 

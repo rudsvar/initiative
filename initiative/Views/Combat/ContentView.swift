@@ -322,10 +322,16 @@ struct CombatantRow: View {
         .foregroundColor(color)
     }
 
+    /// Player view exists for turning the screen around, and the party already
+    /// know their own hit points — it's the monsters' numbers that need hiding.
+    /// Blanking everyone's was the behaviour before combatants knew which they
+    /// were.
+    private var hideNumbers: Bool { playerViewEnabled && !combatant.isPlayer }
+
     @ViewBuilder
     private var healthRow: some View {
         if let current = combatant.currentHP, let max = combatant.maxHP {
-            if playerViewEnabled {
+            if hideNumbers {
                 let band = StatusBand.health(current: current, max: max)
                 statRow(systemImage: "heart.fill", text: band.label, color: band.color)
             } else {
@@ -341,7 +347,7 @@ struct CombatantRow: View {
     @ViewBuilder
     private var armorClassRow: some View {
         if let ac = combatant.armorClass {
-            if playerViewEnabled {
+            if hideNumbers {
                 let band = StatusBand.armorClass(ac)
                 statRow(systemImage: "shield.fill", text: band.label, color: band.color)
             } else {
