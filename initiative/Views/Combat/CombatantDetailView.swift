@@ -87,13 +87,7 @@ struct CombatantDetailView: View {
         .navigationTitle("Combatant")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showAddEffect) {
-            if let combatant = combatant {
-                AddEffectView(
-                    session: session,
-                    combatant: combatant,
-                    isPresented: $showAddEffect
-                )
-            }
+            EffectsView(session: session, combatantID: combatantId, isPresented: $showAddEffect)
         }
         .alert("Track HP", isPresented: $showEnableHP) {
             TextField(text: $newMaxHPText) {
@@ -258,7 +252,9 @@ struct CombatantDetailView: View {
                 Text("Active Effects").cardHeading()
                 Spacer()
                 Button(action: { showAddEffect = true }) {
-                    Label("Add", systemImage: "plus")
+                    // "Manage" rather than "Add": the screen it opens both
+                    // applies and removes, and shows what's already active.
+                    Label("Manage", systemImage: "slider.horizontal.3")
                         .font(Theme.Typography.label)
                         .foregroundColor(Theme.accent)
                 }
@@ -351,9 +347,7 @@ struct CombatantDetailView: View {
     }
 
     private func removeEffect(_ effect: Effect, from combatant: Combatant) {
-        if let index = session.combatants.firstIndex(where: { $0.id == combatant.id }) {
-            session.combatants[index].effects.removeAll { $0.id == effect.id }
-        }
+        session.removeEffect(effect.id, from: combatant.id)
     }
 }
 

@@ -241,6 +241,41 @@ class CombatSession {
         }
     }
 
+    // MARK: - Effects
+    //
+    // Adding and removing effects lives here rather than in the views that do it
+    // so that the behaviour is testable and so every path logs the same way —
+    // the log is the session's history, and an effect appearing or going is as
+    // much a part of what happened as a hit point change.
+
+    func addEffect(_ effect: Effect, to combatantID: UUID) {
+        guard let index = combatants.firstIndex(where: { $0.id == combatantID }) else { return }
+        combatants[index].effects.append(effect)
+        appendLog("\(combatants[index].name): \(effect.name)", combatantId: combatantID)
+    }
+
+    func removeEffect(_ effectID: UUID, from combatantID: UUID) {
+        guard let index = combatants.firstIndex(where: { $0.id == combatantID }),
+              let effect = combatants[index].effects.first(where: { $0.id == effectID }) else { return }
+        combatants[index].effects.removeAll { $0.id == effectID }
+        appendLog("\(combatants[index].name): \(effect.name) removed", combatantId: combatantID)
+    }
+
+    /// Replaces an effect in place, keeping its identity. Used by the editor, so
+    /// reconfiguring a condition doesn't read as removing one and adding another.
+    func updateEffect(_ effect: Effect, on combatantID: UUID) {
+        guard let index = combatants.firstIndex(where: { $0.id == combatantID }),
+              let effectIndex = combatants[index].effects.firstIndex(where: { $0.id == effect.id }) else { return }
+        combatants[index].effects[effectIndex] = effect
+    }
+
+    /// The combatant's own effect with this name, if any. Case-insensitive,
+    /// because an effect's name can be typed by hand as well as picked.
+    func effect(named name: String, on combatantID: UUID) -> Effect? {
+        combatants.first { $0.id == combatantID }?
+            .visibleEffects.first { $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame }
+    }
+
     // MARK: - Reaction
 
     private static let reactionEffectName = "Reaction Used"

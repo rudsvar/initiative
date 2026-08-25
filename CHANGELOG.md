@@ -6,15 +6,28 @@ All notable changes to this project are documented here, newest first.
 
 ### To do
 
-Agreed but not built, in the order they'd be worth doing:
+- Ongoing damage amounts, concentration, limited uses, temp HP, player-aware
+  player view, round-anchored effects (SPEC → "Planned: the rest of it")
 
-1. **Tap-to-apply effects screen.** Replace the Add Effect form with a grid of
-   every condition: tap one to apply it with its default duration, tap it again
-   to configure, swipe to remove. Fewer presses than the current
-   open-form-pick-configure-confirm flow, and it's what the per-condition
-   defaults below were added for
-2. Ongoing damage amounts, concentration, limited uses, temp HP, player-aware
-   player view, round-anchored effects (SPEC → "Planned: the rest of it")
+### Added — tap-to-apply effects screen
+
+- **`EffectsView` replaces the Add Effect form.** All sixteen conditions are
+  visible at once as chips; **one tap applies one** with the duration that
+  condition usually wants. Tapping an already-applied one opens it for
+  configuring — by then you've said which condition you mean, and the only
+  question left is the duration. "This creature is stunned" went from four
+  decisions to one
+- Active effects are listed above the grid with their durations spelled out, and
+  swipe to remove. A chip can show *that* something is on but not for how much
+  longer, and the duration is what you actually check mid-combat
+- Cooldown quick-picks and a Custom effect entry live on the same screen, so
+  everything affecting one combatant is in one place
+- `EffectEditorView` is what's left of the old form: naming a custom effect, and
+  fixing a duration the default guessed wrong. Both are the uncommon path now
+- Adding, removing and updating effects moved onto `CombatSession` so they're
+  testable and so every path logs identically — an effect appearing or going is
+  as much a part of what happened as a hit point change, and now shows up in the
+  log
 
 ### Fixed
 

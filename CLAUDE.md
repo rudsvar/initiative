@@ -50,7 +50,8 @@ initiative/
 │                        DefaultContent.swift (the starter creature roster + encounters),
 │                        (installed on every launch; built-ins are read-only) + tests
 ├── Views/
-│   ├── Combat/        # ContentView, CombatantDetailView, LogView, AddCombatantSheet, AddEffectView
+│   ├── Combat/        # ContentView, CombatantDetailView, LogView, AddCombatantSheet,
+│   │                     EffectsView (tap-to-apply grid) + EffectEditorView, TurnPromptView
 │   ├── MainMenu/       # MainMenuView
 │   ├── Presets/        # PresetListView (Main Menu -> Creatures)
 │   ├── Encounters/      # EncounterListView (+ its nested Edit/Add sheets)
