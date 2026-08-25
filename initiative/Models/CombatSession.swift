@@ -133,16 +133,80 @@ class CombatSession {
         )
     }
 
-    func applyDamage(to id: UUID, amount: Int) {
+    /// Returns a concentration check when the hit threatened something the
+    /// combatant was holding — the one prompt in the app that isn't tied to a
+    /// turn boundary, because damage isn't either.
+    @discardableResult
+    func applyDamage(to id: UUID, amount: Int) -> TurnPrompt? {
         guard amount > 0, let index = combatants.firstIndex(where: { $0.id == id }),
-              let current = combatants[index].currentHP else { return }
-        combatants[index].currentHP = max(0, current - amount)
+              let current = combatants[index].currentHP else { return nil }
+
+        let before = combatants[index].temporaryHP ?? 0
+        let result = Self.absorb(damage: amount, temporaryHP: combatants[index].temporaryHP, currentHP: current)
+        combatants[index].temporaryHP = result.temporaryHP
+        combatants[index].currentHP = result.currentHP
+
+        let absorbed = before - (result.temporaryHP ?? 0)
+        let note = absorbed > 0 ? ", \(absorbed) absorbed" : ""
         appendLog(
-            "\(combatants[index].name) took \(amount) damage (\(combatants[index].currentHP!)/\(combatants[index].maxHP!) HP)",
+            "\(combatants[index].name) took \(amount) damage\(note) (\(result.currentHP)/\(combatants[index].maxHP!) HP)",
             combatantId: id,
             hpOperation: .damage(amount: amount)
         )
         startDyingOrDieIfNeeded(at: index)
+        return concentrationCheck(at: index, afterTaking: amount)
+    }
+
+    /// Splits an incoming hit between the temporary buffer and real hit points.
+    ///
+    /// Shared by `applyDamage` and `recomputeHP` deliberately: the live path and
+    /// the replay path have to agree exactly or deleting a log entry would
+    /// recompute a different answer than the one the DM originally saw, and
+    /// keeping them as one function makes that true by construction rather than
+    /// by two people remembering.
+    static func absorb(damage: Int, temporaryHP: Int?, currentHP: Int) -> (temporaryHP: Int?, currentHP: Int) {
+        guard let buffer = temporaryHP, buffer > 0 else {
+            return (temporaryHP, max(0, currentHP - damage))
+        }
+        let absorbed = min(buffer, damage)
+        let remaining = buffer - absorbed
+        return (remaining > 0 ? remaining : nil, max(0, currentHP - (damage - absorbed)))
+    }
+
+    /// Grants temporary hit points, **replacing** whatever was there rather than
+    /// adding to it. Two sources of temporary HP don't stack in any system this
+    /// app is likely to be used with, and "replace" is the version a DM can
+    /// predict without the app having a rule about which is larger.
+    func grantTemporaryHP(to id: UUID, amount: Int) {
+        guard amount > 0, let index = combatants.firstIndex(where: { $0.id == id }) else { return }
+        combatants[index].temporaryHP = amount
+        appendLog(
+            "\(combatants[index].name) gained \(amount) temporary HP",
+            combatantId: id,
+            hpOperation: .grantTemporaryHP(amount: amount)
+        )
+    }
+
+    /// Damage threatens whatever the combatant is holding. Being dropped to 0
+    /// ends it outright — there's nothing to roll for — otherwise the DM is asked.
+    private func concentrationCheck(at index: Int, afterTaking amount: Int) -> TurnPrompt? {
+        guard let effect = combatants[index].effects.first(where: { $0.kind == .concentration }) else { return nil }
+        guard combatants[index].currentHP ?? 0 > 0 else {
+            combatants[index].effects.removeAll { $0.id == effect.id }
+            appendLog("\(combatants[index].name) lost \(effect.name)", combatantId: combatants[index].id)
+            return nil
+        }
+        return TurnPrompt(
+            id: effect.id,
+            combatantID: combatants[index].id,
+            combatantName: combatants[index].name,
+            subject: .concentration(id: effect.id),
+            title: "Roll to hold \(effect.name)",
+            // The damage, not a DC: the threshold is a rule, and rules are the
+            // DM's. What the app knows is how hard they were hit.
+            hint: "Took \(amount) damage",
+            deathSaves: nil
+        )
     }
 
     func applyHealing(to id: UUID, amount: Int) {
@@ -213,14 +277,19 @@ class CombatSession {
         guard let index = combatants.firstIndex(where: { $0.id == combatantId }) else { return }
         var maxHP: Int?
         var currentHP: Int?
+        var temporaryHP: Int?
         for entry in log where entry.combatantId == combatantId {
             switch entry.hpOperation {
             case .enableTracking(let amount):
                 maxHP = amount
                 currentHP = amount
+            case .grantTemporaryHP(let amount):
+                temporaryHP = amount
             case .damage(let amount):
                 guard let current = currentHP else { continue }
-                currentHP = max(0, current - amount)
+                let result = Self.absorb(damage: amount, temporaryHP: temporaryHP, currentHP: current)
+                temporaryHP = result.temporaryHP
+                currentHP = result.currentHP
             case .healing(let amount):
                 guard let current = currentHP, let max = maxHP else { continue }
                 currentHP = min(max, current + amount)
@@ -234,6 +303,7 @@ class CombatSession {
         }
         combatants[index].maxHP = maxHP
         combatants[index].currentHP = currentHP
+        combatants[index].temporaryHP = temporaryHP
         // Deleting the log entry that dropped someone to 0 has to take the death
         // saves with it, or they'd be left rolling at full health.
         if let currentHP, currentHP > 0 {
@@ -362,9 +432,14 @@ class CombatSession {
     }
 
     /// Applies one prompt's outcome. Success removes the effect; for a death save
-    /// both outcomes count toward their own total. The DM decides — nothing here
+    /// both outcomes count toward their own total; for a concentration check the
+    /// sense is inverted and *failing* removes it. The DM decides — nothing here
     /// rolls anything.
-    private func apply(_ prompt: TurnPrompt, succeeded: Bool) {
+    ///
+    /// Public because concentration checks arrive from damage rather than from a
+    /// turn boundary, so the detail screen resolves them directly instead of
+    /// handing them to `nextTurn`.
+    func resolvePrompt(_ prompt: TurnPrompt, succeeded: Bool) {
         guard let index = combatants.firstIndex(where: { $0.id == prompt.combatantID }) else { return }
 
         switch prompt.subject {
@@ -380,6 +455,15 @@ class CombatSession {
                 )
             } else {
                 appendLog("\(combatants[index].name) failed the roll for \(effect.name)", combatantId: combatants[index].id)
+            }
+
+        case .concentration(let effectID):
+            guard let effect = combatants[index].effects.first(where: { $0.id == effectID }) else { return }
+            if succeeded {
+                appendLog("\(combatants[index].name) held \(effect.name)", combatantId: combatants[index].id)
+            } else {
+                combatants[index].effects.removeAll { $0.id == effectID }
+                appendLog("\(combatants[index].name) lost \(effect.name)", combatantId: combatants[index].id)
             }
 
         case .deathSave:
@@ -410,7 +494,7 @@ class CombatSession {
         history.append((combatants: combatants, currentTurnIndex: currentTurnIndex, roundNumber: roundNumber, logCount: log.count))
 
         for (prompt, succeeded) in answers.sorted(by: { $0.key.combatantName < $1.key.combatantName }) {
-            apply(prompt, succeeded: succeeded)
+            resolvePrompt(prompt, succeeded: succeeded)
         }
 
         let endingCombatantId = combatants[currentTurnIndex].id

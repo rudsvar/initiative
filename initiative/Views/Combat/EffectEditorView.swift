@@ -64,16 +64,16 @@ struct EffectEditorView: View {
                         Picker("Kind", selection: $kind) {
                             Text("Condition").tag(EffectKind.condition)
                             Text("Cooldown").tag(EffectKind.cooldown)
+                            Text("Holding").tag(EffectKind.concentration)
                         }
                         .pickerStyle(.segmented)
                         .labelsHidden()
                     }
                     .listRowBackground(Theme.surfaceRaised)
 
-                    Section(kind == .condition ? "Effect Name" : "Ability Name") {
+                    Section(nameSectionTitle) {
                         TextField(text: $effectName) {
-                            Text(kind == .condition ? "e.g., Hexed by the Duke" : "e.g., Breath Weapon")
-                                .foregroundColor(Theme.placeholderText)
+                            Text(namePlaceholder).foregroundColor(Theme.placeholderText)
                         }
                     }
                     .listRowBackground(Theme.surfaceRaised)
@@ -140,6 +140,22 @@ struct EffectEditorView: View {
                         .disabled(effectName.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
             }
+        }
+    }
+
+    private var nameSectionTitle: String {
+        switch kind {
+        case .condition: return "Effect Name"
+        case .cooldown: return "Ability Name"
+        case .concentration: return "Concentrating On"
+        }
+    }
+
+    private var namePlaceholder: String {
+        switch kind {
+        case .condition: return "e.g., Hexed by the Duke"
+        case .cooldown: return "e.g., Breath Weapon"
+        case .concentration: return "e.g., Hold the Bridge"
         }
     }
 

@@ -244,3 +244,27 @@ extension CodableCompatibilityTests {
         XCTAssertFalse(try JSONDecoder().decode(CreaturePreset.self, from: json).isPlayer)
     }
 }
+
+extension CodableCompatibilityTests {
+
+    func testCombatantWithoutTemporaryHPDecodes() throws {
+        let json = """
+        {"id":"\(UUID().uuidString)","name":"Wren","initiative":12,"maxHP":30,"currentHP":30}
+        """.data(using: .utf8)!
+
+        XCTAssertNil(try JSONDecoder().decode(Combatant.self, from: json).temporaryHP)
+    }
+
+    func testGrantTemporaryHPOperationRoundTrips() throws {
+        let original = HPOperation.grantTemporaryHP(amount: 8)
+        let decoded = try JSONDecoder().decode(HPOperation.self, from: JSONEncoder().encode(original))
+        XCTAssertEqual(decoded, original)
+    }
+
+    func testConcentrationEffectRoundTrips() throws {
+        let original = Effect(name: "Hold the Bridge", durationType: .untilRemoved, kind: .concentration)
+        let decoded = try JSONDecoder().decode(Effect.self, from: JSONEncoder().encode(original))
+        XCTAssertEqual(decoded.kind, .concentration)
+        XCTAssertEqual(decoded.durationType, .untilRemoved)
+    }
+}

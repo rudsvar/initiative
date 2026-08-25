@@ -6,8 +6,30 @@ All notable changes to this project are documented here, newest first.
 
 ### To do
 
-- Ongoing damage amounts, concentration, limited uses, temp HP, player-aware
+- Ongoing damage amounts, limited uses, linked concentration, player-aware
   player view, round-anchored effects (SPEC → "Planned: the rest of it")
+
+### Added — concentration and temporary HP
+
+- **Concentration** is a third `EffectKind` — not something wrong with you, not
+  something you can't do yet, but something you're *holding*. Taking damage
+  raises a check: **the one prompt in the app not tied to a turn boundary**,
+  because damage isn't either
+- Its resolution is **inverted from every other prompt** — failing is what
+  removes it, since the roll is to keep the thing rather than shake it off. The
+  labels say so: **Held it** / **Lost it**
+- The prompt reports the **damage taken, not a DC**. The threshold is a rule and
+  rules are the DM's; what the app knows is how hard they were hit. Being dropped
+  to 0 ends it outright without asking
+- **Temporary hit points**, granted from the Health card and shown in the combat
+  row as `26/30 +8`. Absorbed before real HP, not refilled by healing, and gone
+  rather than zero once spent
+- Granting replaces rather than stacks — two sources don't add, and replace is
+  what a DM can predict without the app holding a rule about which is larger
+- The buffer participates in the log, which is the HP undo mechanism: deleting a
+  damage entry would otherwise recompute HP without the buffer that absorbed it.
+  The live and replay paths share one `absorb` function so they agree by
+  construction
 
 ### Added — tap-to-apply effects screen
 

@@ -8,6 +8,9 @@ struct Combatant: Identifiable, Codable {
     var maxHP: Int?
     var currentHP: Int?
     var armorClass: Int?
+    /// A buffer taken off before real hit points. Not healing: it doesn't refill,
+    /// isn't capped by `maxHP`, and once spent it's gone.
+    var temporaryHP: Int?
 
     /// Whether this is one of the party rather than something they're fighting.
     ///
@@ -75,7 +78,7 @@ struct Combatant: Identifiable, Codable {
     // MARK: - Codable
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, initiative, effects, maxHP, currentHP, armorClass, isPlayer, deathSaves
+        case id, name, initiative, effects, maxHP, currentHP, armorClass, temporaryHP, isPlayer, deathSaves
     }
 
     /// Written out by hand rather than synthesized: Swift's synthesized decoding
@@ -94,6 +97,7 @@ struct Combatant: Identifiable, Codable {
         maxHP = try container.decodeIfPresent(Int.self, forKey: .maxHP)
         currentHP = try container.decodeIfPresent(Int.self, forKey: .currentHP)
         armorClass = try container.decodeIfPresent(Int.self, forKey: .armorClass)
+        temporaryHP = try container.decodeIfPresent(Int.self, forKey: .temporaryHP)
         isPlayer = try container.decodeIfPresent(Bool.self, forKey: .isPlayer) ?? false
         deathSaves = try container.decodeIfPresent(DeathSaves.self, forKey: .deathSaves)
     }

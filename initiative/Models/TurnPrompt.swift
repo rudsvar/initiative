@@ -12,6 +12,10 @@ struct TurnPrompt: Identifiable, Hashable {
         case effect(id: UUID)
         /// A death save: both outcomes count toward their own total.
         case deathSave
+        /// A concentration check. **Inverted** from `effect`: failing is what
+        /// removes it, because the roll is to *keep* the thing rather than to
+        /// shake it off.
+        case concentration(id: UUID)
     }
 
     let id: UUID
@@ -28,6 +32,21 @@ struct TurnPrompt: Identifiable, Hashable {
 
     /// Labels for the two answers. Death saves count both outcomes, so "Not yet"
     /// would be a lie — a failed death save is not nothing happening.
-    var successLabel: String { subject == .deathSave ? "Success" : "Made it" }
-    var failureLabel: String { subject == .deathSave ? "Failure" : "Not yet" }
+    var successLabel: String {
+        switch subject {
+        case .deathSave: return "Success"
+        case .concentration: return "Held it"
+        case .effect: return "Made it"
+        }
+    }
+
+    /// "Not yet" would be a lie for the two subjects where failing means
+    /// something happened rather than nothing.
+    var failureLabel: String {
+        switch subject {
+        case .deathSave: return "Failure"
+        case .concentration: return "Lost it"
+        case .effect: return "Not yet"
+        }
+    }
 }

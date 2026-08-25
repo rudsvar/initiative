@@ -925,7 +925,7 @@ Still unimplemented. The mechanism above is the foundation each of these sits on
 5. **Player-aware player view** — with the tag above, "show player view" could
    hide the monsters' numbers while leaving the party's visible, which is what a
    DM actually wants when turning the phone around. Today it hides everyone's.
-6. **Round-anchored effects** — "at the start of round 4, the bridge collapses",
+5. **Round-anchored effects** — "at the start of round 4, the bridge collapses",
    or an environmental effect on a fixed initiative count. Anchored to the round
    rather than to any combatant; would need that anchor to be an
    enum (`.combatant(UUID)` / `.round`) rather than a combatant id.
@@ -933,7 +933,7 @@ Still unimplemented. The mechanism above is the foundation each of these sits on
 **Declined**, for the same reasons as before: auras and zones (needs a map, and
 this app deliberately has no spatial model), legendary and lair actions as
 first-class mechanics (excluded on direct instruction; a lair action is
-expressible as a round-anchored effect if item 6 ever lands), and anything that
+expressible as a round-anchored effect if item 5 ever lands), and anything that
 resolves a rule rather than reminding the DM to.
 
 ## Non-Goals

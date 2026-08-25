@@ -5,6 +5,11 @@ struct CombatantDetailView: View {
     let combatantId: UUID
     @Environment(\.dismiss) var dismiss
     @State private var showAddEffect = false
+    @State private var tempHPAmount = ""
+    /// Raised when damage threatens something the combatant was holding. Damage
+    /// isn't a turn boundary, so this is the one prompt that doesn't come from
+    /// `pendingTurnPrompts`.
+    @State private var concentrationCheck: TurnPrompt?
     @State private var showEnableHP = false
     @State private var newMaxHPText = ""
     @State private var damageHealAmount = ""
@@ -86,6 +91,14 @@ struct CombatantDetailView: View {
         .themedScreen()
         .navigationTitle("Combatant")
         .navigationBarTitleDisplayMode(.inline)
+        .sheet(item: $concentrationCheck) { prompt in
+            TurnPromptView(prompts: [prompt]) { answers in
+                for (prompt, succeeded) in answers {
+                    session.resolvePrompt(prompt, succeeded: succeeded)
+                }
+                concentrationCheck = nil
+            }
+        }
         .sheet(isPresented: $showAddEffect) {
             EffectsView(session: session, combatantID: combatantId, isPresented: $showAddEffect)
         }
@@ -223,6 +236,31 @@ struct CombatantDetailView: View {
                         }
                         .disabled(Int(maxIncreaseAmount) == nil)
                     }
+
+                    HStack(alignment: .bottom, spacing: Theme.Spacing.sm) {
+                        labelledField(
+                            "Temp",
+                            text: .constant(combatant.temporaryHP.map(String.init) ?? "–"),
+                            placeholder: "–",
+                            color: combatant.temporaryHP == nil ? Theme.textTertiary : Theme.statusInfo,
+                            width: Self.hpFieldWidth
+                        )
+                        .disabled(true)
+                        labelledField(
+                            "Amount",
+                            text: $tempHPAmount,
+                            placeholder: "–",
+                            color: Theme.textPrimary,
+                            width: Self.hpFieldWidth
+                        )
+
+                        Spacer(minLength: 0)
+
+                        hpButton("shield.fill", tint: Theme.statusInfo, label: "Grant Temporary HP") {
+                            grantTemporaryHP(to: combatant)
+                        }
+                        .disabled(Int(tempHPAmount) == nil)
+                    }
                 }
             } else {
                 Button(action: { newMaxHPText = ""; showEnableHP = true }) {
@@ -326,8 +364,14 @@ struct CombatantDetailView: View {
 
     private func applyDamage(to combatant: Combatant) {
         guard let amount = Int(damageHealAmount) else { return }
-        session.applyDamage(to: combatant.id, amount: amount)
+        concentrationCheck = session.applyDamage(to: combatant.id, amount: amount)
         damageHealAmount = ""
+    }
+
+    private func grantTemporaryHP(to combatant: Combatant) {
+        guard let amount = Int(tempHPAmount) else { return }
+        session.grantTemporaryHP(to: combatant.id, amount: amount)
+        tempHPAmount = ""
     }
 
     private func applyHealing(to combatant: Combatant) {

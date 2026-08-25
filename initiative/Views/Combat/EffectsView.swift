@@ -42,6 +42,7 @@ struct EffectsView: View {
                         activeSection(combatant)
                     }
                     conditionsSection
+                    concentrationSection
                     cooldownsSection
                     customSection
                 }
@@ -138,6 +139,28 @@ struct EffectsView: View {
         }
     }
 
+    /// Its own section rather than a chip among the conditions: concentration
+    /// isn't something wrong with the combatant, it's something they're holding,
+    /// and it always needs a name — what they're concentrating *on* — so it
+    /// opens the editor rather than applying silently.
+    private var concentrationSection: some View {
+        Section {
+            Button {
+                let effect = Effect(name: "Concentrating", durationType: .untilRemoved, kind: .concentration)
+                session.addEffect(effect, to: combatantID)
+                editing = effect
+            } label: {
+                Label("Concentrating on…", systemImage: "wand.and.rays")
+                    .font(Theme.Typography.body)
+                    .foregroundColor(Theme.statusInfo)
+            }
+            .cardRowStyle()
+            .cardRowLayout()
+        } header: {
+            Text("Concentration").sectionLabel()
+        }
+    }
+
     private var cooldownsSection: some View {
         Section {
             FlowLayout {
@@ -184,16 +207,19 @@ struct EffectsView: View {
     // MARK: - Helpers
 
     private func symbol(for effect: Effect) -> String {
-        if effect.kind == .cooldown {
-            return effect.durationType.awaitsRoll ? "hourglass" : "clock"
+        switch effect.kind {
+        case .cooldown: return effect.durationType.awaitsRoll ? "hourglass" : "clock"
+        case .concentration: return "wand.and.rays"
+        case .condition: return ConditionLibrary.matching(name: effect.name)?.symbolName ?? "sparkles"
         }
-        return ConditionLibrary.matching(name: effect.name)?.symbolName ?? "sparkles"
     }
 
     private func tint(for effect: Effect) -> Color {
-        effect.kind == .cooldown
-            ? Theme.textTertiary
-            : (ConditionLibrary.matching(name: effect.name)?.color ?? Theme.accent)
+        switch effect.kind {
+        case .cooldown: return Theme.textTertiary
+        case .concentration: return Theme.statusInfo
+        case .condition: return ConditionLibrary.matching(name: effect.name)?.color ?? Theme.accent
+        }
     }
 }
 

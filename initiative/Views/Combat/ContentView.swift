@@ -282,6 +282,25 @@ struct CombatantRow: View {
         UIScreen.main.bounds.width - (2 * Theme.Spacing.sm + 2 * Theme.Spacing.md)
     }
 
+    private func chipSymbol(for effect: Effect, condition: StandardCondition?) -> String {
+        switch effect.kind {
+        case .cooldown: return effect.durationType.awaitsRoll ? "hourglass" : "clock"
+        case .concentration: return "wand.and.rays"
+        case .condition: return condition?.symbolName ?? "sparkles"
+        }
+    }
+
+    private func chipTint(for effect: Effect, condition: StandardCondition?) -> Color {
+        switch effect.kind {
+        // A cooldown is something you can't do, not something wrong with you —
+        // quiet, like the reaction chip. Concentration is a third thing again:
+        // it's fine right now, but it's at risk, so it reads as information.
+        case .cooldown: return Theme.textTertiary
+        case .concentration: return Theme.statusInfo
+        case .condition: return condition?.color ?? Theme.accent
+        }
+    }
+
     private func stateBadge(_ systemImage: String, tint: Color) -> some View {
         Image(systemName: systemImage)
             .font(Theme.Typography.iconInline)
@@ -310,7 +329,11 @@ struct CombatantRow: View {
                 let band = StatusBand.health(current: current, max: max)
                 statRow(systemImage: "heart.fill", text: band.label, color: band.color)
             } else {
-                statRow(systemImage: "heart.fill", text: "\(current)/\(max)", color: Theme.textSecondary)
+                // The buffer is appended rather than folded into the number:
+                // "26/30 +8" says both what they have and what's about to be
+                // spent first, which is the thing you're deciding against.
+                let buffer = combatant.temporaryHP.map { " +\($0)" } ?? ""
+                statRow(systemImage: "heart.fill", text: "\(current)/\(max)\(buffer)", color: Theme.textSecondary)
             }
         }
     }
@@ -382,15 +405,11 @@ struct CombatantRow: View {
                     ForEach(combatant.visibleEffects) { effect in
                         let condition = ConditionLibrary.matching(name: effect.name)
                         StatusChip(
-                            symbolName: effect.kind == .cooldown
-                                ? (effect.durationType.awaitsRoll ? "hourglass" : "clock")
-                                : (condition?.symbolName ?? "sparkles"),
+                            symbolName: chipSymbol(for: effect, condition: condition),
                             label: effect.name,
                             // A cooldown is something you can't do, not something
                             // wrong with you — quiet, like the reaction chip.
-                            color: effect.kind == .cooldown
-                                ? Theme.textTertiary
-                                : (condition?.color ?? Theme.accent)
+                            color: chipTint(for: effect, condition: condition)
                         )
                     }
                 }
