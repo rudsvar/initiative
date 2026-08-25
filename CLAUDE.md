@@ -51,7 +51,8 @@ initiative/
 │                        (installed on every launch; built-ins are read-only) + tests
 ├── Views/
 │   ├── Combat/        # ContentView, CombatantDetailView, LogView, AddCombatantSheet,
-│   │                     EffectsView (tap-to-apply grid) + EffectEditorView, TurnPromptView
+│   │                     EffectsView (tap-to-apply grid) + EffectEditorView,
+│   │                     RoundEffectsView (effects owned by the fight), TurnPromptView
 │   ├── MainMenu/       # MainMenuView
 │   ├── Presets/        # PresetListView (Main Menu -> Creatures)
 │   ├── Encounters/      # EncounterListView (+ its nested Edit/Add sheets)

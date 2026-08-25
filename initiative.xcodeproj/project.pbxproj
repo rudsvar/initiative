@@ -26,10 +26,12 @@
 		516C78B264911745A7A371AA /* MainMenuView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6A505C34833BAA007D103BF7 /* MainMenuView.swift */; };
 		52F968B9382EEE7057F6E34D /* CombatantDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5AB92BFBD1A901C57446D6A5 /* CombatantDetailView.swift */; };
 		594492A79BD283DE55245AAC /* NewSessionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43FC7996489BBF4E0E1170E1 /* NewSessionView.swift */; };
+		5DF210A51FC89A4BF19CF1A2 /* RoundEffectsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBD09D77A68BB93102AE4B6 /* RoundEffectsView.swift */; };
 		69ADF2074766356C68EFDEEB /* CodableCompatibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 236012BD8426FA8D17541295 /* CodableCompatibilityTests.swift */; };
 		6DA1B43A72527F8A95AF7ACE /* PresetListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F82F2EA03A7A61F03D982C7 /* PresetListView.swift */; };
 		753B7A6563DA08CED59C9981 /* EncounterStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A418113952E8ECEE42D913AA /* EncounterStore.swift */; };
 		76A17EE0A69324524CE36DCD /* ConditionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DF981AA6DF6B717D16FCD4F /* ConditionsTests.swift */; };
+		7A4239216A30729CB063C1A5 /* RoundEffectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E1057A6C6E759DE9FB1DBA7 /* RoundEffectTests.swift */; };
 		7B78D0FA978026999015844A /* Effect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5105E7AA6B2BA4A20F4CBC35 /* Effect.swift */; };
 		7D58FB15FBAFA3FAAEB93866 /* EffectEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4F6E0061994D32447464ED0 /* EffectEditorView.swift */; };
 		7E5C7BB027F7BC0907ECA434 /* EffectOperationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3613CF49D1C24697119764CE /* EffectOperationsTests.swift */; };
@@ -95,6 +97,7 @@
 		43FC7996489BBF4E0E1170E1 /* NewSessionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NewSessionView.swift; sourceTree = "<group>"; };
 		4AF22B663D7FA19C198D9258 /* ListSections.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ListSections.swift; sourceTree = "<group>"; };
 		4B3FB96497CF923A7DB11289 /* TurnPromptTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TurnPromptTests.swift; sourceTree = "<group>"; };
+		4E1057A6C6E759DE9FB1DBA7 /* RoundEffectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundEffectTests.swift; sourceTree = "<group>"; };
 		5105E7AA6B2BA4A20F4CBC35 /* Effect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Effect.swift; sourceTree = "<group>"; };
 		54DD0236F790EE085E97A432 /* TurnPromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TurnPromptView.swift; sourceTree = "<group>"; };
 		5A00CB935F683245F1DD6FB2 /* UniqueName.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UniqueName.swift; sourceTree = "<group>"; };
@@ -110,6 +113,7 @@
 		6D6B3D18CAD7D9BF42DBDB61 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		7265419AD964CF0CC71037D4 /* ConcentrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConcentrationTests.swift; sourceTree = "<group>"; };
 		74CF92255CFA4102CC5F52CE /* StatusBand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBand.swift; sourceTree = "<group>"; };
+		7BBD09D77A68BB93102AE4B6 /* RoundEffectsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundEffectsView.swift; sourceTree = "<group>"; };
 		7DF8601F37841A579037DFC0 /* DeathSaves.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeathSaves.swift; sourceTree = "<group>"; };
 		7F6ECF4848029671F86C86AA /* CombatSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CombatSession.swift; sourceTree = "<group>"; };
 		8C86540C34D5CD3C7378276D /* PlayerViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerViewTests.swift; sourceTree = "<group>"; };
@@ -194,6 +198,7 @@
 				3613CF49D1C24697119764CE /* EffectOperationsTests.swift */,
 				AE5F2E9E2F63F368EE903186 /* LogEntry.swift */,
 				6B7BA1EEAB4461B78D817DB4 /* ModelsTests.swift */,
+				4E1057A6C6E759DE9FB1DBA7 /* RoundEffectTests.swift */,
 				2FC2E8E196F28000B570FBDA /* TemporaryHPTests.swift */,
 				0DB17045A5515409AF2FD680 /* TurnPrompt.swift */,
 				4B3FB96497CF923A7DB11289 /* TurnPromptTests.swift */,
@@ -232,6 +237,7 @@
 				2C3275643314ADC31D5B3EB6 /* EffectsView.swift */,
 				FE0E8595FB2990C1DF76AD4C /* LogView.swift */,
 				8C86540C34D5CD3C7378276D /* PlayerViewTests.swift */,
+				7BBD09D77A68BB93102AE4B6 /* RoundEffectsView.swift */,
 				54DD0236F790EE085E97A432 /* TurnPromptView.swift */,
 			);
 			path = Combat;
@@ -407,6 +413,7 @@
 				6DA1B43A72527F8A95AF7ACE /* PresetListView.swift in Sources */,
 				87F1E56B91FF848A9C5E7C29 /* PresetStore.swift in Sources */,
 				31BACFE55A361B826C6D4A62 /* RootView.swift in Sources */,
+				5DF210A51FC89A4BF19CF1A2 /* RoundEffectsView.swift in Sources */,
 				B6B0A3D296F731263220A862 /* SearchBar.swift in Sources */,
 				7FF9D67C9EF8BB156F673248 /* SelectAllTextField.swift in Sources */,
 				DC00506D4EA5A3DB9DBDA7AE /* SessionListView.swift in Sources */,
@@ -438,6 +445,7 @@
 				3E634FE120E1F078B6C1172F /* ModelsTests.swift in Sources */,
 				9FE8D77649E294094C52166C /* PlayerViewTests.swift in Sources */,
 				E34D5503DBD8A4402F2825AA /* PresetStoreTests.swift in Sources */,
+				7A4239216A30729CB063C1A5 /* RoundEffectTests.swift in Sources */,
 				E6FA4267FD3E97214D764D71 /* SessionStoreTests.swift in Sources */,
 				A487A5D42B5F78867A371A4C /* StatusBandTests.swift in Sources */,
 				0EEDCD5F856176554A09AFA8 /* TemporaryHPTests.swift in Sources */,

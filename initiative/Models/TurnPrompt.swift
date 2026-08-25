@@ -16,10 +16,16 @@ struct TurnPrompt: Identifiable, Hashable {
         /// removes it, because the roll is to *keep* the thing rather than to
         /// shake it off.
         case concentration(id: UUID)
+        /// A roll owed by something anchored to the round rather than to any
+        /// combatant. Resolves like `effect`: succeeding removes it.
+        case roundEffect(id: UUID)
     }
 
     let id: UUID
-    let combatantID: UUID
+    /// The owning combatant, or nil for a round-anchored prompt — the round
+    /// belongs to no one, which is the whole point of it.
+    let combatantID: UUID?
+    /// Who the prompt is about. "The round" when it isn't about anyone.
     let combatantName: String
     let subject: Subject
     /// What's being rolled for, phrased for the DM — "Roll to recharge Breath
@@ -36,7 +42,7 @@ struct TurnPrompt: Identifiable, Hashable {
         switch subject {
         case .deathSave: return "Success"
         case .concentration: return "Held it"
-        case .effect: return "Made it"
+        case .effect, .roundEffect: return "Made it"
         }
     }
 
@@ -46,7 +52,7 @@ struct TurnPrompt: Identifiable, Hashable {
         switch subject {
         case .deathSave: return "Failure"
         case .concentration: return "Lost it"
-        case .effect: return "Not yet"
+        case .effect, .roundEffect: return "Not yet"
         }
     }
 }

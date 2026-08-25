@@ -52,6 +52,13 @@ struct EffectEditorView: View {
             _turnsCount = State(initialValue: 1)
             _rollHint = State(initialValue: "")
             _rollBoundary = State(initialValue: .startOfTurn)
+        case .forRounds(let rounds):
+            // Only reachable if a round-anchored effect is somehow opened here;
+            // shown as its nearest equivalent rather than silently reset.
+            _selectedDurationType = State(initialValue: .untilEndOfTheirTurn)
+            _turnsCount = State(initialValue: min(20, max(1, rounds)))
+            _rollHint = State(initialValue: "")
+            _rollBoundary = State(initialValue: .startOfTurn)
         }
     }
 

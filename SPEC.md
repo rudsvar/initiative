@@ -903,32 +903,36 @@ above 0 ends the situation outright; so does deleting the log entry for the blow
 that caused it, since the log is the HP undo mechanism and leaving someone
 rolling death saves at full health would be worse than either.
 
-## Planned: round-anchored effects
+## Round-anchored effects
 
-The one thing left on the list, and the only shape the effect mechanism still
-can't express.
+Effects belonging to the fight rather than to any creature in it — a collapsing
+bridge, an environmental hazard, anything that fires at the top of the round.
+They live on `CombatSession.roundEffects` rather than on a combatant, and that's
+the whole point: pinning one to whichever creature was handy is wrong in a way
+that bites, because the effect vanishes when that creature dies or is removed,
+and it fires on their turn instead of at the top of the round. There's a test for
+each of those.
 
-Every duration today is anchored to **some combatant's own turn** — that's what
-"until the end of their turn" means, and it's why an effect has to live on a
-combatant at all. Anything that belongs to the *round* rather than to a creature
-has nowhere to go:
+- **`DurationType.forRounds(remaining:)`** counts down when the round turns over,
+  not on anyone's turn. `.untilRemoved` and `.untilRollSucceeds` work here too;
+  the turn-anchored cases don't, and are inert if one somehow appears.
+- **Rolls come due when the round wraps**, riding on the advance that increments
+  it. `TurnPrompt.combatantID` is therefore optional — the round belongs to no
+  one — and such a prompt is labelled "The round".
+- Ticking, undo and persistence all follow the existing paths: round effects are
+  part of the history snapshot, so Previous restores a countdown, and part of
+  `SessionRecord` (optional, so older saves load empty).
 
-- "At the start of round 4, the bridge collapses."
-- An environmental effect that fires on a fixed initiative count each round.
-- "This lasts three full rounds regardless of whose turn it is."
+**In the UI**: a pinned strip above the roster, shown only when something is in
+play — they belong to the fight, not to any row, and a strip above the list is
+what says so without needing a label to explain it. Managing them is a separate
+screen (`RoundEffectsView`) rather than a mode of `EffectsView`, because almost
+nothing carries over: there are no conditions to pick from (a bridge isn't
+Frightened), no concentration, and the durations differ. Sharing the screen would
+have meant most of it being conditionally hidden.
 
-The workaround is to pin it to whichever combatant is handy, which is wrong in a
-way that bites: the effect vanishes if that combatant dies or is removed, and it
-fires on their turn rather than at the top of the round.
-
-**Shape**: the anchor becomes an enum — `.combatant(UUID)` / `.round` — rather
-than being implicit in the effect's owner, and a round-anchored effect lives on
-the session instead of on a combatant. `pendingTurnPrompts` already fires at turn
-boundaries and knows when the round has just rolled over, so surfacing one is a
-small addition to machinery that exists.
-
-**Not started.** Also the last remaining route to lair-action-style mechanics,
-which were declined as a first-class feature but would be expressible this way.
+This is also the route to lair-action-style mechanics, which were declined as a
+first-class feature but are expressible this way.
 
 ### Declined
 

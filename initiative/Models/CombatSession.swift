@@ -25,6 +25,16 @@ class CombatSession {
     var roundNumber: Int = 1
     private(set) var log: [LogEntry] = []
 
+    /// Effects belonging to the fight rather than to any creature in it — a
+    /// collapsing bridge, an environmental hazard, anything that fires at the top
+    /// of the round.
+    ///
+    /// These live here rather than on a combatant because pinning them to
+    /// whichever creature was handy is wrong in a way that bites: the effect
+    /// vanishes when that creature dies or is removed, and it fires on their turn
+    /// instead of at the top of the round.
+    private(set) var roundEffects: [Effect] = []
+
     /// When true, HP/AC display shows approximate bands instead of exact numbers
     /// (for when the DM's screen is visible to players). A live, per-session UI
     /// mode, not persisted — always starts false (DM view) on load/resume.
@@ -43,7 +53,7 @@ class CombatSession {
     }
     private var _name = CombatSession.defaultName()
 
-    private var history: [(combatants: [Combatant], currentTurnIndex: Int, roundNumber: Int, logCount: Int)] = []
+    private var history: [(combatants: [Combatant], roundEffects: [Effect], currentTurnIndex: Int, roundNumber: Int, logCount: Int)] = []
 
     private func appendLog(_ text: String, combatantId: UUID? = nil, hpOperation: HPOperation? = nil) {
         log.append(LogEntry(text: text, roundNumber: roundNumber, combatantId: combatantId, hpOperation: hpOperation))
@@ -346,6 +356,43 @@ class CombatSession {
             .visibleEffects.first { $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame }
     }
 
+    // MARK: - Round effects
+
+    func addRoundEffect(_ effect: Effect) {
+        roundEffects.append(effect)
+        appendLog("Round effect: \(effect.name)")
+    }
+
+    func removeRoundEffect(_ effectID: UUID) {
+        guard let effect = roundEffects.first(where: { $0.id == effectID }) else { return }
+        roundEffects.removeAll { $0.id == effectID }
+        appendLog("Round effect ended: \(effect.name)")
+    }
+
+    func updateRoundEffect(_ effect: Effect) {
+        guard let index = roundEffects.firstIndex(where: { $0.id == effect.id }) else { return }
+        roundEffects[index] = effect
+    }
+
+    /// True when the *next* advance rolls the round over. Round-anchored things
+    /// key off this rather than off any combatant's turn.
+    var isLastTurnOfRound: Bool {
+        !combatants.isEmpty && currentTurnIndex == combatants.count - 1
+    }
+
+    private func tickRoundEffects() {
+        roundEffects = roundEffects.compactMap { effect in
+            guard case .forRounds(let remaining) = effect.durationType else { return effect }
+            if remaining <= 1 {
+                appendLog("Round effect ended: \(effect.name)")
+                return nil
+            }
+            var updated = effect
+            updated.durationType = .forRounds(remaining: remaining - 1)
+            return updated
+        }
+    }
+
     // MARK: - Reaction
 
     private static let reactionEffectName = "Reaction Used"
@@ -399,6 +446,24 @@ class CombatSession {
 
         var prompts = rollPrompts(for: ending, at: .endOfTurn)
         prompts += rollPrompts(for: starting, at: .startOfTurn)
+
+        // Round-anchored rolls come due when the round turns over, not on
+        // anyone's turn — so they ride on the advance that wraps.
+        if isLastTurnOfRound {
+            prompts += roundEffects.compactMap { effect in
+                guard effect.durationType.awaitsRoll else { return nil }
+                guard case .untilRollSucceeds(_, let hint) = effect.durationType else { return nil }
+                return TurnPrompt(
+                    id: effect.id,
+                    combatantID: nil,
+                    combatantName: "The round",
+                    subject: .roundEffect(id: effect.id),
+                    title: "Roll for \(effect.name)",
+                    hint: hint,
+                    deathSaves: nil
+                )
+            }
+        }
         if let saves = starting.deathSaves, !saves.isResolved {
             prompts.append(
                 TurnPrompt(
@@ -440,7 +505,19 @@ class CombatSession {
     /// turn boundary, so the detail screen resolves them directly instead of
     /// handing them to `nextTurn`.
     func resolvePrompt(_ prompt: TurnPrompt, succeeded: Bool) {
-        guard let index = combatants.firstIndex(where: { $0.id == prompt.combatantID }) else { return }
+        if case .roundEffect(let effectID) = prompt.subject {
+            guard let effect = roundEffects.first(where: { $0.id == effectID }) else { return }
+            if succeeded {
+                roundEffects.removeAll { $0.id == effectID }
+                appendLog("Round effect ended: \(effect.name)")
+            } else {
+                appendLog("Round effect continues: \(effect.name)")
+            }
+            return
+        }
+
+        guard let combatantID = prompt.combatantID,
+              let index = combatants.firstIndex(where: { $0.id == combatantID }) else { return }
 
         switch prompt.subject {
         case .effect(let effectID):
@@ -465,6 +542,9 @@ class CombatSession {
                 combatants[index].effects.removeAll { $0.id == effectID }
                 appendLog("\(combatants[index].name) lost \(effect.name)", combatantId: combatants[index].id)
             }
+
+        case .roundEffect:
+            return // handled above, before the combatant lookup
 
         case .deathSave:
             guard combatants[index].deathSaves != nil else { return }
@@ -491,7 +571,7 @@ class CombatSession {
     func nextTurn(resolving answers: [TurnPrompt: Bool] = [:]) {
         guard !combatants.isEmpty else { return }
 
-        history.append((combatants: combatants, currentTurnIndex: currentTurnIndex, roundNumber: roundNumber, logCount: log.count))
+        history.append((combatants: combatants, roundEffects: roundEffects, currentTurnIndex: currentTurnIndex, roundNumber: roundNumber, logCount: log.count))
 
         for (prompt, succeeded) in answers.sorted(by: { $0.key.combatantName < $1.key.combatantName }) {
             resolvePrompt(prompt, succeeded: succeeded)
@@ -503,6 +583,7 @@ class CombatSession {
         if wrapped {
             roundNumber += 1
             appendLog("Round \(roundNumber) began")
+            tickRoundEffects()
         }
         let startingCombatantId = combatants[currentTurnIndex].id
 
@@ -522,6 +603,7 @@ class CombatSession {
     func previousTurn() {
         guard let previous = history.popLast() else { return }
         combatants = previous.combatants
+        roundEffects = previous.roundEffects
         currentTurnIndex = previous.currentTurnIndex
         roundNumber = previous.roundNumber
         log = Array(log.prefix(previous.logCount))
@@ -532,6 +614,7 @@ class CombatSession {
         id = UUID()
         name = CombatSession.defaultName()
         combatants = []
+        roundEffects = []
         currentTurnIndex = 0
         roundNumber = 1
         log = []
@@ -541,13 +624,14 @@ class CombatSession {
     // MARK: - Persistence
 
     func makeRecord() -> SessionRecord {
-        SessionRecord(id: id, name: name, combatants: combatants, currentTurnIndex: currentTurnIndex, roundNumber: roundNumber, log: log)
+        SessionRecord(id: id, name: name, combatants: combatants, currentTurnIndex: currentTurnIndex, roundNumber: roundNumber, log: log, roundEffects: roundEffects)
     }
 
     func load(_ record: SessionRecord) {
         id = record.id
         name = record.name
         combatants = record.combatants
+        roundEffects = record.roundEffects ?? []
         currentTurnIndex = record.currentTurnIndex
         roundNumber = record.roundNumber ?? 1
         log = record.log ?? []
@@ -571,6 +655,10 @@ class CombatSession {
                     return effect
                 case .untilRemoved:
                     // Countered by doing something about it, on no schedule.
+                    return effect
+                case .forRounds:
+                    // Only meaningful on a round-anchored effect, which doesn't
+                    // live on a combatant — see tickRoundEffects().
                     return effect
                 }
             }

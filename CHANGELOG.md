@@ -4,11 +4,24 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
-### To do
+### Added — round-anchored effects
 
-- Round-anchored effects — the one shape the effect mechanism still can't
-  express (SPEC → "Planned: round-anchored effects"). Ongoing damage, limited
-  uses and linked concentration were dropped rather than deferred
+- **Effects can belong to the fight rather than to a creature** — a collapsing
+  bridge, an environmental hazard. `DurationType.forRounds(remaining:)` counts
+  down when the round turns over, not on anyone's turn
+- They live on the session, which is the point: pinned to whichever combatant was
+  handy, an effect vanishes when that combatant dies and fires on their turn
+  instead of at the top of the round. Both have tests
+- Rolls owed by one come due when the round wraps. `TurnPrompt.combatantID` is
+  now optional — the round belongs to no one — and the prompt reads "The round"
+- A pinned strip above the roster shows what's in play; managing them is its own
+  screen, since almost nothing carries over from the per-combatant one (a bridge
+  isn't Frightened)
+- Part of the undo history and of `SessionRecord`, so Previous restores a
+  countdown and older saves load empty
+
+That closes the effects work. Ongoing damage, limited uses and linked
+concentration were dropped rather than deferred — see SPEC → Declined.
 
 ### Fixed
 

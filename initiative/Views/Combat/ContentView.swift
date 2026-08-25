@@ -9,6 +9,7 @@ struct ContentView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var showAddCombatant = false
     @State private var showLog = false
+    @State private var showRoundEffects = false
     /// Non-empty while the turn is waiting on answers. Advancing is gated on it —
     /// see TurnPromptView for why the prompt can't be dismissed.
     @State private var pendingPrompts: [TurnPrompt] = []
@@ -19,6 +20,13 @@ struct ContentView: View {
 
     var body: some View {
         VStack(spacing: 0) {
+            // Above the roster rather than in it: these belong to the fight, not
+            // to any row, and a pinned strip is what says so without needing a
+            // label to explain it.
+            if !session.roundEffects.isEmpty {
+                RoundEffectStrip(effects: session.roundEffects) { showRoundEffects = true }
+            }
+
             List {
                 ForEach(session.sortedCombatants) { combatant in
                     CombatantRow(
@@ -56,6 +64,7 @@ struct ContentView: View {
                 onPrevious: { session.previousTurn() },
                 onTogglePlayerView: { session.playerViewEnabled.toggle() },
                 onShowLog: { showLog = true },
+                onShowRoundEffects: { showRoundEffects = true },
                 onNext: { advanceTurn() }
             )
         }
@@ -115,6 +124,9 @@ struct ContentView: View {
         .sheet(isPresented: $showLog) {
             LogView(session: session)
         }
+        .sheet(isPresented: $showRoundEffects) {
+            RoundEffectsView(session: session, isPresented: $showRoundEffects)
+        }
         .sheet(isPresented: Binding(
             get: { !pendingPrompts.isEmpty },
             set: { if !$0 { pendingPrompts = [] } }
@@ -165,6 +177,7 @@ private struct TurnControlBar: View {
     let onPrevious: () -> Void
     let onTogglePlayerView: () -> Void
     let onShowLog: () -> Void
+    let onShowRoundEffects: () -> Void
     let onNext: () -> Void
 
     var body: some View {
@@ -426,6 +439,48 @@ struct CombatantRow: View {
         // Dying combatants stay at full strength: they're the ones that need
         // attention, and fading them would say the opposite.
         .opacity(combatant.isDead ? 0.5 : 1)
+    }
+}
+
+/// What's happening to the whole fight, pinned above the roster. Tapping it
+/// opens the manage screen — the strip is a readout, and everything it shows is
+/// already one tap from being changed.
+private struct RoundEffectStrip: View {
+    let effects: [Effect]
+    let onTap: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            HStack(spacing: Theme.Spacing.sm) {
+                Image(systemName: "theatermasks")
+                    .font(Theme.Typography.iconRow)
+                    .foregroundColor(Theme.statusInfo)
+
+                VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
+                    ForEach(effects) { effect in
+                        HStack(spacing: Theme.Spacing.xs) {
+                            Text(effect.name)
+                                .font(Theme.Typography.bodyEmphasis)
+                                .foregroundColor(Theme.textPrimary)
+                            Text(effect.durationType.description)
+                                .font(Theme.Typography.caption)
+                                .foregroundColor(Theme.textTertiary)
+                        }
+                    }
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(.horizontal, Theme.Spacing.md)
+            .padding(.vertical, Theme.Spacing.sm)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Theme.surface)
+            .overlay(alignment: .bottom) {
+                Rectangle()
+                    .fill(Theme.border.opacity(0.5))
+                    .frame(height: Theme.hairline)
+            }
+        }
+        .buttonStyle(.plain)
     }
 }
 

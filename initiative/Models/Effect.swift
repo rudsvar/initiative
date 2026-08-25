@@ -96,6 +96,11 @@ enum DurationType: Equatable, Codable {
     case untilEndOfTheirTurn(remainingTurns: Int)
     case untilRollSucceeds(at: TurnBoundary, hint: String?)
     case untilRemoved
+    /// Counts down at the top of each round rather than on anyone's turn. Only
+    /// meaningful for a round-anchored effect (`CombatSession.roundEffects`) —
+    /// an effect on a combatant has that combatant's turns to key off, which is
+    /// more precise.
+    case forRounds(remaining: Int)
 
     var description: String {
         switch self {
@@ -109,6 +114,8 @@ enum DurationType: Equatable, Codable {
             return "Until a roll succeeds, at the \(when) of their turn\(what)"
         case .untilRemoved:
             return "Until removed"
+        case .forRounds(let remaining):
+            return remaining > 1 ? "For \(remaining) more rounds" : "Until the end of this round"
         }
     }
 
@@ -123,7 +130,7 @@ enum DurationType: Equatable, Codable {
         // with target-based effects still decode — they collapse into the owner-turn
         // equivalent since the target concept no longer exists.
         case untilStartOfTheirTurn, untilEndOfTheirTurn, untilStartOfTargetTurn, untilEndOfTargetTurn
-        case untilRollSucceeds, untilRemoved
+        case untilRollSucceeds, untilRemoved, forRounds
     }
 
     private enum CodingKeys: String, CodingKey {
@@ -145,6 +152,8 @@ enum DurationType: Equatable, Codable {
             )
         case .untilRemoved:
             self = .untilRemoved
+        case .forRounds:
+            self = .forRounds(remaining: remaining)
         }
     }
 
@@ -163,6 +172,9 @@ enum DurationType: Equatable, Codable {
             try container.encodeIfPresent(hint, forKey: .hint)
         case .untilRemoved:
             try container.encode(Kind.untilRemoved, forKey: .kind)
+        case .forRounds(let remaining):
+            try container.encode(Kind.forRounds, forKey: .kind)
+            try container.encode(remaining, forKey: .remainingTurns)
         }
     }
 }

@@ -13,6 +13,9 @@ struct SessionRecord: Codable, Identifiable {
     /// Optional for the same reason (sessions saved before the log existed) —
     /// CombatSession.load() treats a missing value as an empty log.
     var log: [LogEntry]?
+    /// Optional for the same reason again — sessions saved before effects could
+    /// belong to the round rather than to a creature.
+    var roundEffects: [Effect]?
 
     init(
         id: UUID = UUID(),
@@ -21,7 +24,8 @@ struct SessionRecord: Codable, Identifiable {
         combatants: [Combatant],
         currentTurnIndex: Int,
         roundNumber: Int? = nil,
-        log: [LogEntry]? = nil
+        log: [LogEntry]? = nil,
+        roundEffects: [Effect]? = nil
     ) {
         self.id = id
         self.name = name
@@ -30,6 +34,7 @@ struct SessionRecord: Codable, Identifiable {
         self.currentTurnIndex = currentTurnIndex
         self.roundNumber = roundNumber
         self.log = log
+        self.roundEffects = roundEffects
     }
 }
 
