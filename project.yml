@@ -25,6 +25,10 @@ targets:
       - path: initiative/Assets.xcassets
     settings:
       PRODUCT_NAME: initiative
+      # Home-screen name only — bundle id, module name, and the Xcode project
+      # itself stay "initiative" so this doesn't touch code signing/provisioning
+      # or require reinstalling (a bundle id change loses on-device data).
+      INFOPLIST_KEY_CFBundleDisplayName: "Combat Companion"
       CODE_SIGN_STYLE: Automatic
       DEVELOPMENT_TEAM: YOUR_TEAM_ID
       GENERATE_INFOPLIST_FILE: YES
