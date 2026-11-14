@@ -18,10 +18,11 @@ change against these rules:
   ruleset. Creature names and numbers must be original or come from a source
   with a licence that allows it, with attribution. Do not write a comment that
   says numbers are "not copied" unless that is true.
-- **Personal information:** the developer's legal name appears only in
-  `LICENSE`. No email addresses, phone numbers, addresses, device names, home
-  paths (`~/...`, `<agent-config>/...`), or names of real people anywhere. Say
-  "the developer" in prose.
+- **Personal information:** the developer publishes under their own name, so
+  the name in `LICENSE` and in commit authorship is fine. No email addresses
+  (other than the GitHub noreply address), phone numbers, postal addresses,
+  device names, home paths (`~/...`, `<agent-config>/...`), or details about
+  other real people.
 - **Secrets:** no `.p8` keys, provisioning profiles, certificates, API keys or
   tokens, in the tree or in history.
 - **History:** a rewrite is the only way to remove something already

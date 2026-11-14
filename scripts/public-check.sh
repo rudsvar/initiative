@@ -5,13 +5,13 @@
 # Exits non-zero when anything matches. Run before every push.
 #
 # CLAUDE.md and this script name the banned terms on purpose, so they are
-# skipped. LICENSE carries the developer's legal name on purpose.
+# skipped. LICENSE carries the developer's name on purpose.
 
 set -u
 cd "$(dirname "$0")/.." || exit 2
 
 # Checked everywhere, including history.
-STRICT='D&D|Dungeons (&|and) Dragons|Wizards of the Coast|Hasbro|5e|Pathfinder|Svartveit|/Users/|\.claude/|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'
+STRICT='D&D|Dungeons (&|and) Dragons|Wizards of the Coast|Hasbro|5e|Pathfinder|/Users/|\.claude/|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'
 # Checked only where it is listing or public-facing text. Developer docs may
 # name Apple's tools, and Xcode writes "iPhone Developer" into the project.
 APPLE='iPhone|iPad|App Store|TestFlight'
