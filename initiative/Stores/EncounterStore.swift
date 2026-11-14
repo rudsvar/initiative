@@ -82,7 +82,7 @@ class EncounterStore {
     /// Saves an editable copy of an encounter under a fresh name, and returns it.
     /// The only route from a built-in encounter to a customised one.
     @discardableResult
-    func duplicate(_ encounter: Encounter) -> Encounter {
+    func clone(_ encounter: Encounter) -> Encounter {
         // New entry ids as well as a new encounter id: entries are snapshots, and
         // two encounters sharing entry identity would make SwiftUI's list
         // diffing treat them as the same rows.

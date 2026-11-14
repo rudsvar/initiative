@@ -95,32 +95,28 @@ struct PresetListView: View {
                             // make every row three lines tall, and at 70-odd
                             // creatures that costs more scrolling than the
                             // aligned columns are worth.
+                            // Fixed-width columns so each stat lines up down the list.
+                            // A missing stat keeps its column, shown as a dash.
                             HStack(spacing: Theme.Spacing.md) {
-                                if let maxHP = preset.maxHP {
-                                    statRow("heart.fill", "\(maxHP)")
-                                }
-                                if let armorClass = preset.armorClass {
-                                    statRow("shield.fill", "\(armorClass)")
-                                }
-                                if let bonus = preset.initiativeBonus, bonus != 0 {
-                                    statRow("die.face.5.fill", "\(bonus >= 0 ? "+" : "")\(bonus)")
-                                }
+                                statColumn("heart.fill", preset.maxHP.map(String.init), color: Theme.statusBad)
+                                statColumn("shield.fill", preset.armorClass.map(String.init), color: Theme.statusInfo)
+                                statColumn("die.face.5.fill", preset.initiativeBonus.map { $0 >= 0 ? "+\($0)" : "\($0)" }, color: Theme.textSecondary)
                             }
                         }
                     }
                     .buttonStyle(CardRowButtonStyle())
                     .cardRowLayout()
                     // Built-in creatures are fixtures: they can't be deleted or
-                    // edited, only copied. So a built-in row offers Duplicate
+                    // edited, only copied. So a built-in row offers Clone
                     // where a user's own offers Delete, rather than offering
                     // actions that then refuse.
                     .swipeActions(edge: .trailing) {
                         if preset.isBuiltIn {
                             Button {
-                                presetStore.duplicate(preset)
+                                presetStore.clone(preset)
                                 presets = presetStore.listPresets()
                             } label: {
-                                Label("Duplicate", systemImage: "plus.square.on.square")
+                                Label("Clone", systemImage: "plus.square.on.square")
                             }
                         } else {
                             // No extra confirmation dialog: swipe-to-reveal + tap
@@ -138,21 +134,22 @@ struct PresetListView: View {
         }
     }
 
-    private func statRow(_ systemImage: String, _ text: String) -> some View {
+    private func statColumn(_ systemImage: String, _ value: String?, color: Color) -> some View {
         HStack(spacing: Theme.Spacing.xs) {
             Image(systemName: systemImage)
                 .font(Theme.Typography.iconInline)
                 .frame(width: 12)
-            Text(text)
+            Text(value ?? "–")
         }
         .font(Theme.Typography.stat)
-        .foregroundColor(Theme.textSecondary)
+        .foregroundColor(value == nil ? Theme.textTertiary : color)
+        .frame(width: Theme.Layout.statColumn, alignment: .trailing)
     }
 }
 
 /// Doubles as the read-only view of a built-in creature. Built-ins can't be
 /// edited, but they still need to be *inspectable* — and showing the same fields
-/// greyed out, with Duplicate where Save would be, makes the relationship between
+/// greyed out, with Clone where Save would be, makes the relationship between
 /// the two obvious in a way a separate detail screen wouldn't.
 private struct EditPresetView: View {
     let presetStore: PresetStore
@@ -237,8 +234,8 @@ private struct EditPresetView: View {
                     if isReadOnly {
                         // The only way to customise a built-in. The copy lands in
                         // "Yours" at the top of the list, where it's editable.
-                        Button("Duplicate") {
-                            presetStore.duplicate(preset)
+                        Button("Clone") {
+                            presetStore.clone(preset)
                             onSave()
                             dismiss()
                         }

@@ -113,11 +113,11 @@ final class EncounterStoreTests: XCTestCase {
 
     // MARK: - Built-ins are read-only
 
-    func testDuplicateMakesAnEditableCopyUnderANewName() {
+    func testCloneMakesAnEditableCopyUnderANewName() {
         store.installDefaults()
         let ambush = store.listEncounters().first { $0.name == "Goblin Ambush" }!
 
-        let copy = store.duplicate(ambush)
+        let copy = store.clone(ambush)
 
         XCTAssertEqual(copy.name, "Goblin Ambush Copy")
         XCTAssertEqual(copy.entries.map(\.name), ambush.entries.map(\.name))
@@ -129,11 +129,11 @@ final class EncounterStoreTests: XCTestCase {
     /// Entries are snapshots, so a copy needs its own entry identities — sharing
     /// them would make SwiftUI's list diffing treat two encounters' rows as the
     /// same rows.
-    func testDuplicatedEntriesGetFreshIdentities() {
+    func testClonedEntriesGetFreshIdentities() {
         store.installDefaults()
         let ambush = store.listEncounters().first { $0.name == "Goblin Ambush" }!
 
-        let copy = store.duplicate(ambush)
+        let copy = store.clone(ambush)
 
         XCTAssertTrue(Set(copy.entries.map(\.id)).isDisjoint(with: Set(ambush.entries.map(\.id))))
     }

@@ -207,11 +207,11 @@ final class PresetStoreTests: XCTestCase {
         XCTAssertEqual(store.preset(named: "Hexed Duke")?.maxHP, 55)
     }
 
-    func testDuplicateMakesAnEditableCopyUnderANewName() {
+    func testCloneMakesAnEditableCopyUnderANewName() {
         store.installDefaults()
         let goblin = store.preset(named: "Goblin")!
 
-        let copy = store.duplicate(goblin)
+        let copy = store.clone(goblin)
 
         XCTAssertEqual(copy.name, "Goblin Copy")
         XCTAssertEqual(copy.maxHP, goblin.maxHP)
@@ -225,7 +225,7 @@ final class PresetStoreTests: XCTestCase {
         store.installDefaults()
         let goblin = store.preset(named: "Goblin")!
 
-        XCTAssertEqual(store.duplicate(goblin).name, "Goblin Copy")
-        XCTAssertEqual(store.duplicate(goblin).name, "Goblin Copy 2")
+        XCTAssertEqual(store.clone(goblin).name, "Goblin Copy")
+        XCTAssertEqual(store.clone(goblin).name, "Goblin Copy 2")
     }
 }

@@ -103,10 +103,10 @@ struct EncounterListView: View {
                     .swipeActions(edge: .trailing) {
                         if encounter.isBuiltIn {
                             Button {
-                                encounterStore.duplicate(encounter)
+                                encounterStore.clone(encounter)
                                 encounters = encounterStore.listEncounters()
                             } label: {
-                                Label("Duplicate", systemImage: "plus.square.on.square")
+                                Label("Clone", systemImage: "plus.square.on.square")
                             }
                         } else {
                             Button(role: .destructive) {
@@ -208,8 +208,8 @@ private struct EditEncounterView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     if isReadOnly {
-                        Button("Duplicate") {
-                            encounterStore.duplicate(encounter)
+                        Button("Clone") {
+                            encounterStore.clone(encounter)
                             onSave()
                             dismiss()
                         }

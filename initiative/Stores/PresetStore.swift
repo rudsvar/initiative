@@ -122,7 +122,7 @@ class PresetStore {
     /// Saves an editable copy of a preset under a fresh name, and returns it.
     /// This is the only route from a built-in creature to a customised one.
     @discardableResult
-    func duplicate(_ preset: CreaturePreset) -> CreaturePreset {
+    func clone(_ preset: CreaturePreset) -> CreaturePreset {
         let copy = CreaturePreset(
             name: UniqueName.forCopy(of: preset.name, avoiding: listPresets().map(\.name)),
             maxHP: preset.maxHP,
