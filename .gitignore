@@ -30,3 +30,6 @@ Podfile.lock
 
 # Local signing team (see Config/Signing.xcconfig)
 Config/Signing.local.xcconfig
+
+# Trademark list for scripts/public-check.sh (never committed)
+scripts/banned-terms.local

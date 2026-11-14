@@ -1,0 +1,4 @@
+# Copy to scripts/banned-terms.local (git-ignored) and fill it in.
+# One extended regex per line. Lines starting with # are ignored.
+# The real list is not committed, because the repo itself must not contain
+# trademark names.
