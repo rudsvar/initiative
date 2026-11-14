@@ -2,11 +2,17 @@ import SwiftUI
 
 /// The rolls owed at a turn boundary, asked once and together.
 ///
-/// **Deliberately not dismissible.** These are precisely the things that get
-/// forgotten mid-combat, and a prompt you can wave away is one you will wave
-/// away — so there's no Cancel, and the turn doesn't advance until every line has
-/// an answer. The cost of being insistent is only paid when something is
-/// genuinely owed, which is a minority of turns.
+/// **Dismissible at any time — swiping away just leaves the turn where it
+/// was.** Nothing here is applied until every prompt has an answer (see
+/// `onComplete`), so backing out mid-prompt can't half-advance anything;
+/// worst case you reopen the same prompts on the next attempt to advance.
+/// Answering still needs no confirmation of its own: this is the middle of
+/// combat, and a mis-tap is rare enough that trading "tap once, fix it by
+/// hand if wrong" for "tap, then tap Continue" on every single roll is the
+/// wrong side of that bet. Tapping an answer resolves it immediately; the
+/// sheet dismisses itself the instant the last one is answered.
+///
+/// A compact card rather than a full navigation screen — see `selfSizingSheet()`.
 struct TurnPromptView: View {
     let prompts: [TurnPrompt]
     /// Called with every prompt's outcome once all of them have one.
@@ -14,31 +20,44 @@ struct TurnPromptView: View {
 
     @State private var answers: [TurnPrompt: Bool] = [:]
 
-    private var allAnswered: Bool { answers.count == prompts.count }
+    /// One at a time rather than every prompt stacked in the sheet at once —
+    /// with several owed together (a few death saves plus a recharge, say)
+    /// the stacked version had no `ScrollView`, so `selfSizingSheet()` would
+    /// measure a height taller than the screen and there was no way to reach
+    /// what didn't fit: not scrollable, and dragging the sheet couldn't
+    /// expand it past its own fixed detent either. Showing just the next
+    /// unanswered prompt keeps the sheet's height bounded no matter how many
+    /// are owed, and answering one during combat at a time is the more
+    /// natural shape for it anyway.
+    private var current: TurnPrompt? {
+        prompts.first { answers[$0] == nil }
+    }
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                Theme.backgroundGradient.ignoresSafeArea()
-                ScrollView {
-                    VStack(spacing: Theme.Spacing.md) {
-                        ForEach(prompts) { prompt in
-                            promptCard(prompt)
-                        }
-                    }
-                    .padding(Theme.Spacing.lg)
-                }
+        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+            Text(prompts.count == 1 ? "Roll owed" : "Roll \(answers.count + 1) of \(prompts.count)")
+                .font(Theme.Typography.label)
+                .foregroundColor(Theme.textTertiary)
+
+            if let current {
+                promptCard(current)
             }
-            .navigationTitle(prompts.count == 1 ? "One roll owed" : "\(prompts.count) rolls owed")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Continue") { onComplete(answers) }
-                        .fontWeight(.semibold)
-                        .disabled(!allAnswered)
-                }
-            }
-            .interactiveDismissDisabled()
+        }
+        // The system's own sheet material, not a custom `Theme` fill — a
+        // solid `Theme.surface` background here (tried right before this)
+        // still looked out of place against the native sheet chrome around
+        // it (drag indicator, corner radius, the dimmed backdrop behind it),
+        // since those are rendered by the system and don't know about this
+        // app's palette. `.regularMaterial` is what native sheets actually
+        // use, adapts to light/dark automatically, and reads as "a normal
+        // iOS sheet" instead of a custom card wearing sheet chrome.
+        .padding(Theme.Spacing.lg)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .selfSizingSheet()
+        .presentationBackground(.regularMaterial)
+        .onChange(of: answers) { _, newValue in
+            guard newValue.count == prompts.count else { return }
+            onComplete(newValue)
         }
     }
 
@@ -62,32 +81,31 @@ struct TurnPromptView: View {
             }
 
             HStack(spacing: Theme.Spacing.sm) {
-                answerButton(prompt.successLabel, tint: Theme.statusGood, isChosen: answers[prompt] == true) {
+                answerButton(prompt.successLabel, tint: Theme.statusGood) {
                     answers[prompt] = true
                 }
-                answerButton(prompt.failureLabel, tint: Theme.statusBad, isChosen: answers[prompt] == false) {
+                answerButton(prompt.failureLabel, tint: Theme.statusBad) {
                     answers[prompt] = false
                 }
             }
         }
-        .sectionCard()
     }
 
-    /// Answers stay visible and re-tappable rather than the card disappearing on
-    /// choice: a mistap on the first of three prompts shouldn't be unfixable
-    /// before you've even pressed Continue.
-    private func answerButton(_ label: String, tint: Color, isChosen: Bool, action: @escaping () -> Void) -> some View {
+    /// No "chosen" visual state to hold onto: the tap resolves the prompt and,
+    /// once every prompt has one, the whole sheet is gone before there'd be
+    /// anything left to look at.
+    private func answerButton(_ label: String, tint: Color, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(label)
                 .font(Theme.Typography.bodyEmphasis)
-                .foregroundColor(isChosen ? Theme.accentForeground : tint)
+                .foregroundColor(tint)
                 .frame(maxWidth: .infinity)
                 .padding(.vertical, Theme.Spacing.sm)
-                .background(isChosen ? tint : tint.opacity(0.14))
+                .background(tint.opacity(0.14))
                 .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.sm, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: Theme.Radius.sm, style: .continuous)
-                        .stroke(tint.opacity(isChosen ? 0 : 0.4), lineWidth: Theme.hairline)
+                        .stroke(tint.opacity(0.4), lineWidth: Theme.hairline)
                 )
         }
         .buttonStyle(.plain)
@@ -95,19 +113,21 @@ struct TurnPromptView: View {
 }
 
 #Preview {
-    TurnPromptView(
-        prompts: [
-            TurnPrompt(
-                id: UUID(), combatantID: UUID(), combatantName: "Bog Hulk",
-                subject: .effect(id: UUID()), title: "Roll to recharge Breath Weapon",
-                hint: "5–6 on a d6", deathSaves: nil
-            ),
-            TurnPrompt(
-                id: UUID(), combatantID: UUID(), combatantName: "Wren",
-                subject: .deathSave, title: "Death save",
-                hint: nil, deathSaves: DeathSaves(successes: 1, failures: 1)
-            ),
-        ],
-        onComplete: { _ in }
-    )
+    Color.clear.sheet(isPresented: .constant(true)) {
+        TurnPromptView(
+            prompts: [
+                TurnPrompt(
+                    id: UUID(), combatantID: UUID(), combatantName: "Bog Hulk",
+                    subject: .effect(id: UUID()), title: "Roll to recharge Breath Weapon",
+                    hint: "5–6 on a d6", deathSaves: nil
+                ),
+                TurnPrompt(
+                    id: UUID(), combatantID: UUID(), combatantName: "Wren",
+                    subject: .deathSave, title: "Death save",
+                    hint: nil, deathSaves: DeathSaves(successes: 1, failures: 1)
+                ),
+            ],
+            onComplete: { _ in }
+        )
+    }
 }

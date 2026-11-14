@@ -67,8 +67,13 @@ struct RoundEffectsView: View {
                         case .rounds:
                             Stepper("Rounds: \(rounds)", value: $rounds, in: 1...20)
                         case .roll:
+                            // No example roll here on purpose — what's rolled
+                            // and what counts as a success depends entirely
+                            // on the rules in play and the specific ability,
+                            // neither of which this app knows or assumes.
+                            // The DM fills in whatever their own rules call for.
                             TextField(text: $rollHint) {
-                                Text("What to roll — e.g. 5–6 on a d6")
+                                Text("What to roll (optional)")
                                     .foregroundColor(Theme.placeholderText)
                             }
                         case .removed:
@@ -104,7 +109,7 @@ struct RoundEffectsView: View {
     private var footnote: String {
         switch duration {
         case .rounds: return "Counts down at the top of each round, not on anyone's turn."
-        case .roll: return "You'll be asked for the result when the round turns over. The app never rolls."
+        case .roll: return "You'll be asked for the result when the round turns over."
         case .removed: return "Stays until you remove it."
         }
     }

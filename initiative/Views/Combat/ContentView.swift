@@ -10,8 +10,11 @@ struct ContentView: View {
     @State private var showAddCombatant = false
     @State private var showLog = false
     @State private var showRoundEffects = false
-    /// Non-empty while the turn is waiting on answers. Advancing is gated on it —
-    /// see TurnPromptView for why the prompt can't be dismissed.
+    /// Non-empty while the turn is waiting on answers. Dismissing the prompt
+    /// sheet (it's freely swipeable — see `TurnPromptView`) just clears this
+    /// back to empty without advancing; `session.nextTurn` only ever runs
+    /// from the sheet's own completion callback, once every prompt has an
+    /// answer.
     @State private var pendingPrompts: [TurnPrompt] = []
 
     private var nameBinding: Binding<String> {
@@ -29,18 +32,20 @@ struct ContentView: View {
 
             List {
                 ForEach(session.sortedCombatants) { combatant in
-                    CombatantRow(
-                        combatant: combatant,
-                        isCurrent: session.currentCombatant?.id == combatant.id,
-                        playerViewEnabled: session.playerViewEnabled
-                    )
-                    .contentShape(Rectangle())
-                    .background(
-                        NavigationLink(destination: CombatantDetailView(session: session, combatantId: combatant.id)) {
-                            EmptyView()
-                        }
-                        .opacity(0)
-                    )
+                    let isCurrent = session.currentCombatant?.id == combatant.id
+                    // A real Button, not a hidden NavigationLink in the
+                    // background: the hidden-link pattern gave the row zero
+                    // visible feedback on tap, since its own press-dimming
+                    // applied to an invisible EmptyView rather than the
+                    // actually-displayed CombatantRow content.
+                    Button(action: { path.append(Route.combatantDetail(combatant.id)) }) {
+                        CombatantRow(
+                            combatant: combatant,
+                            isCurrent: isCurrent,
+                            playerViewEnabled: session.playerViewEnabled
+                        )
+                    }
+                    .buttonStyle(CardRowButtonStyle(isHighlighted: isCurrent))
                     .cardRowLayout()
                     .swipeActions(edge: .trailing) {
                         // No confirmation dialog: swipe-to-reveal plus a tap on
@@ -56,17 +61,24 @@ struct ContentView: View {
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
-
-            TurnControlBar(
-                canGoBack: session.canGoToPreviousTurn,
-                canAdvance: !session.sortedCombatants.isEmpty,
-                playerViewEnabled: session.playerViewEnabled,
-                onPrevious: { session.previousTurn() },
-                onTogglePlayerView: { session.playerViewEnabled.toggle() },
-                onShowLog: { showLog = true },
-                onShowRoundEffects: { showRoundEffects = true },
-                onNext: { advanceTurn() }
-            )
+            // `.safeAreaInset` rather than a plain VStack sibling: the roster
+            // still reserves room for the bar at rest, but rows now scroll
+            // *behind* it instead of stopping dead above a hard-edged bar —
+            // same floating-over-content treatment as the search field on
+            // the Creatures/Encounters lists.
+            .safeAreaInset(edge: .bottom) {
+                TurnControlBar(
+                    canGoBack: session.canGoToPreviousTurn,
+                    canAdvance: !session.sortedCombatants.isEmpty,
+                    playerViewEnabled: session.playerViewEnabled,
+                    onPrevious: { session.previousTurn() },
+                    onTogglePlayerView: { session.playerViewEnabled.toggle() },
+                    onShowLog: { showLog = true },
+                    onNext: { advanceTurn() }
+                )
+                .padding(.horizontal, Theme.Spacing.lg)
+                .padding(.bottom, Theme.Spacing.sm)
+            }
         }
         .themedScreen()
         .navigationBarTitleDisplayMode(.inline)
@@ -170,6 +182,14 @@ struct ContentView: View {
 /// The centre slot holds the session's own controls (player view, log) rather
 /// than Add: adding a combatant is the same action it is on every other screen
 /// and belongs in the same top-right corner, while these two exist only here.
+/// Four separate buttons, not one fused bar (tried and it read as a single
+/// odd blob rather than distinct controls) — Log paired next to Previous,
+/// View paired next to Next, evenly spaced across the width. Media-style
+/// icons (`backward.fill`/`forward.fill`, not chevrons) since stepping
+/// through turns is the same shape as transport controls. View and Log used
+/// to live behind a hamburger `Menu` — direct, always-visible buttons are one
+/// tap instead of two for the pair of things reached for almost as often as
+/// Next itself.
 private struct TurnControlBar: View {
     let canGoBack: Bool
     let canAdvance: Bool
@@ -177,7 +197,6 @@ private struct TurnControlBar: View {
     let onPrevious: () -> Void
     let onTogglePlayerView: () -> Void
     let onShowLog: () -> Void
-    let onShowRoundEffects: () -> Void
     let onNext: () -> Void
 
     var body: some View {
@@ -187,94 +206,76 @@ private struct TurnControlBar: View {
             }
         } else {
             content(glass: false)
-                .background(Theme.background)
-                .overlay(alignment: .top) {
-                    Rectangle()
-                        .fill(Theme.border.opacity(0.5))
-                        .frame(height: Theme.hairline)
-                }
         }
     }
 
     private func content(glass: Bool) -> some View {
-        HStack(spacing: Theme.Spacing.md) {
-            stepButton(
-                label: "Previous",
-                systemImage: "chevron.left",
-                iconLeading: true,
-                prominent: false,
-                glass: glass
-            ) { onPrevious() }
+        HStack(spacing: 0) {
+            // Arrows on the ends, View/Log in the middle two slots — Log
+            // still sits next to Previous and View next to Next.
+            barButton(
+                "backward.fill",
+                label: "Previous Turn",
+                tint: canGoBack ? Theme.accent : Theme.textTertiary,
+                glass: glass,
+                action: onPrevious
+            )
             .disabled(!canGoBack)
-            .frame(maxWidth: .infinity, alignment: .leading)
+            .frame(maxWidth: .infinity)
 
-            optionsButton(glass: glass)
-                .frame(maxWidth: .infinity, alignment: .center)
+            barButton("list.bullet.clipboard", label: "Log", tint: Theme.textSecondary, glass: glass, action: onShowLog)
+                .frame(maxWidth: .infinity)
 
-            stepButton(
-                label: "Next",
-                systemImage: "chevron.right",
-                iconLeading: false,
-                prominent: true,
-                glass: glass
-            ) { onNext() }
-            .disabled(!canAdvance)
-            .frame(maxWidth: .infinity, alignment: .trailing)
+            barButton(
+                playerViewEnabled ? "eye.slash.fill" : "eye.fill",
+                label: playerViewEnabled ? "Show DM View" : "Show Player View",
+                tint: Theme.textSecondary,
+                glass: glass,
+                action: onTogglePlayerView
+            )
+            .frame(maxWidth: .infinity)
+
+            barButton("forward.fill", label: "Next Turn", tint: Theme.accent, glass: glass, prominent: true, action: onNext)
+                .disabled(!canAdvance)
+                .frame(maxWidth: .infinity)
         }
-        .padding(Theme.Spacing.lg)
     }
 
+    /// `.frame(maxWidth: .infinity)` on the label (not chained onto the
+    /// `Button` from outside) plus `.contentShape(Rectangle())` — a plain
+    /// `Button`'s tap target is only ever as big as its label's own rendered
+    /// content, so a `.frame()` applied afterward stretches the layout slot
+    /// without stretching what's actually tappable inside it.
     @ViewBuilder
-    private func stepButton(
+    private func barButton(
+        _ systemImage: String,
         label: String,
-        systemImage: String,
-        iconLeading: Bool,
-        prominent: Bool,
+        tint: Color,
         glass: Bool,
+        prominent: Bool = false,
         action: @escaping () -> Void
     ) -> some View {
-        let content = Button(action: action) {
-            HStack(spacing: Theme.Spacing.xs) {
-                if iconLeading { Image(systemName: systemImage) }
-                Text(label)
-                if !iconLeading { Image(systemName: systemImage) }
-            }
-            .font(Theme.Typography.bodyEmphasis)
+        let button = Button(action: action) {
+            Image(systemName: systemImage)
+                .font(Theme.Typography.iconPrimaryAction)
+                .frame(width: 52, height: 52)
+                .contentShape(Rectangle())
         }
+        .accessibilityLabel(label)
 
         if glass, #available(iOS 26.0, *) {
             if prominent {
-                content.buttonStyle(.glassProminent).tint(Theme.accent)
+                button.buttonStyle(.glassProminent).tint(Theme.accent)
             } else {
-                content.buttonStyle(.glass)
+                button.buttonStyle(.glass).tint(tint)
             }
         } else {
-            content.foregroundColor(prominent ? Theme.accent : Theme.textSecondary)
-        }
-    }
-
-    @ViewBuilder
-    private func optionsButton(glass: Bool) -> some View {
-        let content = Menu {
-            Button(action: onTogglePlayerView) {
-                Label(
-                    playerViewEnabled ? "Show DM View" : "Show Player View",
-                    systemImage: playerViewEnabled ? "eye.slash.fill" : "eye.fill"
-                )
-            }
-            Button(action: onShowLog) {
-                Label("Log", systemImage: "list.bullet.clipboard")
-            }
-        } label: {
-            Image(systemName: "line.3.horizontal")
-                .font(Theme.Typography.iconPrimaryAction)
-        }
-        .accessibilityLabel("Session Options")
-
-        if glass, #available(iOS 26.0, *) {
-            content.buttonStyle(.glass)
-        } else {
-            content.foregroundColor(Theme.accent)
+            button
+                .buttonStyle(.plain)
+                .foregroundColor(tint)
+                .background(Theme.background)
+                .clipShape(Circle())
+                .overlay(Circle().stroke(Theme.border.opacity(0.5), lineWidth: Theme.hairline))
         }
     }
 }
@@ -298,7 +299,6 @@ struct CombatantRow: View {
     private func chipSymbol(for effect: Effect, condition: StandardCondition?) -> String {
         switch effect.kind {
         case .cooldown: return effect.durationType.awaitsRoll ? "hourglass" : "clock"
-        case .concentration: return "wand.and.rays"
         case .condition: return condition?.symbolName ?? "sparkles"
         }
     }
@@ -306,10 +306,8 @@ struct CombatantRow: View {
     private func chipTint(for effect: Effect, condition: StandardCondition?) -> Color {
         switch effect.kind {
         // A cooldown is something you can't do, not something wrong with you —
-        // quiet, like the reaction chip. Concentration is a third thing again:
-        // it's fine right now, but it's at risk, so it reads as information.
+        // quiet, like the reaction chip.
         case .cooldown: return Theme.textTertiary
-        case .concentration: return Theme.statusInfo
         case .condition: return condition?.color ?? Theme.accent
         }
     }
@@ -324,15 +322,27 @@ struct CombatantRow: View {
     }
 
     @ViewBuilder
-    private func statRow(systemImage: String, text: String, color: Color) -> some View {
+    private func statRow(systemImage: String, iconColor: Color, text: String, textColor: Color) -> some View {
+        statRow(systemImage: systemImage, iconColor: iconColor, content: Text(text), textColor: textColor)
+    }
+
+    /// Icon trails the text rather than leading it, both pinned to a fixed
+    /// width — that's what makes the heart on one row and the shield on the
+    /// next line up at the same right edge regardless of how many digits the
+    /// text before them has. Icon color is fixed per stat (heart red, shield
+    /// blue) independent of the text color, which still carries the
+    /// health/AC-band color in player view.
+    @ViewBuilder
+    private func statRow(systemImage: String, iconColor: Color, content: Text, textColor: Color) -> some View {
         HStack(spacing: Theme.Spacing.xs) {
+            content
+                .foregroundColor(textColor)
             Image(systemName: systemImage)
                 .font(Theme.Typography.iconInline)
-                .frame(width: 12)
-            Text(text)
+                .foregroundColor(iconColor)
+                .frame(width: 14, alignment: .center)
         }
         .font(Theme.Typography.stat)
-        .foregroundColor(color)
     }
 
     /// Player view exists for turning the screen around, and the party already
@@ -346,13 +356,17 @@ struct CombatantRow: View {
         if let current = combatant.currentHP, let max = combatant.maxHP {
             if hideNumbers {
                 let band = StatusBand.health(current: current, max: max)
-                statRow(systemImage: "heart.fill", text: band.label, color: band.color)
+                statRow(systemImage: "heart.fill", iconColor: Theme.statusBad, text: band.label, textColor: band.color)
             } else {
-                // The buffer is appended rather than folded into the number:
-                // "26/30 +8" says both what they have and what's about to be
-                // spent first, which is the thing you're deciding against.
-                let buffer = combatant.temporaryHP.map { " +\($0)" } ?? ""
-                statRow(systemImage: "heart.fill", text: "\(current)/\(max)\(buffer)", color: Theme.textSecondary)
+                // Bold carries the signal instead of a "+8" suffix: Current
+                // bolds while a temp buffer is active, Max bolds once it's
+                // ever been raised — same cue as HealthControlRow, so the
+                // roster reads it without opening the row. The exact buffer
+                // amount is still visible on the detail screen if it matters.
+                let content = Text("\(current)").fontWeight(combatant.temporaryHP != nil ? .bold : .regular)
+                    + Text("/")
+                    + Text("\(max)").fontWeight(combatant.maxHPIncreased ? .bold : .regular)
+                statRow(systemImage: "heart.fill", iconColor: Theme.statusBad, content: content, textColor: Theme.textSecondary)
             }
         }
     }
@@ -362,9 +376,9 @@ struct CombatantRow: View {
         if let ac = combatant.armorClass {
             if hideNumbers {
                 let band = StatusBand.armorClass(ac)
-                statRow(systemImage: "shield.fill", text: band.label, color: band.color)
+                statRow(systemImage: "shield.fill", iconColor: Theme.statusInfo, text: band.label, textColor: band.color)
             } else {
-                statRow(systemImage: "shield.fill", text: "\(ac)", color: Theme.textSecondary)
+                statRow(systemImage: "shield.fill", iconColor: Theme.statusInfo, text: "\(ac)", textColor: Theme.textSecondary)
             }
         }
     }
@@ -379,9 +393,9 @@ struct CombatantRow: View {
                 // combatant's number is accent-colored: gold marks exactly one
                 // thing on this screen, and this is the screen's one thing.
                 Text("\(combatant.initiative)")
-                    .font(Theme.Typography.numeric(27))
+                    .font(Theme.Typography.numeric(21))
                     .foregroundColor(isCurrent ? Theme.accent : Theme.textSecondary)
-                    .frame(width: 40, alignment: .center)
+                    .frame(width: 34, alignment: .center)
 
                 HStack(spacing: Theme.Spacing.xs + 2) {
                     Text(combatant.name)
@@ -403,24 +417,25 @@ struct CombatantRow: View {
 
                 Spacer(minLength: Theme.Spacing.sm)
 
-                // Icon-led (heart/shield) instead of text labels ("14/20 HP"), and
-                // left-aligned within their own column so the icons themselves
-                // line up vertically regardless of how many digits each value has.
-                VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {
+                // Icon-led (heart/shield) instead of text labels ("14/20 HP").
+                // A fixed minimum width plus trailing alignment — rather than
+                // leading, sized to content — is what makes the icons line up
+                // vertically between rows whose names are different lengths;
+                // every row's health/AC column ends at the same right edge.
+                VStack(alignment: .trailing, spacing: Theme.Spacing.xxs) {
                     healthRow
                     armorClassRow
                 }
+                .frame(minWidth: 90, alignment: .trailing)
             }
 
-            // Glance-at-a-glance list, not the detail screen — a short label (e.g.
-            // "Stunned") alongside the icon in each chip, not bare symbols alone.
-            // Reaction-used is just another status chip among the rest. FlowLayout
-            // wraps to the next line on overflow instead of clipping.
-            if combatant.reactionUsed || !combatant.visibleEffects.isEmpty {
+            // Glance-at-a-glance list, not the detail screen — a short label
+            // (e.g. "Stunned") alongside the icon in each chip, not bare
+            // symbols alone. Reaction and Concentration live only on the
+            // detail screen now, not here — this strip is conditions/
+            // cooldowns only. FlowLayout wraps to the next line on overflow.
+            if !combatant.visibleEffects.isEmpty {
                 FlowLayout {
-                    if combatant.reactionUsed {
-                        StatusChip(symbolName: "arrow.uturn.left", label: "Reaction", color: Theme.textTertiary)
-                    }
                     ForEach(combatant.visibleEffects) { effect in
                         let condition = ConditionLibrary.matching(name: effect.name)
                         StatusChip(
@@ -435,9 +450,10 @@ struct CombatantRow: View {
                 .frame(width: rowWidth, alignment: .leading)
             }
         }
-        .cardRowStyle(isHighlighted: isCurrent)
         // Dying combatants stay at full strength: they're the ones that need
-        // attention, and fading them would say the opposite.
+        // attention, and fading them would say the opposite. cardRowStyle
+        // itself now lives in the enclosing Button's CardRowButtonStyle, not
+        // here — this is just the row's content.
         .opacity(combatant.isDead ? 0.5 : 1)
     }
 }
