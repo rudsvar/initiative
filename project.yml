@@ -37,6 +37,9 @@ targets:
       CODE_SIGN_STYLE: Automatic
       CODE_SIGN_IDENTITY: "Apple Development"
       GENERATE_INFOPLIST_FILE: YES
+      # The app uses only the system's HTTPS, so no export-compliance question
+      # on every beta or store upload.
+      INFOPLIST_KEY_ITSAppUsesNonExemptEncryption: NO
       # With GENERATE_INFOPLIST_FILE: YES, Xcode builds Info.plist purely from
       # INFOPLIST_KEY_* build settings — a separate top-level `infoPlist:` dict
       # (as this target used to have) is silently ignored, which is why none of
