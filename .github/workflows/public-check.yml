@@ -6,9 +6,9 @@ on:
 
 jobs:
   public-check:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Write the banned-terms list from the repo secret
@@ -26,7 +26,7 @@ jobs:
   tests:
     runs-on: macos-26
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Run the test suite on the simulator
         run: |
           # Use the first available simulator rather than naming a device model.
