@@ -1,0 +1,34 @@
+name: Public repo check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  public-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Write the banned-terms list from the repo secret
+        env:
+          BANNED_TERMS: ${{ secrets.BANNED_TERMS }}
+        run: |
+          if [ -z "$BANNED_TERMS" ]; then
+            echo "Repo secret BANNED_TERMS is not set" >&2
+            exit 1
+          fi
+          printf '%s\n' "$BANNED_TERMS" > scripts/banned-terms.local
+      - name: Run the check
+        run: sh scripts/public-check.sh
+
+  tests:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run the test suite on the simulator
+        run: |
+          # Use the first available simulator rather than naming a device model.
+          UDID=$(xcrun simctl list devices available | grep -m1 -o -E '[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}')
+          xcodebuild test -scheme initiative -destination "platform=iOS Simulator,id=$UDID"
