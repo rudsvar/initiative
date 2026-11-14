@@ -4,6 +4,288 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Changed — roll prompt answers are always "Success"/"Failure"
+
+- `TurnPrompt.successLabel`/`failureLabel` used to vary by subject ("Made
+  it"/"Not yet" for effects, "Held it"/"Lost it" for concentration, "Success"/
+  "Failure" for death saves). Now always "Success"/"Failure" — the prompt's
+  own title already says what's being rolled for, so the different phrasing
+  per subject added variety without adding information.
+
+### Changed — removed the "5–6 on a d6" example from the roll-hint field
+
+- The custom round-effect editor's "what to roll" field showed "e.g. 5–6 on
+  a d6" as placeholder text — an actual roll threshold, even shown only as
+  an example, isn't something this app should ever suggest. What's rolled
+  and what counts as success depends entirely on the rules in play and the
+  specific ability; the app doesn't know either and shouldn't imply a
+  default. Placeholder is now just "What to roll (optional)"
+
+### Changed — one roll prompt at a time
+
+- **`TurnPromptView` shows one owed roll at a time instead of stacking all of
+  them in the sheet at once.** With several owed together (a couple of death
+  saves plus a recharge, say) the stacked version had no `ScrollView`, so
+  `selfSizingSheet()` measured a height taller than the screen with no way
+  to reach what didn't fit — not scrollable, and dragging the sheet couldn't
+  expand it past its own fixed detent either. Now it just shows the next
+  unanswered prompt ("Roll 2 of 3") and advances automatically as each is
+  answered, which also keeps the sheet's height bounded no matter how many
+  are owed
+- **The roll prompt sheet is dismissible again** (swipe away), and doing so
+  just clears it without advancing — nothing is applied until every prompt
+  has an answer, so backing out mid-prompt can't half-advance the turn;
+  worst case the same prompts reappear next time you try to advance
+- **The roll prompt now uses the system's own sheet material
+  (`.presentationBackground(.regularMaterial)`) instead of a custom `Theme`
+  fill.** A darker `Theme.background` wrapped around a lighter
+  `Theme.surface` card was the first fix tried — it removed the mismatched
+  seam, but a flat custom color still looked out of place against sheet
+  chrome the system itself draws (drag indicator, corner radius, dimmed
+  backdrop), which doesn't know about this app's palette. `.regularMaterial`
+  is what native sheets actually use and adapts to light/dark automatically,
+  so this one popup now reads as a normal iOS sheet rather than a themed
+  card wearing sheet chrome — a deliberate, scoped exception to "everything
+  visual comes from `Theme`," not a change to that rule generally
+
+### Changed — combined turn bar, encounter search fixed, keyboard bug fixed
+
+- **The combat screen's bottom bar is four separate circular glass buttons**
+  (Previous, Log, View, Next — arrows on the ends, View/Log filling the
+  middle two slots), not the single fused pill tried earlier this
+  round — the fused version read as one odd blob rather than distinct
+  controls. Media-style icons (`backward.fill`/`forward.fill`), not chevrons,
+  since stepping through turns is the same shape as transport controls. Log
+  sits next to Previous and View next to Next, all four evenly spaced
+- **View and Log are direct buttons in the bar**, not hidden behind a
+  hamburger `Menu` that only ever held those two items — one tap instead of
+  two for something reached for almost as often as Next itself
+- **Previous is accent-colored when there's a turn to go back to**, not a
+  flat gray regardless of state — dims to a tertiary gray only once disabled
+- **The roster's initiative number is smaller** (27pt → 21pt) — it was
+  crowding the row next to the name at the old size
+- **Encounter search now matches if *any* typed word matches** (OR), not
+  only when *every* word matches (AND) — typing "goblin troll" now finds an
+  encounter containing either, the more useful default when a query is
+  likely to name several different things you're looking for at once.
+  Creature search is unchanged (AND still makes sense there — narrowing by
+  more than one word about the *same* creature)
+- **Fixed: the Limited Use editor's Stepper would overlap the Name field
+  once the keyboard appeared, and the Add/Save button would stop
+  responding.** `selfSizingSheet`'s height measurement was reacting to the
+  keyboard's safe-area inset shrinking the space available to it, which fed
+  back into a shrinking `presentationDetents` height, compressing the
+  sheet's own layout — fixed by having that measurement ignore the keyboard
+  safe area entirely, so the sheet's size stays stable regardless of it
+- **Encounter search's placeholder text said "and" while the search itself
+  used OR logic** — fixed the wording ("Search encounters or creatures") to
+  match
+- **Fixed: the search field's text did a visible tiny resize right as a
+  screen appeared.** Pinning the search field's UIKit font explicitly (in
+  `Theme.applyNavigationBarAppearance`) turned out not to be the whole
+  story — the real cause was `appSearchable`'s `isVisible` flipping from
+  false to true right after the first frame (Creatures/Encounters/New
+  Session all started with an empty array, populated a moment later in
+  `.onAppear`), which mounted `.searchable` for the first time on a *later*
+  render instead of the first one; that cold mount is what animated in and
+  read as a font resize. Fixed by loading each screen's data eagerly at
+  `init` instead, so `.searchable` is present, correctly, from frame one
+
+### Changed — native search, floating bottom bar, fixed tap targets
+
+- **Search is now the system's own `.searchable` field**, not a hand-built
+  bar — the custom one (tried in this same round of changes) read as too
+  wide and too heavy next to how search actually looks on iOS 26. On iOS 26+
+  it's paired with `.searchToolbarBehavior(.minimize)`, the same native
+  glass-search pattern Notes/Files/Photos use. `appSearchable(text:prompt:
+  isVisible:)` replaces `bottomSearchBar`; the custom `SearchBar` view and
+  its `glassBar()` helper are gone. Creatures, Encounters, and (new) New
+  Session all use it now — New Session had no search at all before
+- **The combat screen's bottom bar floats over the roster** via
+  `.safeAreaInset(edge: .bottom)` instead of sitting in a plain `VStack`
+  next to the list — rows are now visible scrolling behind it instead of
+  stopping dead above a hard-edged bar, matching the search field's
+  floating treatment
+- **List section headers ("Yours"/"Included", "For a dark room"/"For a lit
+  room") no longer pin and follow the scroll.** `List` in `.plain` style
+  pins whatever's in a `Section`'s `header:` slot; every screen using that
+  slot (Creatures, Encounters, New Session, Appearance) had its label
+  floating and trailing the scroll instead of moving with its own rows. Now
+  the label is a plain row inside the section instead of its header, which
+  scrolls normally
+- **Chip and step buttons are now clickable across their whole visible
+  area**, not just the icon+text inside them. `EffectChip`, `LimitedUseChip`,
+  and the bottom bar's Previous/Options/Next buttons all sized their tap
+  target to their label's intrinsic content while a `.frame(maxWidth:
+  .infinity)` applied *outside* the button stretched only the layout slot
+  around it — tapping the empty space a chip or a third of the bar visually
+  fills out to did nothing. Fixed by moving `.frame(maxWidth: .infinity)` +
+  `.contentShape(Rectangle())` inside each button's own label
+
+### Changed — floating glass nav bars and search field (iOS 26+)
+
+- **Navigation bars are transparent instead of opaque on iOS 26+**
+  (`Theme.applyNavigationBarAppearance`), so the system's native floating
+  Liquid Glass title bar shows through — list content is now visible
+  scrolling up underneath it, the way title bars behave everywhere else on
+  iOS 26. The custom opaque background this app had painted on every bar
+  since before glass existed was single-handedly blocking that: it doesn't
+  just make titles look flat, it visually hides the content that's already
+  scrolling behind the bar regardless. Below iOS 26 the bar keeps its
+  original opaque `Theme.backgroundLift` fill, unchanged
+- (The bottom search field also got a floating-pill redesign in this round,
+  since replaced by the system's own `.searchable` — see "native search,
+  floating bottom bar, fixed tap targets" above.)
+
+### Added — visible tap feedback; glass on nav buttons and search
+
+- **Every tappable row now visibly dims/scales on press** — combatant,
+  creature, encounter, session, and theme rows. Previously a plain `Button`
+  with `.cardRowStyle()` chained on afterward had *no* press feedback at all
+  inside a `List`: that chained modifier sits outside the button's own label,
+  so the button's built-in press-dimming never touched it (and the combatant
+  row's tap target was a fully hidden `NavigationLink` in the background,
+  which had nothing visible to dim in the first place). New shared
+  `CardRowButtonStyle` folds the same background/border/highlight look into
+  a real `ButtonStyle` so `configuration.isPressed` can darken and slightly
+  scale it. The combatant row's navigation was rebuilt on a proper `Button`
+  + `Route.combatantDetail(UUID)` push instead of the hidden-link trick, so
+  it gets the same feedback as every other row
+- **Liquid Glass extended to the bottom search field** on Creatures/Encounters
+  (`glassBar()`, a no-op below iOS 26 where the field keeps its existing flat
+  `Theme.surfaceRaised` look) — the same floating-over-content case the combat
+  screen's bottom bar already qualified for. The top nav bar's own icon
+  buttons (back, add) turn out to need no code at all: a standard
+  `ToolbarItem` button is automatically glass-styled by the system on iOS 26,
+  and manually adding `.buttonStyle(.glass)` to one is redundant and can
+  conflict — briefly added, then reverted once traced back to this project's
+  own `<agent-config>/skills/ios-hig/SKILL.md`, which already documents the rule.
+  Glass stays deliberately restricted to the surfaces that skill calls out —
+  not spread to every button in the app
+
+### Changed — New Session splits encounters into Yours/Included
+
+- **"New Session" now groups prepared encounters into "Yours" and
+  "Included"** sections, same split (and same `ListSections.split` logic) the
+  Encounters library itself uses — previously every encounter, built-in or
+  custom, was listed together under one flat "From an Encounter" header, so
+  a user's own encounters could get buried among the shipped ones
+
+### Changed — Reaction/Concentration off the roster; compact one-line health
+
+- **Reaction and Concentration are gone from the roster row** — the read-only
+  status strip on each row shows only conditions/cooldowns now; Reaction and
+  Concentration live on the combatant detail screen alongside everything else
+- **Tapping a row still pushes to `CombatantDetailView`**, unchanged from
+  before. Two in-place-disclosure designs were tried this round — a
+  chevron-per-row unfold, and before that an auto-expanding current-combatant
+  row — and both were reverted: `List` animates a row's own height change
+  internally regardless of whether the app requests an animation, which made
+  a row's own text visibly slide as it resized, with no reliable way found to
+  suppress it (an explicit `.animation(value:)`, then a `disablesAnimations`
+  transaction, were each tried and still glitched). A pushed screen has no
+  row to resize, so the artifact can't occur there
+- **Health collapses to one line**: current/max readout plus four small
+  buttons (damage, heal, grant temp HP, increase max HP), each prompting for
+  its amount via an inline alert instead of a persistent Amount field.
+  Replaces the old three-row Current/Max/Temp layout on the detail screen
+- **Current is bolded while temporary HP is active; Max is bolded once it's
+  ever been raised** by Increase Max HP — shown both on the roster row and
+  the detail screen, a quick visual flag for "this number isn't the base
+  anymore" without adding another label. The roster row no longer also
+  appends a "+8" suffix for the temp buffer — the bold already says it, and
+  the exact amount is a tap away on the detail screen
+- **The combatant's name is editable directly in the detail screen's top
+  bar** (same select-all-on-focus field as the session name), so there's no
+  separate Name field lower on the screen
+- **Health/AC now right-align to a fixed column** across roster rows. The
+  heart/shield icon trails the number rather than leading it, both pinned to
+  the same fixed-width column, so the icons themselves line up vertically
+  between rows regardless of how many digits the number before them has —
+  putting the icon first only aligned the row's overall right edge, not the
+  icon
+- **Heart and shield icons are colored red/blue** (fixed per stat) instead of
+  the same neutral gray as the number next to them — a quick "which stat is
+  this" cue independent of the number's own color (which still reflects the
+  health/AC band in player view)
+
+### Added — Limited Use (Legendary Actions and the like)
+
+- **`LimitedUse`: a named, countable resource** ("Legendary Actions", "3/day"),
+  spent one tap at a time like `Reaction` but counting down instead of
+  flipping a bool. Replaces "Once per encounter", which was really the same
+  idea with the count hardcoded to one
+- **Refills when the round turns over**, not on the combatant's own turn —
+  unlike `Reaction`. A Legendary Action budget is meant to be spent across
+  every other combatant's turn in the round, so tying its refill to its
+  owner's own turn (the way `Reaction` works) would refill it before it's
+  had the chance to be spent
+- Lives in its own "Actions" card with Reaction and Concentration — a
+  2-column grid above Effects, not a chip under it, since a DM checks these
+  every single turn regardless of what conditions are active
+- Created via a compact modal (name + a count stepper); the cog on an
+  existing one reopens the same modal to rename it, change the count, or
+  remove it
+
+### Changed — combatant screen: two-column grids, one Recharge, smaller title fields
+
+- **Effect chips are laid out as a fixed two-column grid**, not a wrapping row
+  of variable-width chips — every chip gets the same, bigger tap target
+  regardless of label length, and the grid reads top-to-bottom instead of
+  like a paragraph
+- **The three named "Recharge 5–6/6/4–6" cooldowns collapsed into one plain
+  "Recharge"** — the DC was always the DM's own number in their head; the app
+  only needed to remember that a roll was owed, and three near-identical
+  picks for that was clutter the app itself was creating
+- **The combatant detail screen's title is the combatant's name**, not the
+  word "Combatant" — and the editable Name field moved to the bottom of the
+  identity card, since the title now covers the common case of just reading it
+- Dropped the "the app never rolls, it just remembers you owe one" caption
+  from the effect and round-effect editors — said once in this changelog and
+  in SPEC is enough; repeating it on every single effect was exactly the kind
+  of thing that stops reading as information
+
+### Changed — minimal-taps pass: renamed, no confirm on rolls, compact prompt
+
+- **App renamed to "Combat Companion"** on the home screen (`CFBundleDisplayName`
+  only — bundle id, module name and the Xcode project stay `initiative`, so this
+  doesn't touch code signing or require reinstalling)
+- **Answering a roll prompt (Success/Failure, Held it/Lost it, death saves) no
+  longer needs a Continue button.** Tapping the answer resolves it immediately;
+  the sheet dismisses itself the instant every prompt has one. This is the
+  middle of combat — a mis-tap is rare and cheap to fix by hand, and paying for
+  that on every single roll with an extra confirmation tap was the wrong trade
+- **`TurnPromptView` is a compact modal, not a full screen** — it measures its
+  own content height and feeds that back into `.presentationDetents` instead of
+  claiming a fixed fraction of the display, so a one-line prompt gets a
+  one-line sheet
+- **Reaction and concentration are just effects among the others now** — folded
+  into the same tap-to-apply grid as the standard conditions (first two chips,
+  since they're checked every turn) instead of each getting its own card
+- Effect chips are bigger (larger tap target, bigger icon) — pressed mid-combat,
+  where a bigger target beats a denser grid
+- Name/initiative/AC/HP boxes on the combatant detail screen are a bit smaller,
+  freeing up room for the bigger effect chips below
+
+### Changed — effects screen folded into the combatant detail view
+
+- **Removed the "Manage" button and its separate `EffectsView` screen.** The
+  tap-to-apply grid of conditions now lives directly on the combatant detail
+  screen, so applying "Stunned" is one tap from opening the combatant instead
+  of two, and there's no longer a distinct "Active" list next to the grid —
+  an active condition is just the chip, colorful with a checkmark
+- **A gear icon appears on an active chip** as a second, independent tap
+  target, for the minority of cases that need a different duration than the
+  default. `EffectEditorView` is down to two questions: which edge of the turn
+  it keys off, and a "Requires a save" toggle (on by default) that reveals a
+  turns stepper when switched off — "until removed" isn't an option there
+  anymore, since those conditions clear the same way they're applied, by
+  tapping the chip off again
+- **Concentration is now a plain toggle on the combatant**, not a named
+  `Effect` — nothing to configure, so nothing to clutter. Taking damage while
+  it's on still raises the same turn-prompt mechanism, inverted the same way
+  as before
+
 ### Added — round-anchored effects
 
 - **Effects can belong to the fight rather than to a creature** — a collapsing

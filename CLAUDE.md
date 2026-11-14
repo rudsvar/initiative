@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-**initiative** is a personal iOS app built with SwiftUI, targeting iOS 17+. It's a single-window app with automatic code signing enabled.
+**initiative** is a personal iOS app built with SwiftUI, targeting iOS 17+. It's a single-window app with automatic code signing enabled. The home-screen name is **"Combat Companion"** (`INFOPLIST_KEY_CFBundleDisplayName` in `project.yml`) — the repo, Xcode project, module, scheme, and bundle id all stay `initiative`; only the user-facing name changed.
 
 ## Development commands
 
@@ -44,14 +44,25 @@ initiative/
 ├── App/              # initiativeApp.swift (@main), RootView.swift (nav root, owns
 │                        the shared CombatSession/SessionStore/PresetStore/EncounterStore)
 ├── Models/           # One file per type: Combatant, Effect (+ EffectKind/DurationType),
-│                        DeathSaves, TurnPrompt, LogEntry (+ HPOperation),
+│                        DeathSaves, LimitedUse (countable resources like Legendary
+│                        Actions), TurnPrompt, LogEntry (+ HPOperation),
 │                        CombatSession — plus their tests
 ├── Stores/           # SessionStore/PresetStore/EncounterStore (JSON-file persistence),
 │                        DefaultContent.swift (the starter creature roster + encounters),
 │                        (installed on every launch; built-ins are read-only) + tests
 ├── Views/
-│   ├── Combat/        # ContentView, CombatantDetailView, LogView, AddCombatantSheet,
-│   │                     EffectsView (tap-to-apply grid) + EffectEditorView,
+│   ├── Combat/        # ContentView (roster; tapping a row pushes to
+│   │                     CombatantDetailView — inline in-row disclosure was tried
+│   │                     twice and reverted, see SPEC.md "Declined": List animates
+│   │                     a row's own height change no matter what, causing the
+│   │                     row's own text to visibly slide/fly), CombatantDetailView
+│   │                     (identity, health, tap-to-apply effects grid, Actions
+│   │                     card), HealthControlRow (one-line current/max +
+│   │                     damage/heal/temp/increase-max buttons — the piece
+│   │                     CombatantDetailView builds its Health card from),
+│   │                     LogView, AddCombatantSheet,
+│   │                     EffectEditorView (duration config for one effect),
+│   │                     LimitedUseEditorView (name + count for one resource),
 │   │                     RoundEffectsView (effects owned by the fight), TurnPromptView
 │   ├── MainMenu/       # MainMenuView
 │   ├── Presets/        # PresetListView (Main Menu -> Creatures)
@@ -93,17 +104,32 @@ project.yml            # XcodeGen configuration (regenerates .xcodeproj)
   changed from an earlier "native iOS colors, custom theme only selectively"
   stance — that's no longer current.)
 - **Reach for the shared modifiers in `Common/ViewExtensions.swift` first**:
-  `themedScreen()` (full-screen backdrop), `cardRowStyle(isHighlighted:)` +
-  `cardRowLayout()` (every list row in the app), `sectionCard()` (a group of
-  controls on a detail screen), `fieldStyle(width:)` (text input chrome),
-  `Text.sectionLabel()` (tracked caps field label), `Text.cardHeading()`
-  (serif card title) and `bottomSearchBar(text:prompt:isVisible:)`. These exist
-  because each was previously copy-pasted per screen and drifted apart.
+  `themedScreen()` (full-screen backdrop), `CardRowButtonStyle(isHighlighted:)`
+  (a `ButtonStyle` — apply as `.buttonStyle(CardRowButtonStyle())` on every
+  tappable row's `Button`; it's the card look *and* press feedback together,
+  since a plain modifier chained onto a `Button` sits outside the button's
+  own label and never sees `isPressed`) + `cardRowLayout()` (every list row
+  in the app), `sectionCard()` (a group of controls on a detail screen),
+  `fieldStyle(width:)` (text input chrome), `Text.sectionLabel()` (tracked
+  caps field label), `Text.cardHeading()` (serif card title),
+  `appSearchable(text:prompt:isVisible:)` (`Common/SearchBar.swift` — the
+  system's own `.searchable`, plus `.searchToolbarBehavior(.minimize)` on
+  iOS 26+; not a hand-built bar), and `selfSizingSheet()` (sizes a sheet to
+  its own content height instead of a fixed `.presentationDetents` fraction
+  — used by small popups like `TurnPromptView` and `LimitedUseEditorView`).
+  These exist because each was previously copy-pasted per screen and
+  drifted apart.
 - **The Creatures and Encounters screens are deliberately the same screen twice**
   — both are a saved library mixing built-in and user-made entries, so both get
-  search (bottom-anchored, `SearchBar`) and a Yours-above-Included split from the
-  shared `ListSections`. Change one and change the other; the matching and
-  splitting live outside the views precisely so they can be tested.
+  search (`appSearchable`) and a Yours-above-Included split from the shared
+  `ListSections`. Change one and change the other; the matching and splitting
+  live outside the views precisely so they can be tested. New Session (a third,
+  simpler picker) reuses both the same way.
+- **A `Section`'s title goes in its content, never its `header:` slot** — a
+  `List` in `.plain` style pins whatever's in that slot so it floats and
+  trails the scroll instead of moving with its own rows. Every "Yours"/
+  "Included"-style label in the app (Creatures, Encounters, New Session,
+  Appearance) is a plain `Text` row placed first inside the section instead.
 - **The palette's rules, not just its values** — `Theme`'s doc comment is the
   authority, but in short: surfaces come from the elevation ladder
   (`background` → `surface` → `surfaceRaised`) rather than from borders, borders

@@ -164,20 +164,18 @@ Build a clean, minimal initiative tracker for managing turn order and temporary 
   no longer needs a bespoke "reset reaction" line at all. `Combatant.reactionUsed`
   is now a computed property (`effects.contains { isReactionMarker == true }`),
   so read call sites didn't need to change
-- Hidden from the user-facing effects list (`Combatant.visibleEffects` filters
-  it out) — it has its own dedicated Reaction UI, so showing it a second time
-  in "Active Effects" would be redundant
-- Visual indicator: `arrow.uturn.left` (a half-circle back-turning arrow —
-  available in accent color, used in muted tertiary color; same glyph both
-  states, just recolored). Went through a few earlier choices (`bolt.fill`/
-  `bolt.slash.fill`, `hand.tap`/`hand.tap.fill`, `arrow.triangle.2.circlepath`)
-  before landing here — needed something visually distinct from every
-  `ConditionLibrary` icon (see §11) so it's never confused with a status
-  condition, and closer to the "arrow that goes back and forth in a half
-  circle" shape than the earlier full-circle option. On the combatant detail
-  screen's toggle it shows both states; on the main list it's just one more
-  status chip (see §1), shown only when used, not shown at all when
-  available, matching how effects only show when active rather than
+- **Still filtered out of `Combatant.visibleEffects`** (it's not an `Effect`
+  the DM applies, just internal implementation for the free-riding expiry), but
+  no longer hidden from the *UI* — it's a chip in the combatant detail screen's
+  Actions card (see "Concentration" above), not a dedicated card of its own
+- Visual indicator: `arrow.uturn.left` (a half-circle back-turning arrow). Went
+  through a few earlier choices (`bolt.fill`/`bolt.slash.fill`, `hand.tap`/
+  `hand.tap.fill`, `arrow.triangle.2.circlepath`) before landing here — needed
+  something visually distinct from every `ConditionLibrary` icon (see §11) so
+  it's never confused with a status condition. Same grid treatment as any other
+  chip: grayscale when available, colorful with a checkmark when used, one tap
+  to flip it. On the main roster list it's just one more status chip (see §1),
+  shown only when used, matching how effects only show when active rather than
   placeholders for every possible one
 
 ### 4. Temporary Effects
@@ -224,22 +222,27 @@ GM-controlled NPC that's narrative-only) — `maxHP`/`currentHP` are `nil` until
 explicitly enabled for that combatant, so existing sessions and the "add
 combatant" flow are unaffected by default.
 
-**Enabling & editing** (from the combatant detail screen, alongside Reaction/Effects)
+**Enabling & editing** (`HealthControlRow` — the roster's expanded current
+combatant and the detail screen's Health card both use the same component)
 - "Track HP" action prompts for a max HP value, sets `currentHP = maxHP`
-- Once tracked: **Current HP** and **Max HP** are separate rows, each with
-  its own inline Amount field and action button(s) right next to it, rather
-  than one shared amount field feeding all three actions — Current's row
-  has **Damage**/**Heal** buttons (subtracts/adds, clamped to `0...maxHP`);
-  Max's row has a single **Increase Max HP** button (blue heart-plus icon,
-  raises *both* max and current by the amount — a buff/level-up, not just a
-  higher ceiling with no immediate benefit). Keeps each action next to the
-  value it actually affects instead of Increase Max HP sitting oddly far
-  from the Max HP box
-- Direct numeric entry on the Current/Max HP fields themselves for exact
-  corrections (e.g. after a spell effect)
-- `currentHP` clamps to `0...maxHP` for Damage/Heal — no negative HP, no
-  overheal past max via those two actions (Increase Max HP is the deliberate
-  exception, since it moves the ceiling itself)
+- Once tracked: a single line shows the **current/max** readout plus four
+  small buttons — **Damage**, **Heal**, **Grant Temporary HP**, and
+  **Increase Max HP** — replacing an earlier three-row layout that gave each
+  action its own persistent Amount field. There's no room for three fields
+  on a roster row, and the amount differs every time anyway, so each button
+  instead prompts for its amount inline via a one-shot alert
+- Damage/Heal clamp `currentHP` to `0...maxHP`. Increase Max HP raises *both*
+  max and current by the amount (a buff/level-up, not just a higher ceiling
+  with no immediate benefit) and is the deliberate exception to that clamp,
+  since it moves the ceiling itself. Temporary HP replaces rather than stacks
+  (see below)
+- **Current is bolded whenever temporary HP is present; Max is bolded once
+  it's ever been raised** by Increase Max HP (`Combatant.maxHPIncreased`) —
+  a lightweight visual flag that the number isn't the base value anymore,
+  without a separate label
+- Direct numeric entry on the Initiative/AC fields (detail screen) still
+  exists for exact corrections; Current/Max HP themselves are edited only
+  through the buttons above, not a raw text field
 
 **Dead indicator**
 - A combatant is dead when `currentHP == 0` (only meaningful if HP is tracked)
@@ -254,10 +257,13 @@ combatant" flow are unaffected by default.
 - HP display in the list (e.g. "12/20") is colored by remaining-HP fraction so
   a wounded combatant is visible without opening the detail screen
 
-**Explicitly out of scope for now**: temp HP, overheal, damage types/resistances,
-death saving throws, or any specific ruleset's dying mechanics — this tracks a
-plain current/max HP number and a dead/alive boolean, system-agnostic, per the
-project's standing "no copyrighted ruleset content" constraint.
+**Explicitly out of scope**: overheal, damage types/resistances, or any
+specific ruleset's dying mechanics beyond the generic death-saves flow above —
+this tracks a plain current/max HP number, an optional temporary-HP buffer,
+and a dead/alive boolean, system-agnostic, per the project's standing "no
+copyrighted ruleset content" constraint. (Temporary HP itself, listed as
+out-of-scope in an earlier draft of this section, was added — see the
+`temporaryHP` field and `grantTemporaryHP`.)
 
 ### 6. Navigation & Layout
 
@@ -279,43 +285,62 @@ project's standing "no copyrighted ruleset content" constraint.
 **Toolbar**
 - **Back** (leading): icon-only (`chevron.left`, no "Menu" text) — returns to
   the main menu, autosaves first. Icon-only deliberately: it makes this item
-  the same width as the trailing icon-only hamburger button, which is what
-  lets `.principal` center correctly (see below)
+  the same width as the trailing icon-only add button, which is what lets
+  `.principal` center correctly (see below)
 - **Session name + Round N** (`.principal`, true center): a two-line stack —
   editable name field above, plain round counter below, neither a button.
   Works reliably in `.principal` specifically *because* the leading/trailing
   items are both single icons of equal width
-- **Hamburger menu** (trailing, `line.3.horizontal`): opens a dropdown with
-  "Show Player/DM View" (the DM/player-view toggle, §12) and "Log" (§9) —
-  consolidates two lower-frequency actions that used to sit in the bottom
-  bar, freeing that bar's middle slot for the Add-combatant button
+- **Add Combatant** (trailing, `+`): opens the add-combatant modal
+  (`AddCombatantSheet`) — the same top-right corner this action sits in on
+  every other screen (Creatures, Encounters)
 
-**Bottom bar**
-- **Previous Turn** (left): Reverts to the previous turn's full state (turn
-  index, reactions, effects, and log entries — see §9); disabled when there's
-  no prior turn to return to
-- **Add Combatant** (center, `+` icon): opens the add-combatant modal
-  (`AddCombatantSheet`) — replaced an earlier top-of-list inline row, a
-  bottom-of-list placeholder row, and later a top-right toolbar button; all
-  turned out to want a dedicated modal (fiddly small fields / accidental
-  taps) reachable from a natural thumb position, so this bottom-center slot
-  is now the entry point
-- **Next Turn** (right): Advance to next combatant, reset current's reaction
-  to available
-- On iOS 26+, this whole bar uses Liquid Glass (`GlassEffectContainer`,
-  `.glassProminent` on Next Turn as the primary action, `.glass` on Previous
-  Turn and Add) — it's the one floating control bar in the app, the natural
-  fit per Apple's glass guidance (see `<agent-config>/skills/ios-hig/SKILL.md`).
-  Falls back to the existing themed bar below iOS 26. No other button in the
-  app uses glass — see that skill for the full reasoning on which buttons
-  qualify
+**Bottom bar** (`TurnControlBar`) — four separate circular icon buttons,
+evenly spaced, in this order: Previous, Log, View, Next — arrows on the two
+ends, View/Log filling the middle two slots. A single fused pill sharing one
+background shape was tried first and reverted — it read as one odd blob
+rather than four distinct controls. Log still sits next to Previous and View
+next to Next:
+- **Previous** (`backward.fill`, media-transport style rather than a bare
+  chevron — stepping through turns is the same shape as transport controls):
+  reverts to the previous turn's full state (turn index, reactions, effects,
+  and log entries — see §9); disabled when there's no prior turn to return to
+- **Next** (`forward.fill`, accent-tinted/prominent to read as the primary
+  action): advance to next combatant, reset current's reaction to available
+- **View** (`eye.fill`/`eye.slash.fill`, toggles per state): the DM/player-view
+  toggle (§12) — a direct button, not behind a menu. A hamburger `Menu` was
+  tried here holding this and Log; a menu that only ever holds two items
+  wasn't earning the extra tap over showing both directly
+- **Log** (`list.bullet.clipboard`): opens the session log (§9) — also a
+  direct button for the same reason
+- On iOS 26+ each button gets its own `.glassProminent`/`.glass` style inside
+  a shared `GlassEffectContainer` (Next prominent, the other three not) —
+  it's the one floating control surface in the app, the natural fit per
+  Apple's glass guidance (see `<agent-config>/skills/ios-hig/SKILL.md`). Falls
+  back to plain circular buttons below iOS 26. No other button in the app
+  uses glass — see that skill for the full reasoning on which buttons qualify
+- Floats over the roster via `.safeAreaInset(edge: .bottom)` rather than
+  sitting in a plain `VStack` beside the list — combatant rows are visible
+  scrolling behind it instead of stopping dead above a hard-edged bar
 
-**Combatant Detail** (tap a combatant row)
-- Shows full combatant info
-- Current reaction status with toggle
-- List of active effects with removal option
-- Button to "Add Effect"
-- Close/back to main list
+**Combatant Detail** (tap anywhere on a row — pushed, not inline)
+- Top bar shows the combatant's name in an editable field (same
+  select-all-on-focus behavior as the session name in the main toolbar) —
+  there's no separate Name field elsewhere on the screen
+- Identity card: Initiative and Armor Class fields
+- Health card: `HealthControlRow` — current/max readout plus damage/heal/
+  grant-temp-HP/increase-max-HP buttons, each prompting for its amount via
+  an inline alert
+- Actions card: Reaction, Concentration, and any `LimitedUse` resources
+- Effects card: the full two-column condition/cooldown grid, named
+  cooldowns/custom effects list, "Add Limited Use…", "Custom effect…"
+- The roster row's own read-only status strip shows only conditions/cooldowns
+  (`combatant.visibleEffects`) — Reaction and Concentration are not shown
+  there, only on this screen. Two designs that tried to unfold this content
+  in place under the roster row instead of pushing to it — a chevron on
+  every row, and before that an auto-expanding current-combatant row — were
+  each tried and reverted (see "Declined" below); a pushed screen is what
+  ships
 
 **Add Effect Modal** (from combatant detail)
 - Effect name input
@@ -375,8 +400,8 @@ couple of iterations: `.principal` centers relative to leading/trailing
 button widths, not the true phone-screen center, so it visibly skewed
 whenever the two flanking toolbar items had unequal width — moved to the
 screen body as a workaround for a while, then back to `.principal` once
-both the leading (back arrow) and trailing (hamburger) items settled on
-being single icons of equal width (see §6), which lets `.principal` center
+both the leading (back arrow) and trailing (add) items settled on being
+single icons of equal width (see §6), which lets `.principal` center
 correctly.
 
 **Round counter**: shown directly below the session name in that same
@@ -517,13 +542,21 @@ descriptive words like "stunned" aren't ownable), and SF Symbols are licensed
 for in-app UI use on Apple platforms (not for app icons/logos, which doesn't
 apply here).
 
-- **Add Effect** gets a "Choose Condition" menu above the free-text name field
-  — picking one fills the name; the free-text field still accepts anything
-  custom, conditions are a convenience, not a restriction
-- Effect badges (combatant list row, "Active Effects" on the detail screen)
-  look up the effect's name against the library (case-insensitive) and show
-  the matching icon/color; unrecognized/custom effect names fall back to a
-  generic sparkle icon in the theme accent color
+- The combatant detail screen's "Effects" card shows every standard condition
+  (plus the single `StandardCooldown`) as a chip in a **fixed two-column
+  grid**, grayscale until tapped — not a wrapping row of variable-width chips,
+  so every chip gets the same, larger tap target regardless of label length.
+  **One tap applies it with its usual duration** and turns the chip colorful
+  with a checkmark; tapping it again removes it — there's no separate "Manage"
+  screen between opening a combatant and changing what's wrong with them. A
+  gear icon appears on an active chip only, for the minority of cases that need
+  a different duration than the default guessed (`EffectEditorView`, see
+  below). Custom (non-standard) effects still go through a name field, via a
+  "Custom effect…" row below the grid.
+- Effect badges (combatant list row, the same grid on the detail screen) look
+  up the effect's name against the library (case-insensitive) and show the
+  matching icon/color; unrecognized/custom effect names fall back to a generic
+  sparkle icon in the theme accent color
 - **Color comes from the condition's category, not the condition** — see
   "Condition colors are information, not decoration" under Design & Theming for
   the five categories and why per-condition hues were dropped
@@ -539,7 +572,7 @@ per-combatant notes — all considered and declined on direct instruction.
 A single toggle (`CombatSession.playerViewEnabled`, not persisted — always
 starts in DM view on load/resume) controls whether HP/AC show exact numbers
 or an approximate read, for when the DM's screen is visible to players.
-There is exactly one control for it, in the toolbar's hamburger menu (§6) —
+There is exactly one control for it, the View button in the bottom bar (§6) —
 not duplicated per-screen — so it's unambiguous which state you're in no
 matter which screen you're looking at.
 
@@ -572,11 +605,14 @@ it. `EncounterStore` persists one JSON file per encounter, mirroring `SessionSto
   per entry; swipe to delete an entry or the whole encounter (no extra
   confirmation dialog, matching the pattern used elsewhere)
 - **Starting from one**: Main Menu → **New Session** opens a dedicated list
-  screen (`NewSessionView`, `Route.newSessionChooser`) — "Fresh Session" or
-  any saved encounter by name, styled like every other list in the app
-  (`cardRowStyle`). Replaced an earlier `confirmationDialog` action sheet,
-  which looked out of place as the one native-chrome sheet in an otherwise
-  fully custom-themed app. Picking an encounter resets the session then
+  screen (`NewSessionView`, `Route.newSessionChooser`) — "Fresh Session", then
+  saved encounters split into "Yours" and "Included" sections (same
+  `ListSections.split` the Encounters library itself uses, so a user's own
+  prepared encounters aren't buried among the built-ins), styled like every
+  other list in the app (`cardRowStyle`). Replaced an earlier
+  `confirmationDialog` action sheet, which looked out of place as the one
+  native-chrome sheet in an otherwise fully custom-themed app. Picking an
+  encounter resets the session then
   calls `addCombatants` once per entry; initiative is always rolled fresh
   per combatant at start time (never stored in the encounter itself) — an
   encounter is a creature list, not a frozen turn order
@@ -634,27 +670,31 @@ is therefore a plain what's-missing check run on every launch.
 
 ### Browsing the libraries
 
-Creatures and Encounters are the same screen twice — a saved library mixing what
-shipped with the app and what the user has built — so they're presented
-identically, from `Common/ListSections.swift` and `Common/SearchBar.swift`:
+Creatures, Encounters, and New Session are presented identically, from
+`Common/ListSections.swift` and `Common/SearchBar.swift`:
 
 - **Two sections, "Yours" above "Included"**, so the handful of things you made
   aren't buried in seventy built-ins. Origin is decided by *name* rather than a
   stored flag: renaming a default makes it yours, editing its stats doesn't. That
   needs no change to the on-disk format and can't fall out of step with the
   default roster. An empty section is hidden entirely rather than shown as a bare
-  header.
-- **Search pinned at the bottom of the screen**, not the system `.searchable`
-  bar under the title — it's where the thumb is on a phone held one-handed at a
-  table, and the combat screen already puts its controls in a bottom bar, so it
-  reads as the same shape rather than a second convention. Its chrome matches
-  that bar: page color, hairline top edge, nothing else.
+  header. The label itself is a plain row inside the `Section`, not the
+  `header:` slot — `List` in `.plain` style pins that slot so it floats and
+  trails the scroll instead of moving with its own rows, and a page-local
+  grouping label shouldn't behave like a sticky navigation element.
+- **Search is the system's own `.searchable` field** (`View.appSearchable`),
+  not a hand-built bar — a fully custom bottom-docked pill was tried and
+  reverted for reading too wide and too heavy next to how search actually
+  looks on iOS 26. On iOS 26+ it's paired with `.searchToolbarBehavior
+  (.minimize)`, the same native glass-search pattern stock apps use (Notes,
+  Files, Photos); below iOS 26 it falls back to plain `.searchable`, still
+  fully native.
 - Terms are ANDed but may match different fields, so narrowing works ("giant
   spider" doesn't return every Giant) and an encounter is findable by what's
   *in* it ("troll boar" finds Bridge Troll). Matching is
   `localizedStandardContains` — case- and diacritic-insensitive, as user-facing
   search should be.
-- No results shows `ContentUnavailableView.search(text:)`; the bar itself is
+- No results shows `ContentUnavailableView.search(text:)`; search itself is
   hidden when the library is empty, since there's nothing to filter.
 
 ## Design & Theming
@@ -665,9 +705,15 @@ source of truth for color, spacing (`Theme.Spacing`, a 4pt scale), corner radius
 padding numbers, corner radii, `Color(red:…)` values, or bare `.font(.headline)`
 calls — if a value is missing, a token gets added rather than a one-off written
 inline. `Common/ViewExtensions.swift` holds the shared modifiers built on those
-tokens (`themedScreen`, `cardRowStyle`/`cardRowLayout`, `sectionCard`,
+tokens (`themedScreen`, `CardRowButtonStyle`/`cardRowLayout`, `sectionCard`,
 `fieldStyle`, `Text.sectionLabel`, `Text.cardHeading`); each exists because the
 same chrome had been copy-pasted across several screens and drifted apart.
+The one deliberate exception is `TurnPromptView`'s sheet background
+(`.presentationBackground(.regularMaterial)`, §9 "The turn prompt") — native
+sheet chrome (drag indicator, corner radius, dimmed backdrop) is drawn by the
+system and doesn't know about this app's palette, so a custom fill there
+looked out of place no matter which `Theme` color it used; the system's own
+material is what actually matches it.
 
 No screen falls back to system-default white/black — a `Form`/`List` is white by
 default and needs `.scrollContentBackground(.hidden)` + `themedScreen()` (see
@@ -676,8 +722,14 @@ default and needs `.scrollContentBackground(.hidden)` + `themedScreen()` (see
 preferred over hand-rolled containers; it's specifically *colors* that must come
 from `Theme`, not a mandate to reskin every control. The navigation bar is the
 one thing SwiftUI can't color at all, so it's set once through
-`Theme.applyNavigationBarAppearance()` from `RootView.init` — without it the bar
-stays on UIKit's neutral system gray and reads as a foreign slab.
+`Theme.applyNavigationBarAppearance()` from `RootView.init` — below iOS 26,
+without it the bar stays on UIKit's neutral system gray and reads as a foreign
+slab, so it's painted with an opaque `Theme.backgroundLift` fill. On iOS 26+ the
+same function instead configures a *transparent* bar, deliberately — that's
+what lets the system's native floating Liquid Glass title bar show through,
+with list content visible scrolling up underneath it. An opaque custom
+background would defeat that: it doesn't just look flat, it paints over
+content that's already scrolling behind the bar either way.
 
 ### Structure is fixed; the palette is chosen
 
@@ -838,18 +890,45 @@ success this goes away* — differing only in the verb, which `kind` supplies. T
 is entirely a consequence of the app not rolling: had it rolled, the two would
 have needed separate rules for evaluating and reporting.
 
-`hint` is free text (`"5–6 on a d6"`, `"DC 14 Con"`), shown in the prompt and
-nowhere else so chips stay short. It is never parsed. `StandardCooldown` offers
-the common recharges as one-tap quick-picks so the extra capability stays out of
-the way until it's wanted.
+`hint` is free text (`"DC 14 Con"`), shown in the prompt and nowhere else so
+chips stay short. It is never parsed. `StandardCooldown` offers a "Recharge"
+one-tap quick-pick so the extra capability stays out of the way until it's
+wanted — it used to offer three DC-specific variants (Recharge 5–6/6/4–6), which
+turned out to be the app inventing clutter of its own: the DM already knows
+what to roll for, and "Recharge" needs no number attached to remind them that a
+roll is owed.
 
 ### The turn prompt
 
-Rolls owed at a turn boundary are asked **once, together, and must be answered**
-(`TurnPromptView`). Not dismissible, no Cancel, and the turn doesn't advance
-until every line has an answer — these are precisely the things that get
-forgotten mid-combat, and a prompt you can wave away is one you will wave away.
-Nothing appears when nothing is owed, which is most turns.
+Rolls owed at a turn boundary are collected **once, together, and must all be
+answered** (`TurnPromptView`) — but shown **one at a time**, not stacked. A
+stacked list was the original design; with several owed together (a couple of
+death saves plus a recharge, say) it had no `ScrollView`, so the self-sizing
+sheet measured a height taller than the screen with no way to reach what
+didn't fit — not scrollable, and dragging the sheet couldn't expand it past
+its own fixed detent either. Now it shows only the next unanswered prompt
+("Roll 2 of 3") and advances automatically as each is answered, which also
+keeps the sheet's height bounded regardless of how many are owed. Freely
+dismissible (swipe away) at any point — nothing is applied until every
+prompt has an answer, so backing out mid-prompt can't half-advance the
+turn; worst case the same prompts reappear the next time you try to
+advance. Nothing appears when nothing is owed, which is most turns.
+
+The sheet's background is the system's own material
+(`.presentationBackground(.regularMaterial)`), a deliberate, scoped exception
+to "everything visual comes from `Theme`" (see Design & Theming) — a flat
+custom fill was tried first and, even once made a single consistent color,
+still looked out of place against sheet chrome the system itself draws (drag
+indicator, corner radius, dimmed backdrop), which doesn't know about this
+app's palette. `.regularMaterial` is what native sheets actually use and
+adapts to light/dark automatically, so this popup reads as a normal iOS
+sheet rather than a themed card wearing sheet chrome.
+
+**Tapping an answer resolves it immediately — there is no Continue button.**
+This is the middle of combat: a mis-tap is rare, and cheap to fix by hand
+(reopen the effect, flip it back). Paying for that rare case with a second
+confirming tap on every single roll was the wrong trade, so the sheet dismisses
+itself the instant the last prompt has an answer.
 
 - End-of-turn rolls for the combatant whose turn is finishing and start-of-turn
   rolls for the one whose turn is beginning are shown **together**, even though
@@ -858,8 +937,10 @@ Nothing appears when nothing is owed, which is most turns.
 - Answers are handed to `nextTurn(resolving:)` rather than applied separately, so
   they land **inside the same undo step** as the advance. Previous rewinds the
   save you just recorded along with the turn it belonged to.
-- Chosen answers stay visible and re-tappable until Continue — a mistap on the
-  first of three prompts shouldn't be unfixable before you've committed.
+- **A compact modal, not a full screen.** `TurnPromptView` measures its own
+  content height and feeds it back into `.presentationDetents` rather than
+  claiming a fixed fraction of the display — a one-line prompt gets a one-line
+  sheet instead of a `.medium` detent floating it in mostly empty space.
 - **The app never rolls and never decides.** Its job is remembering that a roll is
   owed. Everything the DM answers goes through the log, so it's visible and
   undoable like any other event.
@@ -877,6 +958,70 @@ enough to hurt.
 Only death saves use it today, but it's a property of the combatant rather than a
 flag on that feature because it's the same distinction player view will want in
 order to hide the monsters' numbers and not the party's.
+
+### Configuring a duration
+
+`EffectEditorView` is deliberately down to two questions, because the grid
+already covers the common case in one tap: which edge of the owner's turn it
+keys off (**start** or **end** of their turn), and whether it clears on a roll
+or after a fixed number of turns — a **"Requires a save" toggle, on by
+default**, that reveals a turns stepper when switched off. There is no option
+for "until removed" here: a condition that clears itself (Prone standing up,
+Grappled escaping) is cleared the same way it was applied — tapping the chip
+off again — not through a duration setting, so the screen never needs a third
+choice to express it. A roll hint set by a `StandardCooldown` template (none
+currently set one, but a future one might) is carried through unedited if the
+DM only adjusts boundary/turns; the screen doesn't expose it, so reconfiguring
+a recharge can't accidentally erase what it was rolling for.
+
+### Concentration
+
+A bare `Bool` on `Combatant`, not an `Effect` — deliberately, because it has
+nothing to configure: no name, no duration, just on or off. Naming what's being
+concentrated on ("Hold the Bridge") was tried and dropped — it made
+concentration cost as much attention as a condition, for a mechanic that's
+supposed to be a single toggle the DM flips once and forgets until it's
+threatened. It's a chip in its own "Actions" card, above Effects rather than
+inside it — alongside Reaction and any `LimitedUse` resources — since all
+three are checked every single turn regardless of which conditions are active,
+and neither Reaction nor Concentration has a gear (nothing to configure).
+Taking damage while it's on raises the same `TurnPrompt` mechanism everything
+else uses, with the same inverted sense as before (failure ends it, success
+keeps it), and being dropped to 0 HP ends it without asking, since there's
+nothing left to roll for.
+
+Reaction tracking (§3) sits in the same card for the same reason: neither it
+nor concentration is "wrong with you" or "can't do yet" like a condition or
+cooldown, but both are a plain on/off a DM checks constantly, so treating them
+as chips beats giving each a dedicated section to scroll past.
+
+### Limited Use
+
+A named, countable resource — Legendary Actions, a "3/day" ability — that gets
+spent down over the fight rather than toggled on/off (a condition) or waited on
+for one roll (a cooldown). `LimitedUse` (`name`, `total`, `remaining`) lives on
+`Combatant` as its own array, not as an `Effect`: none of the four `DurationType`
+shapes mean anything for "how many are left," so forcing it into that enum would
+mean cases only one feature uses.
+
+- **Created via a compact modal** (name + a count stepper) reached from "Add
+  Limited Use…" in the Actions card — there's no sensible default count to
+  guess the way a condition's usual duration can be, so the DM is asked once,
+  up front, rather than getting a default they immediately have to fix.
+- **Spent one tap at a time**, same motion as `Reaction`, but counting down
+  instead of flipping a bool; the cog (always present, not just once "active"
+  like a condition's — a limited use always has something to configure) reopens
+  the same modal to rename it, change the count, or remove it.
+- **Refills when the round turns over, not on the combatant's own turn.** This
+  is the one place it diverges from `Reaction`'s rule: a Legendary Action
+  budget is meant to be spent across every *other* combatant's turns within the
+  round, so tying its refill to its own owner's turn — the way `Reaction`
+  works — would hand it back before it had the chance to be spent. Both still
+  reset through hooks in the same `nextTurn()`, just at different moments in it.
+- Replaces "Once per encounter" (a `StandardCooldown` with `.untilRemoved`,
+  see above) — that was the same idea with the count hardcoded to exactly one,
+  and it's what changed this from something declined to something built: see
+  "Declined" below.
 
 ### Death saves
 
@@ -926,10 +1071,10 @@ each of those.
 **In the UI**: a pinned strip above the roster, shown only when something is in
 play — they belong to the fight, not to any row, and a strip above the list is
 what says so without needing a label to explain it. Managing them is a separate
-screen (`RoundEffectsView`) rather than a mode of `EffectsView`, because almost
-nothing carries over: there are no conditions to pick from (a bridge isn't
-Frightened), no concentration, and the durations differ. Sharing the screen would
-have meant most of it being conditionally hidden.
+screen (`RoundEffectsView`) rather than a mode of the per-combatant Effects
+card, because almost nothing carries over: there are no conditions to pick from
+(a bridge isn't Frightened), no concentration, and the durations differ. Sharing
+the screen would have meant most of it being conditionally hidden.
 
 This is also the route to lair-action-style mechanics, which were declined as a
 first-class feature but are expressible this way.
@@ -938,15 +1083,32 @@ first-class feature but are expressible this way.
 
 Deliberately not building, each considered and dropped:
 
-- **Ongoing damage amounts**, **limited-use counters**, and **linked
-  concentration** (losing concentration clearing the effects it held up) — all
-  three were on the list and are no longer wanted. The mechanism could carry
-  them; the appetite isn't there, and an unwanted feature costs the same to
-  maintain as a wanted one.
+- **Ongoing damage amounts** and **linked concentration** (losing concentration
+  clearing the effects it held up) — both were on the list and are no longer
+  wanted. The mechanism could carry them; the appetite isn't there, and an
+  unwanted feature costs the same to maintain as a wanted one.
+  (**Limited-use counters**, previously declined alongside these two, were
+  reinstated as `LimitedUse` — see "Limited Use" above — once a concrete need
+  showed up for them: Legendary Actions and similar per-fight resources.)
 - **Auras and zones** — needs a spatial model, and this app deliberately has none.
-- **Legendary and lair actions** as first-class mechanics — excluded on direct
-  instruction.
+- **Legendary and lair actions as first-class mechanics** (tabletop RPG's specific rules
+  for when they trigger and what they cost) — excluded on direct instruction.
+  `LimitedUse` is a generic countable resource a DM can point at that use case,
+  same as round-anchored effects are the generic route to lair-action-style
+  triggers — neither bakes in the ruleset itself.
 - **Anything that resolves a rule** rather than reminding the DM to.
+- **Unfolding combatant detail in place under a roster row**, tried two ways:
+  first an auto-expanding current-combatant row with a reduced control set
+  (Reaction/Concentration but not initiative/AC/Limited Uses), then a chevron
+  on every row unfolding the full `CombatantDetailView` content. Both were
+  reverted for the same underlying reason: SwiftUI's `List` animates a row's
+  own height change internally regardless of whether the app code requests an
+  animation, and no reliable way was found to suppress it — an explicit
+  `.animation(value:)` and, separately, a `disablesAnimations` transaction
+  wrapping the toggle were each tried and the row's own text still visibly
+  slid/flew as it resized. Pushing to `CombatantDetailView` (see "Combatant
+  Detail" above) sidesteps the whole class of bug, since there's no List row
+  being resized.
 
 ## Non-Goals
 
