@@ -19,41 +19,77 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   with the party's hit points. Keep the simulation in the test target so it runs
   with the suite.
 
+## Rule overview
+
+A short index of the rules that matter most. Keep it current: when a rule
+changes, change it here and in the section it points to.
+
+- **Data format changes:** any change to a saved type (`SessionRecord`,
+  `Combatant`, `Effect`, `CreaturePreset`, `Encounter`) needs a test that
+  decodes the previous format and a migration test, so existing saves and
+  presets keep working. See "Session persistence compatibility".
+- **User content is never changed silently:** never modify a custom
+  (user-made) creature or encounter. Only the built-in ones are read-only, and
+  the user can change a built-in only through Clone, which makes their own
+  copy. See "Default content".
+- **Test first:** new logic and every bug fix get a test; see "Testing".
+- **Show the app:** after significant UI, navigation, persistence or model
+  changes, install and launch in the simulator and name the screen to check.
+  See "Looking at UI changes".
+- **Balance:** when built-in creatures or encounters change, run the premade
+  encounter simulation; see "Working guidelines".
+- **Public repo:** no trademark names and no copyrighted material unless its
+  licence allows it; see "Public repo rules".
+
 ## Public repo rules (read before any commit)
 
 This repo is meant to be public. Everything committed is public, including
 history, docs, comments and test data. Before every commit and push, check the
 change against these rules:
 
-- **Trademarks:** no third-party game or brand names in code, docs, names,
-  assets or listing text: tabletop RPG, tabletop RPG, the publisher,
-  the publisher, "5th-edition", a fantasy RPG, and similar. The app is "for tabletop RPGs".
-  Apple marks (phone, tablet, the app store, beta testing) stay out of the app name,
-  the README and any listing text; plain references to Xcode and to Apple's
-  own tools in developer docs are fine.
-- **Copyright:** no rules text and no stat blocks copied from any published
-  ruleset, except SRD 5.2.1 stat blocks (CC BY 4.0). Those are marked
-  `// SRD 5.2.1` in `DefaultContent.swift`, and their credit lives in `NOTICE`,
-  which must keep the exact attribution statement from the SRD. Use only names
-  that are generic words; never use the names the SRD says it renamed or left
-  out for trademark reasons (for example Beholder, Strahd, Orcus, Tiamat,
-  Deck of Many Things). Do not write a comment that says numbers are "not
-  copied" unless that is true.
+- **Trademarks:** the repo contains no trademark names, in code, docs, names,
+  assets, history or listing text. The list of banned names is not committed:
+  it lives in `scripts/banned-terms.local` (git-ignored), and
+  `scripts/public-check.sh` reads it. The app is "for tabletop RPGs".
+- **Copyright:** no copyrighted material unless its licence allows it, and
+  then the licence terms are followed exactly. SRD 5.2.1 stat blocks (CC BY
+  4.0) are the current case: they are marked `// SRD 5.2.1` in
+  `DefaultContent.swift`, and `NOTICE` keeps the SRD's attribution statement
+  word for word. Do not write a comment that says numbers are "not copied"
+  unless that is true.
 - **Personal information:** the developer publishes under their own name, so
   the name in `LICENSE` and in commit authorship is fine. No email addresses
   (other than the GitHub noreply address), phone numbers, postal addresses,
-  device names, home paths (`~/...`, `<agent-config>/...`), or details about
+  device names, home-directory paths (the user's home folder and `.claude` folders), or details about
   other real people.
 - **Secrets:** no `.p8` keys, provisioning profiles, certificates, API keys or
   tokens, in the tree or in history.
 - **History:** a rewrite is the only way to remove something already
   committed, and it needs the developer's approval first.
 
-Run the check in `scripts/public-check.sh` before pushing (once it exists).
+The check in `scripts/public-check.sh` runs in two places. Each clone enables
+the pre-commit hook once with `git config core.hooksPath .githooks`. The GitHub
+Actions workflow `.github/workflows/public-check.yml` runs the check and the
+test suite on every push and pull request. The check needs the repo secret
+`BANNED_TERMS` set to the contents of `scripts/banned-terms.local`. Without that
+secret the workflow fails on purpose.
 
 ## Project overview
 
-**initiative** is a personal iOS app built with SwiftUI, targeting iOS 17+. It's a single-window app with automatic code signing enabled. The home-screen name is **"Combat Companion"** (`INFOPLIST_KEY_CFBundleDisplayName` in `project.yml`) — the repo, Xcode project, module, scheme, and bundle id all stay `initiative`; only the user-facing name changed.
+**initiative** is a personal iOS app built with SwiftUI, targeting iOS 17+. It's a single-window app with automatic code signing enabled. The home-screen name is **"Instant Initiative"** (`INFOPLIST_KEY_CFBundleDisplayName` in `project.yml`) — the repo, Xcode project, module, scheme, and bundle id all stay `initiative`; only the user-facing name changed.
+
+## Development workflow
+
+- **Phone first for redeploys.** The physical device is the preferred one
+  for development. Redeploy to it after each completed change, using the
+  device commands under "Looking at UI changes". The simulator is for quick
+  checks while iterating.
+- **One commit per completed change.** Commit each change as it finishes, not
+  in one batch at the end. Put the tests for that change in the same commit
+  when they make sense. Run `scripts/public-check.sh` before each commit.
+- **Prune redundant tests.** When a test repeats what another test already
+  covers, remove or merge it, in its own commit. Clean up a few at a time as
+  you go, not in a separate big pass.
 
 ## Development commands
 
@@ -62,8 +98,8 @@ Run the check in `scripts/public-check.sh` before pushing (once it exists).
 open initiative.xcodeproj
 ```
 
-**Build & run on connected phone**
-- Select your phone as the target device (top-left device selector in Xcode)
+**Build & run on a connected device**
+- Select your device as the target device (top-left device selector in Xcode)
 - Press ⌘R to build and run
 - First run prompts for Apple ID code signing
 
@@ -212,7 +248,7 @@ project.yml            # XcodeGen configuration (regenerates .xcodeproj)
 
 **Default content** (`Stores/DefaultContent.swift`) is **read-only and
 permanent**. Built-ins can't be deleted, renamed, or edited — rows offer
-Duplicate instead of Delete, the edit sheets open disabled with a Duplicate
+Clone instead of Delete, the edit sheets open disabled with a Clone
 action, and `PresetStore.upsert` refuses to touch a built-in (otherwise adding a
 combatant named "Goblin" rewrites the built-in's stats). `installDefaults()` runs
 on every launch and installs anything missing; adding to the table is all that's
@@ -270,7 +306,7 @@ xcodebuild test -scheme initiative -destination "platform=iOS Simulator,id=<UDID
 ```
 
 Get a UDID from `xcrun simctl list devices available`. Prefer the `id=` form:
-the `name=phone 16 Pro` form has been observed to fail with "Unable to find a
+the `name=` form has been observed to fail with "Unable to find a
 device matching the provided destination specifier" even when a simulator by
 that exact name is listed as available.
 
@@ -295,7 +331,7 @@ and set the last-active pointer with
 then add a *temporary* launch-argument branch in `RootView` that pushes the
 route you want. Delete that branch before committing — it must not ship.
 
-**After significant changes, also build, install, and launch on a real phone**
+**After significant changes, also build, install, and launch on a real device**
 if one is connected — catches device-only issues (letterboxing, signing,
 real-hardware behavior) that the simulator can't. Check connection first:
 
