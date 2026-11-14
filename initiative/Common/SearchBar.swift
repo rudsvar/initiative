@@ -1,88 +1,34 @@
 import SwiftUI
 
-/// A themed search field pinned below a list.
-///
-/// Bottom-anchored rather than the system `.searchable` bar under the navigation
-/// title, for two reasons: it's where the thumb already is on a phone held
-/// one-handed at a table, and the app already puts its primary controls in a bar
-/// at the bottom of the combat screen — so this reads as the same shape rather
-/// than as a second, unrelated convention. Its chrome deliberately matches that
-/// bar: the page color, a hairline along the top edge, nothing else.
-///
-/// Applied through `View.bottomSearchBar(...)` so both list screens get an
-/// identical one from a single definition.
-struct SearchBar: View {
-    @Binding var text: String
-    let prompt: String
-
-    @FocusState private var isFocused: Bool
-
-    var body: some View {
-        HStack(spacing: Theme.Spacing.sm) {
-            Image(systemName: "magnifyingglass")
-                .font(Theme.Typography.iconRow)
-                .foregroundColor(Theme.textTertiary)
-
-            TextField(text: $text) {
-                Text(prompt).foregroundColor(Theme.placeholderText)
-            }
-            .font(Theme.Typography.body)
-            .foregroundColor(Theme.textPrimary)
-            .autocorrectionDisabled()
-            .textInputAutocapitalization(.never)
-            .submitLabel(.search)
-            .focused($isFocused)
-
-            if !text.isEmpty {
-                Button {
-                    text = ""
-                } label: {
-                    Image(systemName: "xmark.circle.fill")
-                        .font(Theme.Typography.iconRow)
-                        .foregroundColor(Theme.textTertiary)
-                }
-                .accessibilityLabel("Clear Search")
-            }
-        }
-        .padding(.horizontal, Theme.Spacing.md)
-        .padding(.vertical, Theme.Spacing.sm)
-        .background(Theme.surfaceRaised)
-        .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous)
-                .stroke(isFocused ? Theme.accent.opacity(0.5) : Theme.border.opacity(0.6),
-                        lineWidth: Theme.hairline)
-        )
-        .padding(.horizontal, Theme.Spacing.sm)
-        .padding(.vertical, Theme.Spacing.sm)
-        .background(Theme.background)
-        .overlay(alignment: .top) {
-            Rectangle()
-                .fill(Theme.border.opacity(0.5))
-                .frame(height: Theme.hairline)
-        }
-    }
-}
-
 extension View {
-    /// Pins a `SearchBar` below this view. `isVisible` is for the case where
-    /// there's nothing to search yet — an empty library shows its
-    /// `ContentUnavailableView` without a search field under it offering to
-    /// filter nothing.
-    func bottomSearchBar(text: Binding<String>, prompt: String, isVisible: Bool = true) -> some View {
-        VStack(spacing: 0) {
-            self
-            if isVisible {
-                SearchBar(text: text, prompt: prompt)
+    /// The system's own search field — not a custom-built bar. On iOS 26+
+    /// this is `.searchable` plus `.searchToolbarBehavior(.minimize)`, which
+    /// is exactly what turns it into the collapsed glass search icon that
+    /// expands into a floating glass field on tap, the same pattern every
+    /// stock iOS 26 app uses (Notes, Files, Photos). A hand-built bar was
+    /// tried here first — full-width, permanently expanded, docked at the
+    /// bottom — and it read as too wide and too heavy next to how search
+    /// actually looks on iOS 26; the system component already gets both the
+    /// sizing and the glass material right for free.
+    ///
+    /// Below iOS 26, `.searchToolbarBehavior` doesn't exist, so this falls
+    /// back to plain `.searchable` — still fully native, just not minimized.
+    ///
+    /// `isVisible` is for the case where there's nothing to search yet — an
+    /// empty library skips search entirely rather than offering to filter
+    /// nothing.
+    @ViewBuilder
+    func appSearchable(text: Binding<String>, prompt: String, isVisible: Bool = true) -> some View {
+        if isVisible {
+            if #available(iOS 26.0, *) {
+                self
+                    .searchable(text: text, prompt: prompt)
+                    .searchToolbarBehavior(.minimize)
+            } else {
+                self.searchable(text: text, prompt: prompt)
             }
+        } else {
+            self
         }
     }
-}
-
-#Preview {
-    VStack {
-        Spacer()
-    }
-    .bottomSearchBar(text: .constant(""), prompt: "Search creatures")
-    .themedScreen()
 }

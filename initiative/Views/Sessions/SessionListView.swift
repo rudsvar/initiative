@@ -28,7 +28,7 @@ struct SessionListView: View {
                                     .foregroundColor(Theme.textTertiary)
                             }
                         }
-                        .cardRowStyle()
+                        .buttonStyle(CardRowButtonStyle())
                         .cardRowLayout()
                         .swipeActions(edge: .trailing) {
                             // No extra confirmation dialog here: swipe-to-reveal + tap

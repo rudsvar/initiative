@@ -9,12 +9,29 @@ struct NewSessionView: View {
     let encounterStore: EncounterStore
     @Binding var path: NavigationPath
 
-    // Read once per appearance rather than inside `body`: listEncounters() hits
-    // disk, and body can re-run any number of times per frame.
-    @State private var encounters: [Encounter] = []
+    // Seeded eagerly rather than defaulting to `[]` and filling in via
+    // `.onAppear` — see the matching note on `PresetListView`: an
+    // empty-then-populated flip mounts `.searchable` for the first time on a
+    // later render instead of the first one, which is what reads as the
+    // search field's text doing a tiny resize on load.
+    @State private var encounters: [Encounter]
+    @State private var query = ""
+
+    init(session: CombatSession, encounterStore: EncounterStore, path: Binding<NavigationPath>) {
+        self.session = session
+        self.encounterStore = encounterStore
+        self._path = path
+        _encounters = State(initialValue: encounterStore.listEncounters())
+    }
+
+    private var matches: [Encounter] {
+        encounters.filter { ListSections.matchesAny(query: query, in: $0.searchableText) }
+    }
 
     var body: some View {
         List {
+            // Not filtered by the search query — starting fresh is always an
+            // option regardless of what you typed looking for an encounter.
             Section {
                 Button(action: startFreshSession) {
                     row(
@@ -23,41 +40,64 @@ struct NewSessionView: View {
                         subtitle: "Start empty and add combatants as you go"
                     )
                 }
-                .cardRowStyle()
+                .buttonStyle(CardRowButtonStyle())
                 .cardRowLayout()
             }
 
-            if !encounters.isEmpty {
-                Section {
-                    ForEach(encounters) { encounter in
-                        Button(action: { startSession(from: encounter) }) {
-                            row(
-                                icon: "shield.lefthalf.filled",
-                                title: encounter.name,
-                                subtitle: entryDescription(for: encounter)
-                            )
-                        }
-                        .cardRowStyle()
-                        .cardRowLayout()
-                    }
-                } header: {
-                    Text("From an Encounter")
-                        .sectionLabel()
-                        .listRowInsets(EdgeInsets(
-                            top: Theme.Spacing.lg,
-                            leading: Theme.Spacing.md,
-                            bottom: Theme.Spacing.xs,
-                            trailing: Theme.Spacing.md
-                        ))
-                }
-            }
+            // Split the same way the Encounters library itself does — the
+            // user's own prepared encounters are what they'll reach for most
+            // starting a session, not the built-ins mixed in among them.
+            let groups = ListSections.split(matches, isBuiltIn: \.isBuiltIn)
+            encounterSection("Yours", encounters: groups.mine)
+            encounterSection("Included", encounters: groups.builtIn)
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
+        .appSearchable(text: $query, prompt: "Search encounters", isVisible: !encounters.isEmpty)
         .themedScreen()
         .navigationTitle("New Session")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { encounters = encounterStore.listEncounters() }
+    }
+
+    /// Hidden entirely when empty rather than shown as a bare header — same
+    /// rule the Encounters/Creatures screens use for their own Yours/Included
+    /// split.
+    ///
+    /// The title is a plain row inside the section, not `Section`'s own
+    /// `header:` — a `List` in `.plain` style pins that header slot so it
+    /// floats and follows the scroll instead of moving with its rows, which
+    /// reads as a stray label stuck to the top of the screen. A row placed
+    /// directly in the section's content scrolls normally like everything
+    /// else, which is what a page-local grouping label should do.
+    @ViewBuilder
+    private func encounterSection(_ title: String, encounters sectionEncounters: [Encounter]) -> some View {
+        if !sectionEncounters.isEmpty {
+            Section {
+                Text(title)
+                    .sectionLabel()
+                    .listRowInsets(EdgeInsets(
+                        top: Theme.Spacing.lg,
+                        leading: Theme.Spacing.md,
+                        bottom: Theme.Spacing.xs,
+                        trailing: Theme.Spacing.md
+                    ))
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+
+                ForEach(sectionEncounters) { encounter in
+                    Button(action: { startSession(from: encounter) }) {
+                        row(
+                            icon: "shield.lefthalf.filled",
+                            title: encounter.name,
+                            subtitle: entryDescription(for: encounter)
+                        )
+                    }
+                    .buttonStyle(CardRowButtonStyle())
+                    .cardRowLayout()
+                }
+            }
+        }
     }
 
     private func row(icon: String, title: String, subtitle: String) -> some View {

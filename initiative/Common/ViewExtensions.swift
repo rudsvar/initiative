@@ -7,45 +7,10 @@ extension View {
         self.background(Theme.backgroundGradient.ignoresSafeArea())
     }
 
-    /// The card look used for every list row across the app (combatant rows,
-    /// creature/encounter/session rows). One shared definition so every list
-    /// stays visually consistent instead of each screen inventing its own chrome.
-    ///
-    /// The highlighted state (current-turn combatant) is carried by three things
-    /// at once — a lift to the top surface level, an accent outline, and a solid
-    /// accent bar down the leading edge — rather than by a tinted wash. The bar
-    /// is what makes the active row findable while scanning down the initiative
-    /// column, which a background tint alone doesn't do.
-    func cardRowStyle(isHighlighted: Bool = false) -> some View {
-        self
-            .padding(Theme.Spacing.md)
-            // Full row width regardless of content. Without this a row whose
-            // content doesn't happen to contain a Spacer shrink-wraps, and a list
-            // of them reads as a ragged right edge — which is what the Encounters
-            // list looked like until the card style was made to claim the width
-            // itself rather than relying on each caller to do it.
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(isHighlighted ? Theme.surfaceRaised : Theme.surface)
-            .overlay(alignment: .leading) {
-                if isHighlighted {
-                    Rectangle()
-                        .fill(Theme.accent)
-                        .frame(width: 3)
-                }
-            }
-            .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous)
-                    .stroke(
-                        isHighlighted ? Theme.accent.opacity(0.55) : Theme.border.opacity(0.5),
-                        lineWidth: Theme.hairline
-                    )
-            )
-    }
-
-    /// The standard list-row chrome that goes with `cardRowStyle` — clears the
-    /// system row background and separators so the card is the only visible
-    /// container. Always paired with `cardRowStyle` on `List` rows.
+    /// The standard list-row chrome that goes with `CardRowButtonStyle` —
+    /// clears the system row background and separators so the card is the
+    /// only visible container. Always paired with `CardRowButtonStyle` on
+    /// `List` rows.
     func cardRowLayout() -> some View {
         self
             .listRowSeparator(.hidden)
@@ -87,6 +52,89 @@ extension View {
                 RoundedRectangle(cornerRadius: Theme.Radius.sm, style: .continuous)
                     .stroke(Theme.border.opacity(0.6), lineWidth: Theme.hairline)
             )
+    }
+
+    /// Sizes a sheet to this view's own content height instead of a fixed
+    /// `.presentationDetents` fraction (`.medium` leaves a short prompt floating
+    /// in mostly empty space) — used by small popups like `TurnPromptView` and
+    /// `LimitedUseEditorView` that don't warrant a full navigation screen.
+    func selfSizingSheet() -> some View {
+        modifier(SelfSizingSheetModifier())
+    }
+
+}
+
+/// The pressable counterpart to `cardRowStyle`. A plain `Button` with
+/// `.cardRowStyle()` chained on afterward has no visible feedback on tap
+/// inside a `List` — that chained modifier sits outside the button's own
+/// label, so the button's built-in press-dimming never touches it. This
+/// folds the same background/border/highlight look into a `ButtonStyle`
+/// instead, so `configuration.isPressed` can actually darken it. Use this
+/// (not `.cardRowStyle()`) on every tappable row — combatant, creature,
+/// encounter, session.
+struct CardRowButtonStyle: ButtonStyle {
+    var isHighlighted: Bool = false
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .padding(Theme.Spacing.md)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                configuration.isPressed
+                    ? Theme.accent.opacity(0.15)
+                    : (isHighlighted ? Theme.surfaceRaised : Theme.surface)
+            )
+            .overlay(alignment: .leading) {
+                if isHighlighted {
+                    Rectangle()
+                        .fill(Theme.accent)
+                        .frame(width: 3)
+                }
+            }
+            .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous)
+                    .stroke(
+                        isHighlighted ? Theme.accent.opacity(0.55) : Theme.border.opacity(0.5),
+                        lineWidth: Theme.hairline
+                    )
+            )
+            .scaleEffect(configuration.isPressed ? 0.98 : 1)
+            .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
+    }
+}
+
+private struct HeightPreferenceKey: PreferenceKey {
+    static let defaultValue: CGFloat = 200
+    static func reduce(value: inout CGFloat, nextValue: () -> CGFloat) {
+        value = nextValue()
+    }
+}
+
+private struct SelfSizingSheetModifier: ViewModifier {
+    @State private var height: CGFloat = 200
+
+    func body(content: Content) -> some View {
+        content
+            // Without this, the keyboard's safe-area inset shrinks the space
+            // the `GeometryReader` below measures the instant a `TextField`
+            // inside the sheet becomes focused — which shrinks the reported
+            // height, which shrinks `presentationDetents`, which compresses
+            // the sheet's own layout into overlapping controls (a Stepper
+            // sliding up onto the TextField above it, in `LimitedUseEditorView`).
+            // Ignoring the keyboard here keeps the measured height — and so
+            // the sheet's own size — stable regardless of the keyboard; the
+            // system still slides the whole sheet up to keep the focused
+            // field visible, it just no longer reshapes it in the process.
+            .ignoresSafeArea(.keyboard)
+            .background(
+                GeometryReader { proxy in
+                    Color.clear.preference(key: HeightPreferenceKey.self, value: proxy.size.height)
+                }
+            )
+            .onPreferenceChange(HeightPreferenceKey.self) { height = $0 }
+            .presentationDetents([.height(height)])
+            .presentationDragIndicator(.visible)
     }
 }
 

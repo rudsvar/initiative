@@ -46,6 +46,22 @@ final class ListSectionsTests: XCTestCase {
         XCTAssertTrue(ListSections.matches(query: "  giant   spider  ", in: ["Giant Spider"]))
     }
 
+    // MARK: - Search (OR)
+
+    func testMatchesAnyEmptyQueryMatchesEverything() {
+        XCTAssertTrue(ListSections.matchesAny(query: "", in: ["Goblin"]))
+    }
+
+    /// Encounter search ORs terms — typing "goblin troll" should surface an
+    /// encounter containing either, not require both to appear.
+    func testMatchesAnySucceedsWhenOnlyOneTermMatches() {
+        XCTAssertTrue(ListSections.matchesAny(query: "goblin troll", in: ["Bridge Troll", "Troll", "Boar"]))
+    }
+
+    func testMatchesAnyFailsWhenNoTermMatches() {
+        XCTAssertFalse(ListSections.matchesAny(query: "goblin ogre", in: ["Bridge Troll", "Troll", "Boar"]))
+    }
+
     // MARK: - Origin split
 
     func testSplitPutsUserContentFirstAndPreservesOrder() {

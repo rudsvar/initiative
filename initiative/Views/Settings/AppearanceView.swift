@@ -22,19 +22,25 @@ struct AppearanceView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 
+    // The title is a plain row inside the section, not `Section`'s own
+    // `header:` — a `List` in `.plain` style pins that header slot so it
+    // floats and follows the scroll instead of moving with its rows.
     private func section(_ title: String, themes: [ThemeIdentifier]) -> some View {
         Section {
+            Text(title)
+                .sectionLabel()
+                .listRowSeparator(.hidden)
+                .listRowBackground(Color.clear)
+
             ForEach(themes) { theme in
                 Button {
                     controller.selection = theme
                 } label: {
                     ThemeOptionRow(theme: theme, isSelected: controller.selection == theme)
                 }
-                .cardRowStyle(isHighlighted: controller.selection == theme)
+                .buttonStyle(CardRowButtonStyle(isHighlighted: controller.selection == theme))
                 .cardRowLayout()
             }
-        } header: {
-            Text(title).sectionLabel()
         }
     }
 }

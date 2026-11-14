@@ -98,9 +98,24 @@ extension Theme {
     /// place too.
     static func applyNavigationBarAppearance() {
         let appearance = UINavigationBarAppearance()
-        appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = UIColor(backgroundLift)
-        appearance.shadowColor = UIColor(border.opacity(0.5))
+        // Below iOS 26: opaque, painted in the app's own surface color —
+        // `.preferredColorScheme` alone leaves the bar on UIKit's neutral
+        // system gray, and there's no plain SwiftUI way to recolor it.
+        //
+        // iOS 26+: transparent instead, so the system's native floating
+        // Liquid Glass bar shows through and list content is visible
+        // scrolling up underneath it, the way every other iOS 26 app's title
+        // bar behaves — an opaque custom background would paint over that
+        // and make the bar look like a flat pre-26 slab despite running on
+        // glass hardware. Title text keeps the app's own serif/color even
+        // here; only the *backdrop* defers to the system.
+        if #available(iOS 26.0, *) {
+            appearance.configureWithTransparentBackground()
+        } else {
+            appearance.configureWithOpaqueBackground()
+            appearance.backgroundColor = UIColor(backgroundLift)
+            appearance.shadowColor = UIColor(border.opacity(0.5))
+        }
 
         appearance.titleTextAttributes = [
             .foregroundColor: UIColor(textPrimary),
@@ -110,6 +125,17 @@ extension Theme {
             .foregroundColor: UIColor(textPrimary),
             .font: UIFont.preferredFont(forTextStyle: .largeTitle).serif,
         ]
+
+        // Pins the `.searchable` field's text to the system's own default
+        // search font up front. Without this it briefly inherits the
+        // surrounding nav bar's custom serif title font from this same
+        // appearance proxy on first layout, then gets corrected to the
+        // system's plain body font a frame later — visible as the search
+        // field's text doing a tiny resize/font-swap right as the screen
+        // appears. Search fields are one thing this app leaves fully native
+        // (see `Common/SearchBar.swift`), so this just makes that consistent
+        // from frame one instead of after a visible correction.
+        UITextField.appearance(whenContainedInInstancesOf: [UISearchBar.self]).font = .preferredFont(forTextStyle: .body)
 
         UINavigationBar.appearance().standardAppearance = appearance
         UINavigationBar.appearance().scrollEdgeAppearance = appearance
@@ -191,7 +217,7 @@ extension Theme {
 
         /// Tabular figures at a text style's size, for stat readouts (HP, AC).
         static let stat = Font.system(.caption, design: .rounded).monospacedDigit()
-        static let statLarge = Font.system(.title3, design: .rounded).weight(.bold).monospacedDigit()
+        static let statLarge = Font.system(.headline, design: .rounded).weight(.bold).monospacedDigit()
         /// A glyph that sits inline with adjacent text (the heart beside an HP
         /// value, the skull beside a name). A text style rather than a point size
         /// so it grows with the text it's sitting next to.

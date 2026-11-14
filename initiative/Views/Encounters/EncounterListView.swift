@@ -8,12 +8,23 @@ struct EncounterListView: View {
     let encounterStore: EncounterStore
     let presetStore: PresetStore
 
-    @State private var encounters: [Encounter] = []
+    // Seeded eagerly rather than defaulting to `[]` and filling in via
+    // `.onAppear` — see the matching note on `PresetListView`: an
+    // empty-then-populated flip mounts `.searchable` for the first time on a
+    // later render instead of the first one, which is what reads as the
+    // search field's text doing a tiny resize on load.
+    @State private var encounters: [Encounter]
     @State private var editingEncounter: Encounter?
     @State private var query = ""
 
+    init(encounterStore: EncounterStore, presetStore: PresetStore) {
+        self.encounterStore = encounterStore
+        self.presetStore = presetStore
+        _encounters = State(initialValue: encounterStore.listEncounters())
+    }
+
     private var matches: [Encounter] {
-        encounters.filter { ListSections.matches(query: query, in: $0.searchableText) }
+        encounters.filter { ListSections.matchesAny(query: query, in: $0.searchableText) }
     }
 
     var body: some View {
@@ -37,7 +48,7 @@ struct EncounterListView: View {
                 .scrollDismissesKeyboard(.interactively)
             }
         }
-        .bottomSearchBar(text: $query, prompt: "Search encounters and creatures", isVisible: !encounters.isEmpty)
+        .appSearchable(text: $query, prompt: "Search encounters or creatures", isVisible: !encounters.isEmpty)
         .themedScreen()
         .navigationTitle("Encounters")
         .navigationBarTitleDisplayMode(.inline)
@@ -59,10 +70,19 @@ struct EncounterListView: View {
 
     /// Hidden entirely when empty rather than shown as a bare header — see the
     /// matching helper on the Creatures screen, which both lists mirror.
+    ///
+    /// The title is a plain row inside the section, not `Section`'s own
+    /// `header:` — a `List` in `.plain` style pins that header slot so it
+    /// floats and follows the scroll instead of moving with its rows.
     @ViewBuilder
     private func section(_ title: String, encounters sectionEncounters: [Encounter]) -> some View {
         if !sectionEncounters.isEmpty {
             Section {
+                Text(title)
+                    .sectionLabel()
+                    .listRowSeparator(.hidden)
+                    .listRowBackground(Color.clear)
+
                 ForEach(sectionEncounters) { encounter in
                     Button(action: { editingEncounter = encounter }) {
                         VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
@@ -76,7 +96,7 @@ struct EncounterListView: View {
                                 .multilineTextAlignment(.leading)
                         }
                     }
-                    .cardRowStyle()
+                    .buttonStyle(CardRowButtonStyle())
                     .cardRowLayout()
                     // Built-in encounters are fixtures: no deleting, no editing,
                     // only copying. Same rule as the Creatures screen.
@@ -98,8 +118,6 @@ struct EncounterListView: View {
                         }
                     }
                 }
-            } header: {
-                Text(title).sectionLabel()
             }
         }
     }

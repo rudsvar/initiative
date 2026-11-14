@@ -21,7 +21,7 @@ struct MainMenuView: View {
                 VStack(spacing: Theme.Spacing.xxl) {
                     Spacer(minLength: 0)
 
-                    Text("Initiative")
+                    Text("Combat Companion")
                         .font(Theme.Typography.display)
                         .foregroundColor(Theme.textPrimary)
                         .multilineTextAlignment(.center)

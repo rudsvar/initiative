@@ -30,6 +30,19 @@ enum ListSections {
         }
     }
 
+    /// Same as `matches`, but terms are ORed instead of ANDed — any one term
+    /// matching any one field is enough. Used for encounter search rather
+    /// than requiring every typed word to match: an encounter's fields are a
+    /// name plus a whole lineup of creature names, and wanting "goblin" *or*
+    /// "troll" is a more common search there than wanting every word to land.
+    static func matchesAny(query: String, in fields: [String]) -> Bool {
+        let terms = query.split(whereSeparator: \.isWhitespace)
+        guard !terms.isEmpty else { return true }
+        return terms.contains { term in
+            fields.contains { $0.localizedStandardContains(term) }
+        }
+    }
+
     // MARK: - Origin
 
     /// Splits a list into the user's own entries and the ones that shipped with
