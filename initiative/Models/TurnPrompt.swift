@@ -13,9 +13,10 @@ struct TurnPrompt: Identifiable, Hashable {
         /// A death save: both outcomes count toward their own total.
         case deathSave
         /// A concentration check. **Inverted** from `effect`: failing is what
-        /// removes it, because the roll is to *keep* the thing rather than to
-        /// shake it off.
-        case concentration(id: UUID)
+        /// ends it, because the roll is to *keep* the thing rather than to
+        /// shake it off. No id — concentration is a bare flag on the combatant,
+        /// not an `Effect`, so `combatantID` alone says what it's about.
+        case concentration
         /// A roll owed by something anchored to the round rather than to any
         /// combatant. Resolves like `effect`: succeeding removes it.
         case roundEffect(id: UUID)
@@ -36,23 +37,11 @@ struct TurnPrompt: Identifiable, Hashable {
     /// Running tally, for death saves only.
     let deathSaves: DeathSaves?
 
-    /// Labels for the two answers. Death saves count both outcomes, so "Not yet"
-    /// would be a lie — a failed death save is not nothing happening.
-    var successLabel: String {
-        switch subject {
-        case .deathSave: return "Success"
-        case .concentration: return "Held it"
-        case .effect, .roundEffect: return "Made it"
-        }
-    }
-
-    /// "Not yet" would be a lie for the two subjects where failing means
-    /// something happened rather than nothing.
-    var failureLabel: String {
-        switch subject {
-        case .deathSave: return "Failure"
-        case .concentration: return "Lost it"
-        case .effect, .roundEffect: return "Not yet"
-        }
-    }
+    /// Labels for the two answers — always the same two words regardless of
+    /// subject. Per-subject phrasing ("Made it"/"Not yet", "Held it"/"Lost
+    /// it") was tried first, but every prompt already states what's being
+    /// rolled for in its own `title`, so restating the outcome in different
+    /// words each time added variety without adding information.
+    var successLabel: String { "Success" }
+    var failureLabel: String { "Failure" }
 }

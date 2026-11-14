@@ -261,10 +261,54 @@ extension CodableCompatibilityTests {
         XCTAssertEqual(decoded, original)
     }
 
-    func testConcentrationEffectRoundTrips() throws {
-        let original = Effect(name: "Hold the Bridge", durationType: .untilRemoved, kind: .concentration)
-        let decoded = try JSONDecoder().decode(Effect.self, from: JSONEncoder().encode(original))
-        XCTAssertEqual(decoded.kind, .concentration)
-        XCTAssertEqual(decoded.durationType, .untilRemoved)
+    func testCombatantWithoutIsConcentratingDecodesAsFalse() throws {
+        let json = """
+        {"id":"\(UUID().uuidString)","name":"Wren","initiative":12}
+        """.data(using: .utf8)!
+
+        XCTAssertFalse(try JSONDecoder().decode(Combatant.self, from: json).isConcentrating)
+    }
+
+    func testIsConcentratingRoundTrips() throws {
+        var combatant = Combatant(id: UUID(), name: "Wren", initiative: 12)
+        combatant.isConcentrating = true
+
+        let decoded = try JSONDecoder().decode(Combatant.self, from: JSONEncoder().encode(combatant))
+
+        XCTAssertTrue(decoded.isConcentrating)
+    }
+
+    func testCombatantWithoutLimitedUsesDecodesEmpty() throws {
+        let json = """
+        {"id":"\(UUID().uuidString)","name":"Wren","initiative":12}
+        """.data(using: .utf8)!
+
+        XCTAssertTrue(try JSONDecoder().decode(Combatant.self, from: json).limitedUses.isEmpty)
+    }
+
+    func testLimitedUsesRoundTrip() throws {
+        var combatant = Combatant(id: UUID(), name: "Ancient Dragon", initiative: 20)
+        combatant.limitedUses = [LimitedUse(name: "Legendary Actions", total: 3, remaining: 1)]
+
+        let decoded = try JSONDecoder().decode(Combatant.self, from: JSONEncoder().encode(combatant))
+
+        XCTAssertEqual(decoded.limitedUses, combatant.limitedUses)
+    }
+
+    func testCombatantWithoutMaxHPIncreasedDecodesAsFalse() throws {
+        let json = """
+        {"id":"\(UUID().uuidString)","name":"Wren","initiative":12}
+        """.data(using: .utf8)!
+
+        XCTAssertFalse(try JSONDecoder().decode(Combatant.self, from: json).maxHPIncreased)
+    }
+
+    func testMaxHPIncreasedRoundTrips() throws {
+        var combatant = Combatant(id: UUID(), name: "Wren", initiative: 12)
+        combatant.maxHPIncreased = true
+
+        let decoded = try JSONDecoder().decode(Combatant.self, from: JSONEncoder().encode(combatant))
+
+        XCTAssertTrue(decoded.maxHPIncreased)
     }
 }

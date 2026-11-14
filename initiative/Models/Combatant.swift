@@ -12,6 +12,12 @@ struct Combatant: Identifiable, Codable {
     /// isn't capped by `maxHP`, and once spent it's gone.
     var temporaryHP: Int?
 
+    /// Set once `CombatSession.increaseMaxHP` has ever raised this combatant's
+    /// ceiling (a buff, a level-up mid-fight). Drives bolding the Max readout in
+    /// the compact health row — a plain HP edit through the max-HP field doesn't
+    /// set it, since that's correcting a number rather than boosting it.
+    var maxHPIncreased: Bool = false
+
     /// Whether this is one of the party rather than something they're fighting.
     ///
     /// Only death saves use it today (an NPC at 0 HP is simply dead; a player
@@ -19,6 +25,17 @@ struct Combatant: Identifiable, Codable {
     /// on that feature because it's the same distinction player view will want in
     /// order to hide the monsters' numbers and not the party's.
     var isPlayer: Bool = false
+
+    /// Something the combatant is actively holding — no name, no duration, just
+    /// on or off. Taking damage while this is true threatens it and raises a
+    /// check; see `CombatSession.applyDamage`. Deliberately not an `Effect`: it
+    /// carries no configuration of its own, so a stored name/duration would be
+    /// clutter with nothing to say.
+    var isConcentrating: Bool = false
+
+    /// Countable resources like Legendary Actions — see `LimitedUse`. Resets to
+    /// full at the start of this combatant's own turn, same rule as `Reaction`.
+    var limitedUses: [LimitedUse] = []
 
     /// Non-nil once this combatant has started dying. See `DeathSaves`.
     var deathSaves: DeathSaves?
@@ -78,7 +95,7 @@ struct Combatant: Identifiable, Codable {
     // MARK: - Codable
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, initiative, effects, maxHP, currentHP, armorClass, temporaryHP, isPlayer, deathSaves
+        case id, name, initiative, effects, maxHP, currentHP, armorClass, temporaryHP, isPlayer, isConcentrating, limitedUses, deathSaves, maxHPIncreased
     }
 
     /// Written out by hand rather than synthesized: Swift's synthesized decoding
@@ -99,6 +116,9 @@ struct Combatant: Identifiable, Codable {
         armorClass = try container.decodeIfPresent(Int.self, forKey: .armorClass)
         temporaryHP = try container.decodeIfPresent(Int.self, forKey: .temporaryHP)
         isPlayer = try container.decodeIfPresent(Bool.self, forKey: .isPlayer) ?? false
+        isConcentrating = try container.decodeIfPresent(Bool.self, forKey: .isConcentrating) ?? false
+        limitedUses = try container.decodeIfPresent([LimitedUse].self, forKey: .limitedUses) ?? []
         deathSaves = try container.decodeIfPresent(DeathSaves.self, forKey: .deathSaves)
+        maxHPIncreased = try container.decodeIfPresent(Bool.self, forKey: .maxHPIncreased) ?? false
     }
 }

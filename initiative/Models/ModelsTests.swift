@@ -744,6 +744,27 @@ final class CombatSessionTests: XCTestCase {
         XCTAssertEqual(session.combatants[0].currentHP, 5)
     }
 
+    func testIncreaseMaxHPSetsMaxHPIncreasedFlag() {
+        session.addCombatant(name: "Goblin", initiative: 10, maxHP: 10)
+        let id = session.combatants[0].id
+        XCTAssertFalse(session.combatants[0].maxHPIncreased)
+
+        session.increaseMaxHP(for: id, amount: 5)
+
+        XCTAssertTrue(session.combatants[0].maxHPIncreased)
+    }
+
+    func testDeleteMaxHPIncreaseEntryClearsMaxHPIncreasedFlag() {
+        session.addCombatant(name: "Goblin", initiative: 10, maxHP: 10)
+        let id = session.combatants[0].id
+        session.increaseMaxHP(for: id, amount: 5)
+        let increaseEntry = session.log.first { $0.hpOperation == .maxHPIncrease(amount: 5) }!
+
+        session.deleteLogEntry(increaseEntry.id)
+
+        XCTAssertFalse(session.combatants[0].maxHPIncreased)
+    }
+
     func testAddCombatantsSpawnsCountWithNumberedNames() {
         session.addCombatants(name: "Goblin", initiative: nil, maxHP: 5, count: 3)
 

@@ -8,11 +8,6 @@ import Foundation
 enum EffectKind: String, Codable {
     case condition
     case cooldown
-    /// Something the combatant is actively maintaining. Neither "wrong with you"
-    /// nor "can't do yet" — it's a thing you're *holding*, and the interesting
-    /// property is that taking damage threatens it. See
-    /// `CombatSession.applyDamage`.
-    case concentration
 }
 
 /// Which edge of a turn something happens on.

@@ -197,25 +197,37 @@ class CombatSession {
         )
     }
 
-    /// Damage threatens whatever the combatant is holding. Being dropped to 0
-    /// ends it outright — there's nothing to roll for — otherwise the DM is asked.
+    /// Damage threatens concentration. Being dropped to 0 ends it outright —
+    /// there's nothing to roll for — otherwise the DM is asked.
     private func concentrationCheck(at index: Int, afterTaking amount: Int) -> TurnPrompt? {
-        guard let effect = combatants[index].effects.first(where: { $0.kind == .concentration }) else { return nil }
+        guard combatants[index].isConcentrating else { return nil }
         guard combatants[index].currentHP ?? 0 > 0 else {
-            combatants[index].effects.removeAll { $0.id == effect.id }
-            appendLog("\(combatants[index].name) lost \(effect.name)", combatantId: combatants[index].id)
+            combatants[index].isConcentrating = false
+            appendLog("\(combatants[index].name) lost concentration", combatantId: combatants[index].id)
             return nil
         }
         return TurnPrompt(
-            id: effect.id,
+            id: UUID(),
             combatantID: combatants[index].id,
             combatantName: combatants[index].name,
-            subject: .concentration(id: effect.id),
-            title: "Roll to hold \(effect.name)",
+            subject: .concentration,
+            title: "Roll to hold concentration",
             // The damage, not a DC: the threshold is a rule, and rules are the
             // DM's. What the app knows is how hard they were hit.
             hint: "Took \(amount) damage",
             deathSaves: nil
+        )
+    }
+
+    /// Concentration is a bare flag rather than an `Effect` — no name, no
+    /// duration, just a thing that's true until damage threatens it or the DM
+    /// turns it off by hand.
+    func toggleConcentration(for id: UUID) {
+        guard let index = combatants.firstIndex(where: { $0.id == id }) else { return }
+        combatants[index].isConcentrating.toggle()
+        appendLog(
+            "\(combatants[index].name) \(combatants[index].isConcentrating ? "started" : "stopped") concentrating",
+            combatantId: id
         )
     }
 
@@ -264,6 +276,7 @@ class CombatSession {
               let current = combatants[index].currentHP else { return }
         combatants[index].maxHP = maxHP + amount
         combatants[index].currentHP = current + amount
+        combatants[index].maxHPIncreased = true
         appendLog(
             "\(combatants[index].name)'s max HP increased by \(amount) (\(combatants[index].currentHP!)/\(combatants[index].maxHP!) HP)",
             combatantId: id,
@@ -288,6 +301,7 @@ class CombatSession {
         var maxHP: Int?
         var currentHP: Int?
         var temporaryHP: Int?
+        var maxHPIncreased = false
         for entry in log where entry.combatantId == combatantId {
             switch entry.hpOperation {
             case .enableTracking(let amount):
@@ -307,6 +321,7 @@ class CombatSession {
                 guard let max = maxHP, let current = currentHP else { continue }
                 maxHP = max + amount
                 currentHP = current + amount
+                maxHPIncreased = true
             case nil:
                 continue
             }
@@ -314,6 +329,7 @@ class CombatSession {
         combatants[index].maxHP = maxHP
         combatants[index].currentHP = currentHP
         combatants[index].temporaryHP = temporaryHP
+        combatants[index].maxHPIncreased = maxHPIncreased
         // Deleting the log entry that dropped someone to 0 has to take the death
         // saves with it, or they'd be left rolling at full health.
         if let currentHP, currentHP > 0 {
@@ -415,6 +431,58 @@ class CombatSession {
             resetReaction(for: id)
         } else {
             useReaction(for: id)
+        }
+    }
+
+    // MARK: - Limited uses
+
+    /// Legendary Actions and the like: a countable resource, not an on/off. The
+    /// modal that creates one asks for a count up front because there's no
+    /// sensible default to guess the way a condition's usual duration can be.
+    func addLimitedUse(name: String, total: Int, to id: UUID) {
+        guard let index = combatants.firstIndex(where: { $0.id == id }) else { return }
+        let use = LimitedUse(name: name, total: total)
+        combatants[index].limitedUses.append(use)
+        appendLog("\(combatants[index].name): \(use.name) (\(use.total) uses)", combatantId: id)
+    }
+
+    /// Renaming or changing the count via the cog — clamps `remaining` to the
+    /// new `total` so shrinking the count can't leave more remaining than exist.
+    func updateLimitedUse(_ use: LimitedUse, on id: UUID) {
+        guard let index = combatants.firstIndex(where: { $0.id == id }),
+              let useIndex = combatants[index].limitedUses.firstIndex(where: { $0.id == use.id }) else { return }
+        var clamped = use
+        clamped.remaining = min(clamped.remaining, clamped.total)
+        combatants[index].limitedUses[useIndex] = clamped
+    }
+
+    func removeLimitedUse(_ useID: UUID, from id: UUID) {
+        guard let index = combatants.firstIndex(where: { $0.id == id }) else { return }
+        combatants[index].limitedUses.removeAll { $0.id == useID }
+    }
+
+    /// Spends one use, same tap-to-activate motion as `toggleReaction` but
+    /// counting down instead of flipping a bool. Does nothing once exhausted —
+    /// the cog is how a DM corrects a mistaken tap, not another tap here.
+    func useLimitedUse(_ useID: UUID, on id: UUID) {
+        guard let index = combatants.firstIndex(where: { $0.id == id }),
+              let useIndex = combatants[index].limitedUses.firstIndex(where: { $0.id == useID }),
+              combatants[index].limitedUses[useIndex].remaining > 0 else { return }
+        combatants[index].limitedUses[useIndex].remaining -= 1
+        let use = combatants[index].limitedUses[useIndex]
+        appendLog("\(combatants[index].name) used \(use.name) (\(use.remaining)/\(use.total) left)", combatantId: id)
+    }
+
+    /// Refills every limited use on every combatant when the round turns over —
+    /// unlike `Reaction`, these aren't tied to one combatant's own turn: a
+    /// Legendary Action budget (and anything else tracked this way) reads more
+    /// naturally as "you get this many per round" than "this many by the time
+    /// your turn comes back around".
+    private func resetLimitedUses() {
+        for index in combatants.indices {
+            for useIndex in combatants[index].limitedUses.indices {
+                combatants[index].limitedUses[useIndex].remaining = combatants[index].limitedUses[useIndex].total
+            }
         }
     }
 
@@ -534,13 +602,12 @@ class CombatSession {
                 appendLog("\(combatants[index].name) failed the roll for \(effect.name)", combatantId: combatants[index].id)
             }
 
-        case .concentration(let effectID):
-            guard let effect = combatants[index].effects.first(where: { $0.id == effectID }) else { return }
+        case .concentration:
             if succeeded {
-                appendLog("\(combatants[index].name) held \(effect.name)", combatantId: combatants[index].id)
+                appendLog("\(combatants[index].name) held concentration", combatantId: combatants[index].id)
             } else {
-                combatants[index].effects.removeAll { $0.id == effectID }
-                appendLog("\(combatants[index].name) lost \(effect.name)", combatantId: combatants[index].id)
+                combatants[index].isConcentrating = false
+                appendLog("\(combatants[index].name) lost concentration", combatantId: combatants[index].id)
             }
 
         case .roundEffect:
@@ -584,6 +651,7 @@ class CombatSession {
             roundNumber += 1
             appendLog("Round \(roundNumber) began")
             tickRoundEffects()
+            resetLimitedUses()
         }
         let startingCombatantId = combatants[currentTurnIndex].id
 
