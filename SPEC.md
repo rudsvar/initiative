@@ -19,7 +19,7 @@
   no network calls anywhere in the app
 - **Development Environment**: Xcode 15+
 - **App Type**: Native SwiftUI single-window application
-- **Bundle ID**: xyz.rudsvar.initiative
+- **Bundle ID**: xyz.rudsvar.instant-initiative
 
 ## Core Goals
 

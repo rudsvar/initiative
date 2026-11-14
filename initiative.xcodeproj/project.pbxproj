@@ -590,7 +590,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = xyz.rudsvar.initiative;
+				PRODUCT_BUNDLE_IDENTIFIER = "xyz.rudsvar.instant-initiative";
 				PRODUCT_NAME = initiative;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -613,7 +613,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = xyz.rudsvar.initiative;
+				PRODUCT_BUNDLE_IDENTIFIER = "xyz.rudsvar.instant-initiative";
 				PRODUCT_NAME = initiative;
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
