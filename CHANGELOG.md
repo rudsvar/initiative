@@ -4,6 +4,17 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Changed — built-in creatures
+
+- Sixteen built-in creatures now use stat blocks from the System Reference
+  Document 5.2.1, licensed under CC BY 4.0. The credit is in `NOTICE`. The
+  other creatures' numbers were set by hand for this app.
+- Several built-in creature names changed to generic words: Goblin Boss →
+  Goblin Chief, Dire Wolf → Great Wolf, Bandit Captain → Bandit Chief, Cult
+  Fanatic → Cult Zealot, Orc Warchief → Orc Warlord, Skeletal Knight → Bone
+  Knight, Vampire Spawn → Blood Thrall, Lesser Demon → Lesser Fiend, Winged
+  Devil → Winged Fiend, Young Dragon → Young Wyrm.
+
 ### Changed — roll prompt answers are always "Success"/"Failure"
 
 - `TurnPrompt.successLabel`/`failureLabel` used to vary by subject ("Made

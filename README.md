@@ -8,6 +8,11 @@ A free, ad-free initiative tracker for tabletop RPG combat, for iOS.
 - Keeps saved creatures and encounters, and saves the current fight automatically.
 - Runs offline. It is designed to collect nothing: no accounts, analytics or ads.
 
+## Credits
+
+Some built-in creatures use stat blocks from the System Reference Document 5.2.1,
+licensed under CC BY 4.0. See [NOTICE](NOTICE).
+
 ## Status
 
 Work in progress. The app is not released yet, and the

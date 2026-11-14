@@ -37,8 +37,8 @@ final class EncounterStoreTests: XCTestCase {
 
         let ambush = store.listEncounters().first { $0.name == "Goblin Ambush" }
         let goblins = ambush?.entries.first { $0.name == "Goblin" }
-        XCTAssertEqual(goblins?.maxHP, 7)
-        XCTAssertEqual(goblins?.armorClass, 15)
+        XCTAssertEqual(goblins?.maxHP, 8)
+        XCTAssertEqual(goblins?.armorClass, 13)
         XCTAssertEqual(goblins?.count, 4)
     }
 

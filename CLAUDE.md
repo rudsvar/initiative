@@ -15,9 +15,13 @@ change against these rules:
   the README and any listing text; plain references to Xcode and to Apple's
   own tools in developer docs are fine.
 - **Copyright:** no rules text and no stat blocks copied from any published
-  ruleset. Creature names and numbers must be original or come from a source
-  with a licence that allows it, with attribution. Do not write a comment that
-  says numbers are "not copied" unless that is true.
+  ruleset, except SRD 5.2.1 stat blocks (CC BY 4.0). Those are marked
+  `// SRD 5.2.1` in `DefaultContent.swift`, and their credit lives in `NOTICE`,
+  which must keep the exact attribution statement from the SRD. Use only names
+  that are generic words; never use the names the SRD says it renamed or left
+  out for trademark reasons (for example Beholder, Strahd, Orcus, Tiamat,
+  Deck of Many Things). Do not write a comment that says numbers are "not
+  copied" unless that is true.
 - **Personal information:** the developer publishes under their own name, so
   the name in `LICENSE` and in commit authorship is fine. No email addresses
   (other than the GitHub noreply address), phone numbers, postal addresses,

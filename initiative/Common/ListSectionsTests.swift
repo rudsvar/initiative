@@ -18,7 +18,7 @@ final class ListSectionsTests: XCTestCase {
     /// A search bar that only matched exact case would be useless — nobody types
     /// "Wyrm" with the capital.
     func testMatchingIsCaseInsensitive() {
-        XCTAssertTrue(ListSections.matches(query: "goblin boss", in: ["Goblin Boss"]))
+        XCTAssertTrue(ListSections.matches(query: "goblin chief", in: ["Goblin Chief"]))
         XCTAssertTrue(ListSections.matches(query: "GOBLIN", in: ["Goblin"]))
     }
 

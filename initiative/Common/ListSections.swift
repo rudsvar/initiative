@@ -16,7 +16,7 @@ enum ListSections {
     /// Whether `query` matches an item, given every string worth searching in it.
     ///
     /// Terms are ANDed and may match different fields, so "goblin boss" finds the
-    /// Goblin Boss creature and "troll boar" finds the Bridge Troll encounter
+    /// Goblin Chief creature and "troll boar" finds the Bridge Troll encounter
     /// (whose name contains neither word — its *lineup* does).
     ///
     /// Matching is `localizedStandardContains`, which is the case- and

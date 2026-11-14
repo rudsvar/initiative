@@ -87,8 +87,8 @@ final class PresetStoreTests: XCTestCase {
         store.installDefaults()
 
         let goblin = store.preset(named: "Goblin")
-        XCTAssertEqual(goblin?.maxHP, 7)
-        XCTAssertEqual(goblin?.armorClass, 15)
+        XCTAssertEqual(goblin?.maxHP, 8)
+        XCTAssertEqual(goblin?.armorClass, 13)
         XCTAssertEqual(goblin?.initiativeBonus, 2)
     }
 
@@ -195,8 +195,8 @@ final class PresetStoreTests: XCTestCase {
         store.upsert(name: "Goblin", maxHP: 999, armorClass: 99, initiativeBonus: 9)
 
         let goblin = store.preset(named: "Goblin")
-        XCTAssertEqual(goblin?.maxHP, 7)
-        XCTAssertEqual(goblin?.armorClass, 15)
+        XCTAssertEqual(goblin?.maxHP, 8)
+        XCTAssertEqual(goblin?.armorClass, 13)
         XCTAssertEqual(goblin?.initiativeBonus, 2)
     }
 
