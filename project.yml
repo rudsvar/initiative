@@ -33,7 +33,6 @@ targets:
       # itself stay "initiative" so this doesn't touch code signing/provisioning
       # or require reinstalling (a bundle id change loses on-device data).
       INFOPLIST_KEY_CFBundleDisplayName: "Instant Initiative"
-      PRODUCT_BUNDLE_IDENTIFIER: xyz.rudsvar.instant-initiative
       CODE_SIGN_STYLE: Automatic
       CODE_SIGN_IDENTITY: "Apple Development"
       GENERATE_INFOPLIST_FILE: YES

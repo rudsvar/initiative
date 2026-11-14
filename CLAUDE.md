@@ -317,7 +317,7 @@ than guessing from code —
 xcrun simctl boot <UDID>
 xcodebuild build -scheme initiative -destination "platform=iOS Simulator,id=<UDID>"
 xcrun simctl install <UDID> "$(find ~/Library/Developer/Xcode/DerivedData/initiative-*/Build/Products/Debug-iphonesimulator -maxdepth 1 -iname 'initiative.app')"
-xcrun simctl launch <UDID> xyz.rudsvar.instant-initiative
+xcrun simctl launch <UDID> xyz.rudsvar.initiative
 xcrun simctl io <UDID> screenshot shot.png
 ```
 
@@ -325,9 +325,9 @@ There is no way to *tap* from the CLI here (no `cliclick`/`idb`, and System
 Events' `click at` fails against Simulator), so a screen behind navigation can't
 be reached by scripting taps. To see one, seed state and reach it directly:
 write a `SessionRecord` JSON into
-`$(xcrun simctl get_app_container <UDID> xyz.rudsvar.instant-initiative data)/Documents/SavedSessions/`
+`$(xcrun simctl get_app_container <UDID> xyz.rudsvar.initiative data)/Documents/SavedSessions/`
 and set the last-active pointer with
-`xcrun simctl spawn <UDID> defaults write xyz.rudsvar.instant-initiative lastActiveSessionID "<uuid>"`,
+`xcrun simctl spawn <UDID> defaults write xyz.rudsvar.initiative lastActiveSessionID "<uuid>"`,
 then add a *temporary* launch-argument branch in `RootView` that pushes the
 route you want. Delete that branch before committing — it must not ship.
 
@@ -345,7 +345,7 @@ Then, with the device UDID from that output (`Identifier` column):
 xcodebuild build -scheme initiative -destination "id=<device-UDID>"
 xcrun devicectl device install app --device <device-UDID> \
   "$(find ~/Library/Developer/Xcode/DerivedData/initiative-*/Build/Products/Debug-iphoneos -maxdepth 1 -iname 'initiative.app')"
-xcrun devicectl device process launch --device <device-UDID> xyz.rudsvar.instant-initiative
+xcrun devicectl device process launch --device <device-UDID> xyz.rudsvar.initiative
 ```
 
 This installs and foregrounds the app on the phone with no manual Xcode steps —

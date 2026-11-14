@@ -4,12 +4,6 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
-### Changed — bundle ID
-
-- The bundle ID is now `xyz.rudsvar.instant-initiative`, matching the app's
-  name. A build under the old ID is a separate app on the phone, and its saved
-  sessions do not carry over.
-
 ### Changed — built-in creatures
 
 - Sixteen built-in creatures now use stat blocks from the System Reference
