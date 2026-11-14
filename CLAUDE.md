@@ -10,7 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   then make it pass. This applies to all model and store logic.
 - **Show the app after significant changes.** After a change to layout,
   navigation, persistence or model behaviour, boot a simulator, build, install
-  and launch the app so the developer can look at it on the virtual phone. Do
+  and launch the app so the owner can look at it on the virtual phone. Do
   this with the commands in "Looking at UI changes" below, then say which
   screen to check.
 - **Check balance with premade encounters.** When the built-in creatures or
@@ -57,15 +57,15 @@ change against these rules:
   `DefaultContent.swift`, and `NOTICE` keeps the SRD's attribution statement
   word for word. Do not write a comment that says numbers are "not copied"
   unless that is true.
-- **Personal information:** the developer publishes under their own name, so
-  the name in `LICENSE` and in commit authorship is fine. No email addresses
+- **Personal information:** the copyright holder's name in `LICENSE` and in commit
+  authorship is fine, and nothing else about any person is. No email addresses
   (other than the GitHub noreply address), phone numbers, postal addresses,
   device names, home-directory paths (the user's home folder and `.claude` folders), or details about
   other real people.
 - **Secrets:** no `.p8` keys, provisioning profiles, certificates, API keys or
   tokens, in the tree or in history.
 - **History:** a rewrite is the only way to remove something already
-  committed, and it needs the developer's approval first.
+  committed, and it needs the project owner's explicit approval first.
 
 The check in `scripts/public-check.sh` runs in two places. Each clone enables
 the pre-commit hook once with `git config core.hooksPath .githooks`. The GitHub
@@ -355,7 +355,7 @@ touch layout, signing/Info.plist, persistence, or navigation.
 
 The signing team is not in git. `Config/Signing.xcconfig` (committed) includes
 `Config/Signing.local.xcconfig` (git-ignored), which sets `DEVELOPMENT_TEAM` to the
-developer's Apple Developer team ID. On a new machine, copy
+team's Apple Developer team ID. On a new machine, copy
 `Config/Signing.local.xcconfig.example` to `Signing.local.xcconfig` and set the
 ID. Without it, simulator builds still work, but a device build fails with
 "requires a development team". Do not move the ID back into `project.yml`. If the

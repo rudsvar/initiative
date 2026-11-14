@@ -16,8 +16,7 @@ licensed under CC BY 4.0. See [NOTICE](NOTICE).
 ## Status
 
 Work in progress. The app is not released yet, and the
-final name is not decided. Building it needs an Apple Developer account, which
-is still pending.
+final name is not decided. Building it needs an Apple Developer account.
 
 ## AI use
 
