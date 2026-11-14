@@ -27,3 +27,6 @@ Podfile.lock
 .DS_Store
 .AppleDouble
 .LSOverride
+
+# Local signing team (see Config/Signing.xcconfig)
+Config/Signing.local.xcconfig

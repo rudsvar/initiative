@@ -88,6 +88,7 @@
 		1A7840FBA3A62622584D6A22 /* ThemeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeController.swift; sourceTree = "<group>"; };
 		236012BD8426FA8D17541295 /* CodableCompatibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodableCompatibilityTests.swift; sourceTree = "<group>"; };
 		255483B3F433841EC3581AEB /* initiativeTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = initiativeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2A3EC616C676736F8FBC87E6 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
 		2C8308DCF55F94E73FD06573 /* ThemeControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeControllerTests.swift; sourceTree = "<group>"; };
 		2F15EDB5010AF863CF8F00C4 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		2F1E593E997D394D860933FA /* PresetStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetStore.swift; sourceTree = "<group>"; };
@@ -183,6 +184,14 @@
 			path = Settings;
 			sourceTree = "<group>";
 		};
+		89271A27A8A4E774CECACF25 /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				2A3EC616C676736F8FBC87E6 /* Signing.xcconfig */,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
 		8CEEACD12952429FF9ECE8D8 /* Sessions */ = {
 			isa = PBXGroup;
 			children = (
@@ -230,6 +239,7 @@
 		A5C1E857B4CC46D4137AA108 = {
 			isa = PBXGroup;
 			children = (
+				89271A27A8A4E774CECACF25 /* Config */,
 				2E7F87332CB807C03E2A7577 /* initiative */,
 				058B3F850C2FBF935CCA5DCE /* Products */,
 			);
@@ -365,10 +375,11 @@
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
 					4C6A86035534699E7F5ECAC9 = {
-						DevelopmentTeam = YOUR_TEAM_ID;
+						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
 					5E6DF4E626F9E9519FFF6C89 = {
+						DevelopmentTeam = "";
 						ProvisioningStyle = Automatic;
 					};
 				};
@@ -501,6 +512,7 @@
 		};
 		81FE7D6F51B8FB9FA0E268B6 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2A3EC616C676736F8FBC87E6 /* Signing.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
@@ -568,7 +580,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = YOUR_TEAM_ID;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Combat Companion";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -592,7 +603,6 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_TEAM = YOUR_TEAM_ID;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_CFBundleDisplayName = "Combat Companion";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -632,6 +642,7 @@
 		};
 		FC2C7FFEFA10B211A2EE65BB /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 2A3EC616C676736F8FBC87E6 /* Signing.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;

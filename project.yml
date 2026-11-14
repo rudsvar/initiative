@@ -5,6 +5,10 @@ options:
   deploymentTarget:
     iOS: "17.0"
 
+configFiles:
+  Debug: Config/Signing.xcconfig
+  Release: Config/Signing.xcconfig
+
 configs:
   Debug:
     settings: {}
@@ -30,7 +34,6 @@ targets:
       # or require reinstalling (a bundle id change loses on-device data).
       INFOPLIST_KEY_CFBundleDisplayName: "Combat Companion"
       CODE_SIGN_STYLE: Automatic
-      DEVELOPMENT_TEAM: YOUR_TEAM_ID
       GENERATE_INFOPLIST_FILE: YES
       # With GENERATE_INFOPLIST_FILE: YES, Xcode builds Info.plist purely from
       # INFOPLIST_KEY_* build settings — a separate top-level `infoPlist:` dict

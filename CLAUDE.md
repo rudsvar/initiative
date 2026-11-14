@@ -317,13 +317,13 @@ useful for catching things like the Info.plist letterboxing bug that only showed
 up on-device. Skip this for trivial/text-only changes; reserve it for changes that
 touch layout, signing/Info.plist, persistence, or navigation.
 
-`DEVELOPMENT_TEAM` in `project.yml` is set to `YOUR_TEAM_ID` (the developer's personal
-Apple Developer team). Do not blank this out or `xcodegen generate`
-will silently strip signing on every regen and break `xcodebuild build -destination
-generic/platform=iOS` (device build) with "requires a development team". If Xcode ever
-reassigns a different team ID, check `~/Library/Preferences/com.apple.dt.Xcode.plist`
-(`IDEProvisioningTeamByIdentifier`) or a device build's `project.pbxproj` for the
-current value and update `project.yml` to match — don't leave it blank.
+The signing team is not in git. `Config/Signing.xcconfig` (committed) includes
+`Config/Signing.local.xcconfig` (git-ignored), which sets `DEVELOPMENT_TEAM` to the
+developer's Apple Developer team ID. On a new machine, copy
+`Config/Signing.local.xcconfig.example` to `Signing.local.xcconfig` and set the
+ID. Without it, simulator builds still work, but a device build fails with
+"requires a development team". Do not move the ID back into `project.yml`. If the
+team changes, edit only the local file.
 
 **Adding a field to a saved type** (`Combatant`, `Effect`, `CreaturePreset`):
 Swift's *synthesized* `Codable` does **not** fall back to a property's declared
