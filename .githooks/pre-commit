@@ -1,0 +1,4 @@
+#!/bin/sh
+# Runs the public-repo check before every commit. Enable once per clone with:
+#   git config core.hooksPath .githooks
+exec sh scripts/public-check.sh
