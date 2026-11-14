@@ -1,32 +1,42 @@
-# initiative
+# Initiative
 
-A SwiftUI iOS app for personal use.
+A free, ad-free initiative tracker for tabletop RPG combat, for phone.
 
-## Development
+## What it does
 
-### Open in Xcode
-```bash
+- Tracks turn order, hit points, conditions, and effects for a combat.
+- Keeps saved creatures and encounters, and saves the current fight automatically.
+- Runs offline. It is designed to collect nothing: no accounts, analytics or ads.
+
+## Status
+
+Work in progress. The app is not on beta testing or the the app store yet, and the
+final name is not decided. Building it needs an Apple Developer account, which
+is still pending.
+
+## AI use
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/0rwx-AI-X-dark.png">
+  <img src="assets/0rwx-AI-X-light.png" alt="0rwx AI-X logo" width="100">
+</picture>
+
+Most of the code was written with an AI coding assistant. The project is
+labelled **AI MADE (X)** in the [0rwx framework](https://0rwx.com/). The logo is
+CC0 (public domain) from
+[NamtaoProductions/0rwx.com](https://github.com/NamtaoProductions/0rwx.com/).
+
+## Build
+
+Requires Xcode and iOS 17 or later.
+
+```sh
+xcodegen generate
 open initiative.xcodeproj
 ```
 
-### Build & Run
-- Select your phone as the target device
-- Press ⌘R to build and run on device
-- Xcode will prompt for code signing with your Apple ID on first run
+The `.xcodeproj` is generated from `project.yml`; edit that file, not the project.
 
-### Project Structure
-- `initiative/` — Swift source files
-  - `initiativeApp.swift` — App entry point
-  - `ContentView.swift` — Main UI
-  - `Assets.xcassets/` — Images and assets
-- `project.yml` — XcodeGen project definition (regenerates `initiative.xcodeproj`)
+## Licence
 
-### Modifying the Project
-Edit `project.yml` and regenerate:
-```bash
-xcodegen generate
-```
-
-## Requirements
-- Xcode 15+ (supports iOS 17 APIs)
-- phone with iOS 17+
+MIT. See [LICENSE](LICENSE).
