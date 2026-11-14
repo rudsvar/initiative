@@ -2,6 +2,23 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Working guidelines
+
+- **Keep it simple.** The smallest change that works. No speculative
+  abstractions, no features nobody asked for.
+- **Test first when possible (TDD).** Write the failing test, watch it fail,
+  then make it pass. This applies to all model and store logic.
+- **Show the app after significant changes.** After a change to layout,
+  navigation, persistence or model behaviour, boot a simulator, build, install
+  and launch the app so the developer can look at it on the virtual phone. Do
+  this with the commands in "Looking at UI changes" below, then say which
+  screen to check.
+- **Check balance with premade encounters.** When the built-in creatures or
+  encounters change, simulate each premade encounter (a turn-by-turn fight with
+  simple, stated assumptions) and report how the expected damage taken compares
+  with the party's hit points. Keep the simulation in the test target so it runs
+  with the suite.
+
 ## Public repo rules (read before any commit)
 
 This repo is meant to be public. Everything committed is public, including
