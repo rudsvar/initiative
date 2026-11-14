@@ -41,6 +41,9 @@ open initiative.xcodeproj
 
 The `.xcodeproj` is generated from `project.yml`; edit that file, not the project.
 
+Signing, CI secrets and the beta upload are described in [docs/SETUP.md](docs/SETUP.md).
+The open items before a public release are in [docs/RELEASE.md](docs/RELEASE.md).
+
 ## Licence
 
 MIT. See [LICENSE](LICENSE).
