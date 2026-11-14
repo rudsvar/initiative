@@ -316,7 +316,7 @@ next to Next:
 - On iOS 26+ each button gets its own `.glassProminent`/`.glass` style inside
   a shared `GlassEffectContainer` (Next prominent, the other three not) —
   it's the one floating control surface in the app, the natural fit per
-  Apple's glass guidance (see `<agent-config>/skills/ios-hig/SKILL.md`). Falls
+  Apple's glass guidance (see the `ios-hig` skill). Falls
   back to plain circular buttons below iOS 26. No other button in the app
   uses glass — see that skill for the full reasoning on which buttons qualify
 - Floats over the roster via `.safeAreaInset(edge: .bottom)` rather than
@@ -563,7 +563,7 @@ apply here).
 - No new duration mechanism — conditions use the same `DurationType` cases
   (and auto-expiry) as any other effect
 
-Explicitly excluded from this app: legendary/lair actions (tabletop RPG-specific
+Explicitly excluded from this app: legendary/lair actions (ruleset-specific
 mechanic, no generic equivalent worth building), held/delayed turns, private
 per-combatant notes — all considered and declined on direct instruction.
 
@@ -1091,7 +1091,7 @@ Deliberately not building, each considered and dropped:
   reinstated as `LimitedUse` — see "Limited Use" above — once a concrete need
   showed up for them: Legendary Actions and similar per-fight resources.)
 - **Auras and zones** — needs a spatial model, and this app deliberately has none.
-- **Legendary and lair actions as first-class mechanics** (tabletop RPG's specific rules
+- **Legendary and lair actions as first-class mechanics** (one published ruleset's specific rules
   for when they trigger and what they cost) — excluded on direct instruction.
   `LimitedUse` is a generic countable resource a DM can point at that use case,
   same as round-anchored effects are the generic route to lair-action-style

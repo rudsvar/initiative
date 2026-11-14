@@ -2,6 +2,33 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Public repo rules (read before any commit)
+
+This repo is meant to be public. Everything committed is public, including
+history, docs, comments and test data. Before every commit and push, check the
+change against these rules:
+
+- **Trademarks:** no third-party game or brand names in code, docs, names,
+  assets or listing text: tabletop RPG, tabletop RPG, the publisher,
+  the publisher, "5th-edition", a fantasy RPG, and similar. The app is "for tabletop RPGs".
+  Apple marks (phone, tablet, the app store, beta testing) stay out of the app name,
+  the README and any listing text; plain references to Xcode and to Apple's
+  own tools in developer docs are fine.
+- **Copyright:** no rules text and no stat blocks copied from any published
+  ruleset. Creature names and numbers must be original or come from a source
+  with a licence that allows it, with attribution. Do not write a comment that
+  says numbers are "not copied" unless that is true.
+- **Personal information:** the developer's legal name appears only in
+  `LICENSE`. No email addresses, phone numbers, addresses, device names, home
+  paths (`~/...`, `<agent-config>/...`), or names of real people anywhere. Say
+  "the developer" in prose.
+- **Secrets:** no `.p8` keys, provisioning profiles, certificates, API keys or
+  tokens, in the tree or in history.
+- **History:** a rewrite is the only way to remove something already
+  committed, and it needs the developer's approval first.
+
+Run the check in `scripts/public-check.sh` before pushing (once it exists).
+
 ## Project overview
 
 **initiative** is a personal iOS app built with SwiftUI, targeting iOS 17+. It's a single-window app with automatic code signing enabled. The home-screen name is **"Combat Companion"** (`INFOPLIST_KEY_CFBundleDisplayName` in `project.yml`) — the repo, Xcode project, module, scheme, and bundle id all stay `initiative`; only the user-facing name changed.
@@ -173,7 +200,7 @@ built-in's name is never overwritten. Encounters name creatures rather than
 restating stats; keep it that way and `DefaultContentTests` will catch a typo'd
 name.
 
-- Consult the `ios-hig` skill (`<agent-config>/skills/ios-hig/SKILL.md`) before building new
+- Consult the `ios-hig` skill before building new
   screens — practical Apple HIG checklist for this app.
 
 ## Important notes
@@ -246,8 +273,8 @@ and set the last-active pointer with
 then add a *temporary* launch-argument branch in `RootView` that pushes the
 route you want. Delete that branch before committing — it must not ship.
 
-**After significant changes, also build, install, and launch on the real phone**
-("Umbra") if it's connected — catches device-only issues (letterboxing, signing,
+**After significant changes, also build, install, and launch on a real phone**
+if one is connected — catches device-only issues (letterboxing, signing,
 real-hardware behavior) that the simulator can't. Check connection first:
 
 ```bash
@@ -268,7 +295,7 @@ useful for catching things like the Info.plist letterboxing bug that only showed
 up on-device. Skip this for trivial/text-only changes; reserve it for changes that
 touch layout, signing/Info.plist, persistence, or navigation.
 
-`DEVELOPMENT_TEAM` in `project.yml` is set to `YOUR_TEAM_ID` (Rudi Svartveit's personal
+`DEVELOPMENT_TEAM` in `project.yml` is set to `YOUR_TEAM_ID` (the developer's personal
 Apple Developer team). Do not blank this out or `xcodegen generate`
 will silently strip signing on every regen and break `xcodebuild build -destination
 generic/platform=iOS` (device build) with "requires a development team". If Xcode ever

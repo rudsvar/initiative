@@ -159,7 +159,7 @@ All notable changes to this project are documented here, newest first.
   `ToolbarItem` button is automatically glass-styled by the system on iOS 26,
   and manually adding `.buttonStyle(.glass)` to one is redundant and can
   conflict — briefly added, then reverted once traced back to this project's
-  own `<agent-config>/skills/ios-hig/SKILL.md`, which already documents the rule.
+  own `ios-hig` skill, which already documents the rule.
   Glass stays deliberately restricted to the surfaces that skill calls out —
   not spread to every button in the app
 
@@ -1071,20 +1071,20 @@ concentration were dropped rather than deferred — see SPEC → Declined.
   hand-written implementation since its associated-value cases can't synthesize)
 - "Menu" button (top-left) on the combat screen; autosaves on leaving the screen or
   app backgrounding
-- New `ios-hig` skill (`<agent-config>/skills/ios-hig/SKILL.md`)
+- New `ios-hig` skill
 - `SessionStoreTests` and new `CombatSession` reset/record tests (35 tests total)
 
 ### Fixed
 - `DEVELOPMENT_TEAM` in `project.yml` was blank, so every `xcodegen generate`
   silently stripped code signing and broke device builds — set to the correct
-  personal team ID (`YOUR_TEAM_ID`, verified against Xcode's own account records)
+  team ID (verified against Xcode's account records)
 - `CombatantDetailView` was reachable via `NavigationLink` from a `ContentView`
   that had no `NavigationStack` ancestor of its own — fixed as part of introducing
   `RootView`'s app-wide stack
 
 ### Changed
 - UI pass against Apple's Human Interface Guidelines (new `ios-hig` skill at
-  `<agent-config>/skills/ios-hig/SKILL.md`): name/initiative are now separate bordered
+  the `ios-hig` skill): name/initiative are now separate bordered
   text boxes instead of borderless text floating in one row; add button moved
   fully outside the initiative box with clear spacing; bottom bar relabeled
   "Previous Turn"/"Next Turn" with chevrons on the correct (outer) sides

@@ -1,6 +1,6 @@
 # Initiative
 
-A free, ad-free initiative tracker for tabletop RPG combat, for phone.
+A free, ad-free initiative tracker for tabletop RPG combat, for iOS.
 
 ## What it does
 
@@ -10,7 +10,7 @@ A free, ad-free initiative tracker for tabletop RPG combat, for phone.
 
 ## Status
 
-Work in progress. The app is not on beta testing or the the app store yet, and the
+Work in progress. The app is not released yet, and the
 final name is not decided. Building it needs an Apple Developer account, which
 is still pending.
 
