@@ -25,9 +25,9 @@ targets:
           - "**/*.swift"
         excludes:
           - "**/*Tests.swift"
-    resources:
       - path: initiative/Assets.xcassets
     settings:
+      ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
       PRODUCT_NAME: initiative
       # The version users see (1.0). Build numbers are set per upload by CI.
       MARKETING_VERSION: "1.0"
