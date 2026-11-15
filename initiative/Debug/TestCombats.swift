@@ -78,10 +78,10 @@ enum TestCombats {
         return session
     }
 
-    /// Wren is dying with two successes and one failure: checks the tally beside her name.
+    /// Wren is dying with two successes and one failure, and AC 14: checks the tally beside her name and her AC.
     static func dyingWithTally() -> CombatSession {
         let session = CombatSession()
-        session.addCombatant(name: "Wren", initiative: 12, maxHP: 10, isPlayer: true)
+        session.addCombatant(name: "Wren", initiative: 12, maxHP: 10, armorClass: 14, isPlayer: true)
         session.combatants[0].deathSaves = DeathSaves(successes: 2, failures: 1)
         return session
     }

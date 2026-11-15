@@ -226,6 +226,10 @@ extension Theme {
         static let label = Font.system(.caption2).weight(.semibold)
         /// The smallest text: the dying tally's circles.
         static let micro = Font.system(.caption2)
+        /// The dying tally's circles, small enough that two rows fit the name's line.
+        static let tally = Font.system(size: 8)
+        /// The dying mark, the height of the name.
+        static let skull = Font.system(size: 18)
 
         /// Tabular figures at a text style's size, for stat readouts (HP, AC).
         static let stat = Font.system(.caption, design: .rounded).monospacedDigit()
