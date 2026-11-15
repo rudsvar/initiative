@@ -86,6 +86,15 @@ enum TestCombats {
         return session
     }
 
+    /// Alpha has HP tracked; Gamma has none (shows −/−). Checks kill, revive, the swipes
+    /// and Previous undoing them.
+    static func killAndReviveAreUndoable() -> CombatSession {
+        let session = CombatSession()
+        session.addCombatant(name: "Alpha", initiative: 20, maxHP: 7)
+        session.addCombatant(name: "Gamma", initiative: 10)
+        return session
+    }
+
     /// A character with an armor class and no buffers, for armor class tests.
     static func wrenWithArmorClass() -> CombatSession {
         let session = CombatSession()
@@ -106,6 +115,7 @@ extension TestCombats {
         "hpAndACChangesShowUntilTurnStarts": hpAndACChangesShowUntilTurnStarts,
         "wolfWithChanges": wolfWithChanges,
         "dyingWithTally": dyingWithTally,
+        "killAndReviveAreUndoable": killAndReviveAreUndoable,
     ]
 }
 #endif

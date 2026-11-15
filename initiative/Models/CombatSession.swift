@@ -574,15 +574,47 @@ class CombatSession {
         }
     }
 
+    /// Saves the current state so Previous can rewind to it. Used by actions that
+    /// change the fight without advancing the turn.
+    private func recordUndoPoint() {
+        history.append((combatants: combatants, roundEffects: roundEffects, currentTurnIndex: currentTurnIndex, roundNumber: roundNumber, logCount: log.count))
+    }
+
     func removeCombatant(id: UUID) {
         guard let index = combatants.firstIndex(where: { $0.id == id }) else { return }
+        recordUndoPoint()
         let name = combatants[index].name
         combatants.remove(at: index)
         if index < currentTurnIndex || (index == currentTurnIndex && currentTurnIndex == combatants.count) {
             currentTurnIndex = max(0, currentTurnIndex - 1)
         }
-        history.removeAll()
         appendLog("\(name) removed from combat")
+    }
+
+    /// Kills a combatant: a tracked HP goes to 0 and death saves end; a combatant with
+    /// no HP is marked dead. Undoable with Previous.
+    func kill(_ id: UUID) {
+        guard let index = combatants.firstIndex(where: { $0.id == id }), !combatants[index].isDead else { return }
+        recordUndoPoint()
+        if combatants[index].currentHP != nil {
+            combatants[index].currentHP = 0
+            combatants[index].deathSaves = nil
+        } else {
+            combatants[index].markedDead = true
+        }
+        appendLog("\(combatants[index].name) was killed", combatantId: id)
+    }
+
+    /// Brings a dead combatant back. A tracked HP at 0 comes back to 1. Undoable with Previous.
+    func revive(_ id: UUID) {
+        guard let index = combatants.firstIndex(where: { $0.id == id }), combatants[index].isDead else { return }
+        recordUndoPoint()
+        if combatants[index].currentHP != nil {
+            combatants[index].currentHP = max(1, combatants[index].currentHP ?? 1)
+            combatants[index].deathSaves = nil
+        }
+        combatants[index].markedDead = nil
+        appendLog("\(combatants[index].name) was revived", combatantId: id)
     }
 
     // MARK: - Turn order

@@ -353,15 +353,14 @@ final class CombatSessionTests: XCTestCase {
         XCTAssertEqual(session.currentCombatant?.id, p2Id)
     }
 
-    func testRemoveCombatantClearsHistory() {
+    /// Removing a combatant is undoable with Previous, like the other fight actions.
+    func testRemoveCombatantIsUndoable() {
         session.addCombatant(name: "P1", initiative: 20)
         session.addCombatant(name: "P2", initiative: 10)
-        session.nextTurn()
-        XCTAssertTrue(session.canGoToPreviousTurn)
-
         session.removeCombatant(id: session.combatants[0].id)
-
-        XCTAssertFalse(session.canGoToPreviousTurn)
+        XCTAssertTrue(session.canGoToPreviousTurn)
+        session.previousTurn()
+        XCTAssertEqual(session.combatants.map(\.name), ["P1", "P2"])
     }
 
     func testRemoveNonexistentCombatantDoesNothing() {

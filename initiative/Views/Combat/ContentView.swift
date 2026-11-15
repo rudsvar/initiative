@@ -8,8 +8,6 @@ struct ContentView: View {
 
     @Environment(\.scenePhase) private var scenePhase
     @State private var showAddCombatant = false
-    /// The combatant whose armor class is being adjusted from its roster row.
-    @State private var armorClassTarget: UUID?
     @State private var showLog = false
     @State private var showRoundEffects = false
     /// Non-empty while the turn is waiting on answers. Dismissing the prompt
@@ -44,20 +42,37 @@ struct ContentView: View {
                         CombatantRow(
                             combatant: combatant,
                             isCurrent: isCurrent,
-                            playerViewEnabled: session.playerViewEnabled,
-                            onArmorClassTap: { armorClassTarget = combatant.id }
+                            playerViewEnabled: session.playerViewEnabled
                         )
                     }
                     .buttonStyle(CardRowButtonStyle(isHighlighted: isCurrent))
                     .cardRowLayout()
+                    // Swipe left kills a living combatant, and removes a dead one.
+                    // Swipe right on a dead combatant revives it. Each is undoable with Previous.
                     .swipeActions(edge: .trailing) {
-                        // No confirmation dialog: swipe-to-reveal plus a tap on
-                        // Delete is already two deliberate actions, and it's the
-                        // pattern every other list in the app uses.
-                        Button(role: .destructive) {
-                            session.removeCombatant(id: combatant.id)
-                        } label: {
-                            Label("Remove", systemImage: "trash")
+                        if combatant.isDead {
+                            Button(role: .destructive) {
+                                session.removeCombatant(id: combatant.id)
+                            } label: {
+                                Label("Remove", systemImage: "trash")
+                            }
+                        } else {
+                            Button {
+                                session.kill(combatant.id)
+                            } label: {
+                                Label("Kill", systemImage: "xmark.circle")
+                            }
+                            .tint(Theme.statusBad)
+                        }
+                    }
+                    .swipeActions(edge: .leading) {
+                        if combatant.isDead {
+                            Button {
+                                session.revive(combatant.id)
+                            } label: {
+                                Label("Revive", systemImage: "arrow.uturn.backward")
+                            }
+                            .tint(Theme.statusGood)
                         }
                     }
                 }
@@ -131,20 +146,6 @@ struct ContentView: View {
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .background {
                 autosave()
-            }
-        }
-        .sheet(isPresented: Binding(
-            get: { armorClassTarget != nil },
-            set: { if !$0 { armorClassTarget = nil } }
-        )) {
-            if let id = armorClassTarget {
-                AdjustAmountSheet(
-                    title: "Armor Class",
-                    decreaseLabel: "Lower",
-                    increaseLabel: "Raise",
-                    onDecrease: { amount in session.adjustArmorClass(for: id, by: -amount) },
-                    onIncrease: { amount in session.adjustArmorClass(for: id, by: amount) }
-                )
             }
         }
         .sheet(isPresented: $showAddCombatant) {
@@ -301,8 +302,6 @@ struct CombatantRow: View {
     let combatant: Combatant
     let isCurrent: Bool
     let playerViewEnabled: Bool
-    /// Tapping the armor class shortcut lowers or raises it without opening the details.
-    var onArmorClassTap: () -> Void = {}
 
     // Computed synchronously (not via GeometryReader + @State) so FlowLayout gets
     // a correct width on the very first layout pass. List rows are self-sizing
@@ -381,17 +380,15 @@ struct CombatantRow: View {
             } else {
                 statLine(
                     "heart.fill", Theme.statusBad,
-                    // Plain unless temp HP is active: ordinary damage and healing do not colour it.
-                    value: marked(
-                        current,
-                        change: combatant.temporaryHP != nil ? combatant.recentHPChange : nil,
-                        showsSign: combatant.temporaryHP != nil
-                    )
+                    value: marked(current, change: combatant.temporaryHP != nil ? combatant.recentHPChange : nil, showsSign: combatant.temporaryHP != nil)
                         + Text("/").foregroundColor(Theme.textTertiary)
                         + marked(max, change: combatant.recentMaxHPChange, showsSign: combatant.recentMaxHPChange != nil),
                     temp: combatant.temporaryHP
                 )
             }
+        } else {
+            // No HP tracked: the heart stays, with a dash for each number.
+            statLine("heart.fill", Theme.statusBad, value: Text("−/−").foregroundColor(Theme.textTertiary), temp: nil)
         }
     }
 
@@ -449,15 +446,11 @@ struct CombatantRow: View {
                 let band = StatusBand.armorClass(ac)
                 statRow(systemImage: "shield.fill", iconColor: Theme.statusInfo, text: band.label, textColor: band.color)
             } else {
-                // A shortcut: tapping it adjusts AC without opening the details.
-                Button(action: onArmorClassTap) {
-                    statLine(
-                        "shield.fill", Theme.statusInfo,
-                        value: marked(ac, change: combatant.recentACChange, showsSign: combatant.recentACChange != nil),
-                        temp: nil
-                    )
-                }
-                .buttonStyle(.plain)
+                statLine(
+                    "shield.fill", Theme.statusInfo,
+                    value: marked(ac, change: combatant.recentACChange, showsSign: combatant.recentACChange != nil),
+                    temp: nil
+                )
             }
         }
     }

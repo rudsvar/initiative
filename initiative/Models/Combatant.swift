@@ -17,6 +17,8 @@ struct Combatant: Identifiable, Codable {
     /// Net change to current HP since this combatant's turn last started (damage is
     /// negative, healing positive). Shown beside current HP, cleared at turn start.
     var recentHPChange: Int?
+    /// Set by Kill for a combatant with no HP tracked. Nil otherwise.
+    var markedDead: Bool?
     /// Net change to max HP since this combatant's turn last started.
     var recentMaxHPChange: Int?
     /// Net change to armor class since this combatant's turn last started.
@@ -96,7 +98,7 @@ struct Combatant: Identifiable, Codable {
     /// the whole point of the mechanic.
     var isDead: Bool {
         if let deathSaves { return deathSaves.isDead }
-        guard let currentHP else { return false }
+        guard let currentHP else { return markedDead == true }
         return currentHP <= 0
     }
 
@@ -125,7 +127,7 @@ struct Combatant: Identifiable, Codable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, initiative, effects, maxHP, currentHP, armorClass, temporaryHP, temporaryAC, recentHPChange, recentMaxHPChange, recentACChange, isPlayer, isConcentrating, limitedUses, maxHPIncreased
+        case id, name, initiative, effects, maxHP, currentHP, armorClass, temporaryHP, temporaryAC, recentHPChange, recentMaxHPChange, markedDead, recentACChange, isPlayer, isConcentrating, limitedUses, maxHPIncreased
     }
 
     /// Written out by hand rather than synthesized: Swift's synthesized decoding
@@ -147,6 +149,7 @@ struct Combatant: Identifiable, Codable {
         temporaryHP = try container.decodeIfPresent(Int.self, forKey: .temporaryHP)
         temporaryAC = try container.decodeIfPresent(Int.self, forKey: .temporaryAC)
         recentHPChange = try container.decodeIfPresent(Int.self, forKey: .recentHPChange)
+        markedDead = try container.decodeIfPresent(Bool.self, forKey: .markedDead)
         recentMaxHPChange = try container.decodeIfPresent(Int.self, forKey: .recentMaxHPChange)
         recentACChange = try container.decodeIfPresent(Int.self, forKey: .recentACChange)
         isPlayer = try container.decodeIfPresent(Bool.self, forKey: .isPlayer) ?? false

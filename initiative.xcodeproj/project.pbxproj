@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0543723AC0B30CD5C7C48168 /* CloneNameSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8173780D06E58806AD3ECB9 /* CloneNameSheet.swift */; };
 		09EC53CC26EE7304C61FC102 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611558F2EA5435F55E881973 /* SessionStore.swift */; };
+		0B02BE41EBA8297838514FED /* KillReviveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20C4BD7EA18DC487773DC9EE /* KillReviveTests.swift */; };
 		0EEDCD5F856176554A09AFA8 /* TemporaryHPTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FC2E8E196F28000B570FBDA /* TemporaryHPTests.swift */; };
 		135F810397EE6974720E3937 /* AddCombatantSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66946360373B910B6577F839 /* AddCombatantSheet.swift */; };
 		13A8DA4DB83B14C9EB1F0D0E /* ConcentrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7265419AD964CF0CC71037D4 /* ConcentrationTests.swift */; };
@@ -113,6 +114,7 @@
 		18C53D0D096702F8E279A268 /* ViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewExtensions.swift; sourceTree = "<group>"; };
 		198DAF52601518703A1CB383 /* ChangeLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangeLabel.swift; sourceTree = "<group>"; };
 		1A7840FBA3A62622584D6A22 /* ThemeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeController.swift; sourceTree = "<group>"; };
+		20C4BD7EA18DC487773DC9EE /* KillReviveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KillReviveTests.swift; sourceTree = "<group>"; };
 		236012BD8426FA8D17541295 /* CodableCompatibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodableCompatibilityTests.swift; sourceTree = "<group>"; };
 		255483B3F433841EC3581AEB /* initiativeTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = initiativeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2A3EC616C676736F8FBC87E6 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
@@ -272,6 +274,7 @@
 				FE1A9ED5BBE06EEC50B84DE4 /* DyingEffectTests.swift */,
 				5105E7AA6B2BA4A20F4CBC35 /* Effect.swift */,
 				3613CF49D1C24697119764CE /* EffectOperationsTests.swift */,
+				20C4BD7EA18DC487773DC9EE /* KillReviveTests.swift */,
 				9C033583CC9AE407903E6C47 /* LimitedUse.swift */,
 				DB8DD2DEFF231D1EBD80E195 /* LimitedUseTests.swift */,
 				AE5F2E9E2F63F368EE903186 /* LogEntry.swift */,
@@ -583,6 +586,7 @@
 				A6CAC928C62BC2EFC03D965A /* DyingEffectTests.swift in Sources */,
 				7E5C7BB027F7BC0907ECA434 /* EffectOperationsTests.swift in Sources */,
 				1A85F56E1359778680CB6BE8 /* EncounterStoreTests.swift in Sources */,
+				0B02BE41EBA8297838514FED /* KillReviveTests.swift in Sources */,
 				62C2CEF33F96A4573D4BC9C4 /* LimitedUseTests.swift in Sources */,
 				39A9BA2DDE7B0C7A9C00E552 /* ListSectionsTests.swift in Sources */,
 				3E634FE120E1F078B6C1172F /* ModelsTests.swift in Sources */,

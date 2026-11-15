@@ -181,6 +181,18 @@ struct CombatantDetailView: View {
                         .foregroundColor(Theme.accent)
                 }
             }
+
+            // Kill and revive live here and in the roster's swipes, both undoable with Previous.
+            Button(combatant.isDead ? "Revive" : "Kill") {
+                if combatant.isDead {
+                    session.revive(combatantId)
+                } else {
+                    session.kill(combatantId)
+                }
+            }
+            .font(Theme.Typography.bodyEmphasis)
+            .foregroundColor(combatant.isDead ? Theme.statusGood : Theme.statusBad)
+            .buttonStyle(.plain)
         }
         .sectionCard()
     }
