@@ -58,6 +58,11 @@ struct MainMenuView: View {
                             path.append(Route.presetList)
                         }
 
+                        #if DEBUG
+                        MenuButton(title: "Test Scenarios", systemImage: "ladybug") {
+                            path.append(Route.scenarios)
+                        }
+                        #endif
                         MenuButton(title: "Appearance", systemImage: "paintpalette") {
                             path.append(Route.appearance)
                         }

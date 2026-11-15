@@ -8,6 +8,9 @@ enum Route: Hashable {
     case newSessionChooser
     case appearance
     case combatantDetail(UUID)
+    #if DEBUG
+    case scenarios
+    #endif
 }
 
 /// App-wide navigation root. Owns the single CombatSession, SessionStore,
@@ -47,6 +50,10 @@ struct RootView: View {
                     NewSessionView(session: session, encounterStore: encounterStore, path: $path)
                 case .appearance:
                     AppearanceView(controller: themeController)
+                #if DEBUG
+                case .scenarios:
+                    DebugScenariosView(session: session, path: $path)
+                #endif
                 case .combatantDetail(let combatantId):
                     CombatantDetailView(session: session, combatantId: combatantId)
                 }

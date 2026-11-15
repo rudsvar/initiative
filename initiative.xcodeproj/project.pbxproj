@@ -50,6 +50,7 @@
 		7FF9D67C9EF8BB156F673248 /* SelectAllTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = F700581D6670C2CC2D6A5112 /* SelectAllTextField.swift */; };
 		87F1E56B91FF848A9C5E7C29 /* PresetStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F1E593E997D394D860933FA /* PresetStore.swift */; };
 		8D5002435663177D3D860CF4 /* FlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6427D74AA5360A780F88C8 /* FlowLayout.swift */; };
+		9E619E17AE246450D08A306D /* DebugScenariosView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FC75838D4FF442192212A7E /* DebugScenariosView.swift */; };
 		9FE8D77649E294094C52166C /* PlayerViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C86540C34D5CD3C7378276D /* PlayerViewTests.swift */; };
 		A487A5D42B5F78867A371A4C /* StatusBandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6636EDC413749080974CA625 /* StatusBandTests.swift */; };
 		A846E1C8F6638A7F4F7591BA /* TurnPromptTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3FB96497CF923A7DB11289 /* TurnPromptTests.swift */; };
@@ -144,6 +145,7 @@
 		8C86540C34D5CD3C7378276D /* PlayerViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerViewTests.swift; sourceTree = "<group>"; };
 		8EB8924B9A672090A314E532 /* CloneName.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloneName.swift; sourceTree = "<group>"; };
 		8F82F2EA03A7A61F03D982C7 /* PresetListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetListView.swift; sourceTree = "<group>"; };
+		8FC75838D4FF442192212A7E /* DebugScenariosView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DebugScenariosView.swift; sourceTree = "<group>"; };
 		9059D28D057C9E7FD6B83705 /* ThemePalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemePalette.swift; sourceTree = "<group>"; };
 		99016F78C287D6C3DE0A2F71 /* DeadCombatantTurnTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeadCombatantTurnTests.swift; sourceTree = "<group>"; };
 		99DA66AE6B5F5BF1053F2262 /* ThemePaletteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemePaletteTests.swift; sourceTree = "<group>"; };
@@ -186,6 +188,7 @@
 		2AED8BAD3EEC8973EED4C66D /* Debug */ = {
 			isa = PBXGroup;
 			children = (
+				8FC75838D4FF442192212A7E /* DebugScenariosView.swift */,
 				F2AB7AA7A046758596462089 /* TestCombats.swift */,
 			);
 			path = Debug;
@@ -494,6 +497,7 @@
 				D3CD6FBE48E2B828A0D1F6BD /* CooldownLibrary.swift in Sources */,
 				5AE6479CF565D61E1AB93011 /* CreatureDetailView.swift in Sources */,
 				30612A0282CDFEEA1E7F79E6 /* DeathSaves.swift in Sources */,
+				9E619E17AE246450D08A306D /* DebugScenariosView.swift in Sources */,
 				497810B3563B071D9F877FB7 /* DefaultContent.swift in Sources */,
 				7B78D0FA978026999015844A /* Effect.swift in Sources */,
 				7D58FB15FBAFA3FAAEB93866 /* EffectEditorView.swift in Sources */,
