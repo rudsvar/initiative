@@ -81,13 +81,14 @@ class EncounterStore {
 
     /// Saves an editable copy of an encounter under a fresh name, and returns it.
     /// The only route from a built-in encounter to a customised one.
+    /// `name` is the one the owner chose; the caller checks it with `CloneName.isValid`.
     @discardableResult
-    func clone(_ encounter: Encounter) -> Encounter {
+    func clone(_ encounter: Encounter, named name: String) -> Encounter {
         // New entry ids as well as a new encounter id: entries are snapshots, and
         // two encounters sharing entry identity would make SwiftUI's list
         // diffing treat them as the same rows.
         let copy = Encounter(
-            name: UniqueName.forCopy(of: encounter.name, avoiding: listEncounters().map(\.name)),
+            name: name.trimmingCharacters(in: .whitespaces),
             entries: encounter.entries.map {
                 EncounterEntry(
                     name: $0.name,

@@ -15,6 +15,7 @@ struct PresetListView: View {
     // Loading here means `.searchable` is present, correctly, from frame one.
     @State private var presets: [CreaturePreset]
     @State private var editingPreset: CreaturePreset?
+    @State private var cloning: CreaturePreset?
     @State private var query = ""
 
     init(presetStore: PresetStore) {
@@ -62,6 +63,12 @@ struct PresetListView: View {
         .onAppear { presets = presetStore.listPresets() }
         .sheet(item: $editingPreset) { preset in
             EditPresetView(presetStore: presetStore, preset: preset) {
+                presets = presetStore.listPresets()
+            }
+        }
+        .sheet(item: $cloning) { preset in
+            CloneNameSheet(title: "Clone Creature", existingNames: presets.map(\.name)) { name in
+                presetStore.clone(preset, named: name)
                 presets = presetStore.listPresets()
             }
         }
@@ -113,8 +120,7 @@ struct PresetListView: View {
                     .swipeActions(edge: .trailing) {
                         if preset.isBuiltIn {
                             Button {
-                                presetStore.clone(preset)
-                                presets = presetStore.listPresets()
+                                cloning = preset
                             } label: {
                                 Label("Clone", systemImage: "plus.square.on.square")
                             }
@@ -157,6 +163,7 @@ private struct EditPresetView: View {
     let onSave: () -> Void
 
     @Environment(\.dismiss) private var dismiss
+    @State private var cloneNamePresented = false
     @State private var name: String
     @State private var hpText: String
     @State private var acText: String
@@ -217,6 +224,10 @@ private struct EditPresetView: View {
                             .keyboardType(.numbersAndPunctuation)
                     }
                     .listRowBackground(Theme.surfaceRaised)
+
+                    if isReadOnly, let block = SRDCatalog.bundled.first(where: { $0.name == preset.name }) {
+                        StatBlockSections(block: block)
+                    }
                 }
                 // Row background goes on each Section, never on the Form:
                 // attached to the Form it is silently ignored, which is why
@@ -226,6 +237,13 @@ private struct EditPresetView: View {
             .disabled(isReadOnly)
             .navigationTitle(navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
+            .sheet(isPresented: $cloneNamePresented) {
+                CloneNameSheet(title: "Clone Creature", existingNames: presetStore.listPresets().map(\.name)) { newName in
+                    presetStore.clone(preset, named: newName)
+                    onSave()
+                    dismiss()
+                }
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(isReadOnly ? "Done" : "Cancel") { dismiss() }
@@ -235,9 +253,7 @@ private struct EditPresetView: View {
                         // The only way to customise a built-in. The copy lands in
                         // "Yours" at the top of the list, where it's editable.
                         Button("Clone") {
-                            presetStore.clone(preset)
-                            onSave()
-                            dismiss()
+                            cloneNamePresented = true
                         }
                         .fontWeight(.semibold)
                     } else {

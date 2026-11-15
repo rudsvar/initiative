@@ -211,21 +211,13 @@ final class PresetStoreTests: XCTestCase {
         store.installDefaults()
         let goblin = store.preset(named: "Goblin")!
 
-        let copy = store.clone(goblin)
+        let copy = store.clone(goblin, named: "Goblin Warlord")
 
-        XCTAssertEqual(copy.name, "Goblin Copy")
+        XCTAssertEqual(copy.name, "Goblin Warlord", "the copy takes the name the owner typed")
         XCTAssertEqual(copy.maxHP, goblin.maxHP)
         XCTAssertEqual(copy.armorClass, goblin.armorClass)
         XCTAssertNotEqual(copy.id, goblin.id)
         XCTAssertFalse(copy.isBuiltIn, "a copy must be editable, so it can't count as built-in")
         XCTAssertNotNil(store.preset(named: "Goblin"), "duplicating must not disturb the original")
-    }
-
-    func testDuplicatingTwiceDoesNotCollide() {
-        store.installDefaults()
-        let goblin = store.preset(named: "Goblin")!
-
-        XCTAssertEqual(store.clone(goblin).name, "Goblin Copy")
-        XCTAssertEqual(store.clone(goblin).name, "Goblin Copy 2")
     }
 }

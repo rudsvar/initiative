@@ -15,6 +15,7 @@ struct EncounterListView: View {
     // search field's text doing a tiny resize on load.
     @State private var encounters: [Encounter]
     @State private var editingEncounter: Encounter?
+    @State private var cloning: Encounter?
     @State private var query = ""
 
     init(encounterStore: EncounterStore, presetStore: PresetStore) {
@@ -66,6 +67,12 @@ struct EncounterListView: View {
                 encounters = encounterStore.listEncounters()
             }
         }
+        .sheet(item: $cloning) { encounter in
+            CloneNameSheet(title: "Clone Encounter", existingNames: encounters.map(\.name)) { name in
+                encounterStore.clone(encounter, named: name)
+                encounters = encounterStore.listEncounters()
+            }
+        }
     }
 
     /// Hidden entirely when empty rather than shown as a bare header — see the
@@ -103,8 +110,7 @@ struct EncounterListView: View {
                     .swipeActions(edge: .trailing) {
                         if encounter.isBuiltIn {
                             Button {
-                                encounterStore.clone(encounter)
-                                encounters = encounterStore.listEncounters()
+                                cloning = encounter
                             } label: {
                                 Label("Clone", systemImage: "plus.square.on.square")
                             }
@@ -140,6 +146,7 @@ private struct EditEncounterView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var encounter: Encounter
     @State private var showAddEntry = false
+    @State private var cloneNamePresented = false
 
     /// Fixed at presentation time from the encounter as saved, *not* from the
     /// editable `@State` copy — otherwise typing over a built-in's name in the
@@ -209,9 +216,7 @@ private struct EditEncounterView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     if isReadOnly {
                         Button("Clone") {
-                            encounterStore.clone(encounter)
-                            onSave()
-                            dismiss()
+                            cloneNamePresented = true
                         }
                         .fontWeight(.semibold)
                     } else {
@@ -226,6 +231,13 @@ private struct EditEncounterView: View {
                     .fontWeight(.semibold)
                     .disabled(encounter.name.trimmingCharacters(in: .whitespaces).isEmpty)
                     }
+                }
+            }
+            .sheet(isPresented: $cloneNamePresented) {
+                CloneNameSheet(title: "Clone Encounter", existingNames: encounterStore.listEncounters().map(\.name)) { newName in
+                    encounterStore.clone(encounter, named: newName)
+                    onSave()
+                    dismiss()
                 }
             }
             .sheet(isPresented: $showAddEntry) {

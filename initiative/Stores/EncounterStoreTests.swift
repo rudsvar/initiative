@@ -117,9 +117,9 @@ final class EncounterStoreTests: XCTestCase {
         store.installDefaults()
         let ambush = store.listEncounters().first { $0.name == "Goblin Ambush" }!
 
-        let copy = store.clone(ambush)
+        let copy = store.clone(ambush, named: "Goblin Ambush Mine")
 
-        XCTAssertEqual(copy.name, "Goblin Ambush Copy")
+        XCTAssertEqual(copy.name, "Goblin Ambush Mine")
         XCTAssertEqual(copy.entries.map(\.name), ambush.entries.map(\.name))
         XCTAssertEqual(copy.entries.map(\.count), ambush.entries.map(\.count))
         XCTAssertFalse(copy.isBuiltIn)
@@ -133,7 +133,7 @@ final class EncounterStoreTests: XCTestCase {
         store.installDefaults()
         let ambush = store.listEncounters().first { $0.name == "Goblin Ambush" }!
 
-        let copy = store.clone(ambush)
+        let copy = store.clone(ambush, named: "Goblin Ambush Mine")
 
         XCTAssertTrue(Set(copy.entries.map(\.id)).isDisjoint(with: Set(ambush.entries.map(\.id))))
     }
