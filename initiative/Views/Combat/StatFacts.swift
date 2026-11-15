@@ -6,9 +6,11 @@ import SwiftUI
 struct StatFacts: View {
     let block: StatBlock
 
-    /// The facts shown, in order. Initiative is not repeated here: it has its own card.
+    /// The facts shown, in order. The initiative bonus is here; the total is on the Initiative card.
     static func facts(for block: StatBlock) -> [(String, String)] {
         var list: [(String, String)] = [
+            // The bonus only: the total is on the Initiative card.
+            ("Initiative bonus", Format.signed(block.initiative.modifier)),
             ("Type", "\(block.size) \(block.type), \(block.alignment)"),
             ("Speed", block.speed),
             ("CR", "\(block.challenge.cr) · \(block.challenge.xp) XP"),

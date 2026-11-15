@@ -1,7 +1,7 @@
 import XCTest
 @testable import initiative
 
-/// The stat facts under a creature's name. Initiative has its own card, so it is not here.
+/// The stat facts under a creature's name: the initiative bonus, then the rest.
 final class StatFactsTests: XCTestCase {
 
     private func wolf() throws -> StatBlock {
@@ -12,9 +12,10 @@ final class StatFactsTests: XCTestCase {
         return try XCTUnwrap(blocks.first { $0.name == "Wolf" })
     }
 
-    func testInitiativeIsNotRepeatedInTheStats() throws {
+    func testInitiativeBonusIsTheModifierOnly() throws {
         let facts = StatFacts.facts(for: try wolf())
-        XCTAssertFalse(facts.contains { $0.0 == "Initiative" })
+        XCTAssertEqual(facts.first?.0, "Initiative bonus")
+        XCTAssertEqual(facts.first?.1, "+2")
     }
 
     func testTheWolfHasItsSpeedAndChallengeToo() throws {
