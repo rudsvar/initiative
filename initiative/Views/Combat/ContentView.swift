@@ -403,9 +403,8 @@ struct CombatantRow: View {
                         .foregroundColor(Theme.textPrimary)
                         .strikethrough(combatant.isDead)
 
-                    if combatant.isDead {
-                        stateBadge("skull.fill", tint: Theme.textPrimary)
-                    } else if combatant.isDying {
+                    // No skull for the dead: the strikethrough and the faded row already say it.
+                    if combatant.isDying {
                         // A dying combatant is the most time-critical thing on
                         // this screen, so it gets the one treatment nothing else
                         // in the row uses: a filled status colour, not a tint.
