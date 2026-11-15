@@ -8,6 +8,8 @@ struct ContentView: View {
 
     @Environment(\.scenePhase) private var scenePhase
     @State private var showAddCombatant = false
+    /// The combatant whose armor class is being adjusted from its roster row.
+    @State private var armorClassTarget: UUID?
     @State private var showLog = false
     @State private var showRoundEffects = false
     /// Non-empty while the turn is waiting on answers. Dismissing the prompt
@@ -42,7 +44,8 @@ struct ContentView: View {
                         CombatantRow(
                             combatant: combatant,
                             isCurrent: isCurrent,
-                            playerViewEnabled: session.playerViewEnabled
+                            playerViewEnabled: session.playerViewEnabled,
+                            onArmorClassTap: { armorClassTarget = combatant.id }
                         )
                     }
                     .buttonStyle(CardRowButtonStyle(isHighlighted: isCurrent))
@@ -128,6 +131,20 @@ struct ContentView: View {
         .onChange(of: scenePhase) { _, newPhase in
             if newPhase == .background {
                 autosave()
+            }
+        }
+        .sheet(isPresented: Binding(
+            get: { armorClassTarget != nil },
+            set: { if !$0 { armorClassTarget = nil } }
+        )) {
+            if let id = armorClassTarget {
+                AdjustAmountSheet(
+                    title: "Armor Class",
+                    decreaseLabel: "Lower",
+                    increaseLabel: "Raise",
+                    onDecrease: { amount in session.adjustArmorClass(for: id, by: -amount) },
+                    onIncrease: { amount in session.adjustArmorClass(for: id, by: amount) }
+                )
             }
         }
         .sheet(isPresented: $showAddCombatant) {
@@ -284,6 +301,8 @@ struct CombatantRow: View {
     let combatant: Combatant
     let isCurrent: Bool
     let playerViewEnabled: Bool
+    /// Tapping the armor class shortcut lowers or raises it without opening the details.
+    var onArmorClassTap: () -> Void = {}
 
     // Computed synchronously (not via GeometryReader + @State) so FlowLayout gets
     // a correct width on the very first layout pass. List rows are self-sizing
@@ -413,11 +432,15 @@ struct CombatantRow: View {
                 let band = StatusBand.armorClass(ac)
                 statRow(systemImage: "shield.fill", iconColor: Theme.statusInfo, text: band.label, textColor: band.color)
             } else {
-                statLine(
-                    "shield.fill", Theme.statusInfo,
-                    value: marked(ac, change: combatant.recentACChange),
-                    temp: combatant.temporaryAC
-                )
+                // A shortcut: tapping it adjusts AC without opening the details.
+                Button(action: onArmorClassTap) {
+                    statLine(
+                        "shield.fill", Theme.statusInfo,
+                        value: marked(ac, change: combatant.recentACChange),
+                        temp: nil
+                    )
+                }
+                .buttonStyle(.plain)
             }
         }
     }
