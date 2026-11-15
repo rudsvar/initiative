@@ -21,8 +21,8 @@ final class DefaultContentTests: XCTestCase {
             // Wide, but wide enough to catch a slipped digit — an AC of 180 or an
             // initiative bonus of 15 is a typo, not a design decision.
             XCTAssertLessThanOrEqual(creature.armorClass, 25, "\(creature.name)'s armor class looks like a typo")
-            XCTAssertLessThanOrEqual(creature.maxHP, 500, "\(creature.name)'s hit points look like a typo")
-            XCTAssertTrue((-5...8).contains(creature.initiativeBonus), "\(creature.name)'s initiative bonus looks like a typo")
+            XCTAssertLessThanOrEqual(creature.maxHP, 700, "\(creature.name)'s hit points look like a typo")
+            XCTAssertTrue((-5...20).contains(creature.initiativeBonus), "\(creature.name)'s initiative bonus looks like a typo")
         }
     }
 

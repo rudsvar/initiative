@@ -68,6 +68,7 @@
 		E0B050CE61AD8A4D0D279D0D /* LimitedUseEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BF0472EB303236DC493667B /* LimitedUseEditorView.swift */; };
 		E2AC405FFEE29743B570354D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6B3D18CAD7D9BF42DBDB61 /* ContentView.swift */; };
 		E34D5503DBD8A4402F2825AA /* PresetStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C155049E0F660B15183A193A /* PresetStoreTests.swift */; };
+		E424CC8B35F19372FF389522 /* CharacterKindPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E39A23D6F350929CB9E41BC0 /* CharacterKindPicker.swift */; };
 		E6FA4267FD3E97214D764D71 /* SessionStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2DB99B4AEE2D59113761B9B /* SessionStoreTests.swift */; };
 		E85ABEBA0550A2E492543652 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68CEAFB61475843F4368122B /* Theme.swift */; };
 		EBBA0AC3F663F701FA9BBF31 /* ListSections.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AF22B663D7FA19C198D9258 /* ListSections.swift */; };
@@ -154,6 +155,7 @@
 		D4F6E0061994D32447464ED0 /* EffectEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectEditorView.swift; sourceTree = "<group>"; };
 		D970AC13228D90BB0630DD34 /* AppearanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceView.swift; sourceTree = "<group>"; };
 		DB8DD2DEFF231D1EBD80E195 /* LimitedUseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LimitedUseTests.swift; sourceTree = "<group>"; };
+		E39A23D6F350929CB9E41BC0 /* CharacterKindPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterKindPicker.swift; sourceTree = "<group>"; };
 		F42838166D90DE1E0C90E3EF /* SRDCatalog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SRDCatalog.swift; sourceTree = "<group>"; };
 		F700581D6670C2CC2D6A5112 /* SelectAllTextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectAllTextField.swift; sourceTree = "<group>"; };
 		F7082DB36F1CEF76E4B26086 /* initiative.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = initiative.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -301,6 +303,7 @@
 		D8D1FC7B1737592BBB5BE632 /* Common */ = {
 			isa = PBXGroup;
 			children = (
+				E39A23D6F350929CB9E41BC0 /* CharacterKindPicker.swift */,
 				8EB8924B9A672090A314E532 /* CloneName.swift */,
 				C8173780D06E58806AD3ECB9 /* CloneNameSheet.swift */,
 				8B4421BB83F081DC1E8AD7C4 /* CloneNameTests.swift */,
@@ -457,6 +460,7 @@
 			files = (
 				135F810397EE6974720E3937 /* AddCombatantSheet.swift in Sources */,
 				F8C4961FCB8EB1F87F440E63 /* AppearanceView.swift in Sources */,
+				E424CC8B35F19372FF389522 /* CharacterKindPicker.swift in Sources */,
 				DD6E18340F781761C581432D /* CloneName.swift in Sources */,
 				0543723AC0B30CD5C7C48168 /* CloneNameSheet.swift in Sources */,
 				BA433734B987BA122D5BFAFD /* CombatSession.swift in Sources */,

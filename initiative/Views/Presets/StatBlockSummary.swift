@@ -14,6 +14,10 @@ struct StatBlockSummary: View {
             detailsCard
             if !block.traits.isEmpty { entriesCard(title: "Traits", entries: block.traits) }
             if !block.actions.isEmpty { entriesCard(title: "Actions", entries: block.actions) }
+            if let entries = block.bonusActions, !entries.isEmpty { entriesCard(title: "Bonus Actions", entries: entries) }
+            if let entries = block.reactions, !entries.isEmpty { entriesCard(title: "Reactions", entries: entries) }
+            if let entries = block.legendaryActions, !entries.isEmpty { entriesCard(title: "Legendary Actions", entries: entries) }
+            if let entries = block.lairActions, !entries.isEmpty { entriesCard(title: "Lair Actions", entries: entries) }
         }
     }
 
@@ -57,9 +61,13 @@ struct StatBlockSummary: View {
     private var detailsCard: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
             if let skills = block.skills { detail("Skills", skills) }
+            if let vulnerabilities = block.vulnerabilities { detail("Vulnerable", vulnerabilities) }
+            if let resistances = block.resistances { detail("Resistant", resistances) }
+            if let immunities = block.immunities { detail("Immune", immunities) }
+            if let conditions = block.conditionImmunities { detail("Cond. immune", conditions) }
+            if let senses = block.senses { detail("Senses", senses) }
+            if let languages = block.languages { detail("Languages", languages) }
             if let gear = block.gear { detail("Gear", gear) }
-            detail("Senses", block.senses)
-            detail("Languages", block.languages)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .sectionCard()

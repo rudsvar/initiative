@@ -81,8 +81,8 @@ final class ListSectionsTests: XCTestCase {
     // MARK: - What counts as the user's own
 
     func testAPresetNamedAfterADefaultIsBuiltIn() {
-        XCTAssertTrue(CreaturePreset(name: "Goblin").isBuiltIn)
-        XCTAssertTrue(CreaturePreset(name: "goblin").isBuiltIn, "matching should not depend on case")
+        XCTAssertTrue(CreaturePreset(name: "Wolf").isBuiltIn)
+        XCTAssertTrue(CreaturePreset(name: "wolf").isBuiltIn, "matching should not depend on case")
     }
 
     func testAPresetTheUserNamedIsTheirs() {
@@ -93,8 +93,8 @@ final class ListSectionsTests: XCTestCase {
     /// section — the point of the split is provenance, not whether it's been
     /// touched. Renaming it is what makes it yours.
     func testAnEditedDefaultIsStillBuiltInUntilRenamed() {
-        XCTAssertTrue(CreaturePreset(name: "Goblin", maxHP: 999, armorClass: 99).isBuiltIn)
-        XCTAssertFalse(CreaturePreset(name: "Goblin, But Worse", maxHP: 999).isBuiltIn)
+        XCTAssertTrue(CreaturePreset(name: "Wolf", maxHP: 999, armorClass: 99).isBuiltIn)
+        XCTAssertFalse(CreaturePreset(name: "Wolf, But Worse", maxHP: 999).isBuiltIn)
     }
 
     func testEncounterOriginFollowsTheSameRule() {

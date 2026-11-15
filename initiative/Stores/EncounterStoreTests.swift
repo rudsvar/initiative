@@ -36,9 +36,9 @@ final class EncounterStoreTests: XCTestCase {
         store.installDefaults()
 
         let ambush = store.listEncounters().first { $0.name == "Goblin Ambush" }
-        let goblins = ambush?.entries.first { $0.name == "Goblin" }
-        XCTAssertEqual(goblins?.maxHP, 8)
-        XCTAssertEqual(goblins?.armorClass, 13)
+        let goblins = ambush?.entries.first { $0.name == "Goblin Warrior" }
+        XCTAssertEqual(goblins?.maxHP, 10)
+        XCTAssertEqual(goblins?.armorClass, 15)
         XCTAssertEqual(goblins?.count, 4)
     }
 
@@ -79,7 +79,7 @@ final class EncounterStoreTests: XCTestCase {
     func testSaveAndListEncounter() {
         let encounter = Encounter(
             name: "Goblin Ambush",
-            entries: [EncounterEntry(name: "Goblin", maxHP: 7, count: 3)]
+            entries: [EncounterEntry(name: "Goblin Warrior", maxHP: 10, count: 3)]
         )
         store.save(encounter)
 

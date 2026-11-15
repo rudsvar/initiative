@@ -19,11 +19,19 @@ struct StatBlock: Codable, Equatable, Identifiable {
     let abilities: Abilities
     let skills: String?
     let gear: String?
-    let senses: String
-    let languages: String
+    let senses: String?
+    let languages: String?
+    let resistances: String?
+    let immunities: String?
+    let vulnerabilities: String?
+    let conditionImmunities: String?
     let challenge: Challenge
     let traits: [Entry]
     let actions: [Entry]
+    let bonusActions: [Entry]?
+    let reactions: [Entry]?
+    let legendaryActions: [Entry]?
+    let lairActions: [Entry]?
 
     struct Initiative: Codable, Equatable {
         /// The modifier added to the d20 roll.

@@ -37,7 +37,7 @@ final class PresetStoreTests: XCTestCase {
 
     /// Fixtures here deliberately use a name that isn't in the built-in roster:
     /// upsert refuses to modify a built-in (see the read-only tests below), so a
-    /// test of generic upsert behaviour named "Goblin" would be testing that
+    /// test of generic upsert behaviour named "Wolf" would be testing that
     /// instead.
     func testUpsertUpdatesExistingPresetCaseInsensitively() {
         store.upsert(name: "Bog Hulk", maxHP: 7)
@@ -80,15 +80,15 @@ final class PresetStoreTests: XCTestCase {
 
         let presets = store.listPresets()
         XCTAssertEqual(presets.count, DefaultContent.creatures.count)
-        XCTAssertNotNil(store.preset(named: "Goblin"))
+        XCTAssertNotNil(store.preset(named: "Wolf"))
     }
 
     func testInstalledDefaultsCarryFullStats() {
         store.installDefaults()
 
-        let goblin = store.preset(named: "Goblin")
-        XCTAssertEqual(goblin?.maxHP, 8)
-        XCTAssertEqual(goblin?.armorClass, 13)
+        let goblin = store.preset(named: "Wolf")
+        XCTAssertEqual(goblin?.maxHP, 11)
+        XCTAssertEqual(goblin?.armorClass, 12)
         XCTAssertEqual(goblin?.initiativeBonus, 2)
     }
 
@@ -115,7 +115,7 @@ final class PresetStoreTests: XCTestCase {
         let presets = store.listPresets()
         XCTAssertEqual(presets.count, DefaultContent.creatures.count + 1)
         XCTAssertNotNil(presets.first { $0.name == "Custom Creature" })
-        XCTAssertNotNil(presets.first { $0.name == "Goblin" })
+        XCTAssertNotNil(presets.first { $0.name == "Wolf" })
     }
 
     func testInstallDefaultsIsIdempotentAcrossLaunches() {
@@ -132,12 +132,12 @@ final class PresetStoreTests: XCTestCase {
     /// puts it back.
     func testAMissingBuiltInIsRestoredOnNextLaunch() {
         store.installDefaults()
-        let goblin = store.preset(named: "Goblin")!
+        let goblin = store.preset(named: "Wolf")!
         store.delete(id: goblin.id)
 
         relaunched().installDefaults()
 
-        XCTAssertNotNil(store.preset(named: "Goblin"))
+        XCTAssertNotNil(store.preset(named: "Wolf"))
         XCTAssertEqual(store.listPresets().count, DefaultContent.creatures.count)
     }
 
@@ -146,14 +146,14 @@ final class PresetStoreTests: XCTestCase {
     /// removed something from the built-in roster.
     func testRenamingABuiltInYieldsBothItAndTheOriginal() {
         store.installDefaults()
-        var goblin = store.preset(named: "Goblin")!
+        var goblin = store.preset(named: "Wolf")!
         goblin.name = "Gobbo the Unkillable"
         store.save(goblin)
 
         relaunched().installDefaults()
 
         XCTAssertNotNil(store.preset(named: "Gobbo the Unkillable"))
-        XCTAssertNotNil(store.preset(named: "Goblin"))
+        XCTAssertNotNil(store.preset(named: "Wolf"))
     }
 
     /// The upgrade path: someone using the app since before a creature existed
@@ -192,11 +192,11 @@ final class PresetStoreTests: XCTestCase {
     func testUpsertDoesNotModifyABuiltInCreature() {
         store.installDefaults()
 
-        store.upsert(name: "Goblin", maxHP: 999, armorClass: 99, initiativeBonus: 9)
+        store.upsert(name: "Wolf", maxHP: 999, armorClass: 99, initiativeBonus: 9)
 
-        let goblin = store.preset(named: "Goblin")
-        XCTAssertEqual(goblin?.maxHP, 8)
-        XCTAssertEqual(goblin?.armorClass, 13)
+        let goblin = store.preset(named: "Wolf")
+        XCTAssertEqual(goblin?.maxHP, 11)
+        XCTAssertEqual(goblin?.armorClass, 12)
         XCTAssertEqual(goblin?.initiativeBonus, 2)
     }
 
@@ -209,7 +209,7 @@ final class PresetStoreTests: XCTestCase {
 
     func testCloneMakesAnEditableCopyUnderANewName() {
         store.installDefaults()
-        let goblin = store.preset(named: "Goblin")!
+        let goblin = store.preset(named: "Wolf")!
 
         let copy = store.clone(goblin, named: "Goblin Warlord", isPlayer: false)
 
@@ -218,12 +218,12 @@ final class PresetStoreTests: XCTestCase {
         XCTAssertEqual(copy.armorClass, goblin.armorClass)
         XCTAssertNotEqual(copy.id, goblin.id)
         XCTAssertFalse(copy.isBuiltIn, "a copy must be editable, so it can't count as built-in")
-        XCTAssertNotNil(store.preset(named: "Goblin"), "duplicating must not disturb the original")
+        XCTAssertNotNil(store.preset(named: "Wolf"), "duplicating must not disturb the original")
     }
 
     func testCloneKeepsTheChosenCharacterKind() {
         store.installDefaults()
-        let goblin = store.preset(named: "Goblin")!
+        let goblin = store.preset(named: "Wolf")!
 
         XCTAssertTrue(store.clone(goblin, named: "Goblin Scout", isPlayer: true).isPlayer)
         XCTAssertFalse(store.clone(goblin, named: "Goblin Raider", isPlayer: false).isPlayer)
@@ -237,7 +237,7 @@ final class PresetStoreTests: XCTestCase {
         store.removeUserCreatures(once: "k", defaults: defaults)
 
         XCTAssertNil(store.preset(named: "My Ogre"))
-        XCTAssertNotNil(store.preset(named: "Goblin"))
+        XCTAssertNotNil(store.preset(named: "Wolf"))
     }
 
     func testOneTimeCleanupRunsOnlyOnce() {

@@ -14,7 +14,9 @@ struct CloneNameSheet: View {
 
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
-    @State private var isPlayer = false
+    @State private var isCharacter = false
+    /// The name box takes focus when the sheet opens, so the owner can type at once.
+    @FocusState private var nameFocused: Bool
 
     private var trimmed: String { name.trimmingCharacters(in: .whitespaces) }
     private var isValid: Bool { CloneName.isValid(name, avoiding: existingNames) }
@@ -28,6 +30,7 @@ struct CloneNameSheet: View {
                         TextField(text: $name) {
                             Text("Name").foregroundColor(Theme.placeholderText)
                         }
+                        .focused($nameFocused)
                     } footer: {
                         if !trimmed.isEmpty && !isValid {
                             Text("Another entry already has that name.")
@@ -37,15 +40,8 @@ struct CloneNameSheet: View {
                     .listRowBackground(Theme.surfaceRaised)
 
                     if asksCharacterKind {
-                        Section("Character") {
-                            Picker("Character", selection: $isPlayer) {
-                                Text("NPC").tag(false)
-                                Text("Player").tag(true)
-                            }
-                            .pickerStyle(.segmented)
-                            Text(isPlayer ? "Players roll death saves at 0 HP." : "Anything else simply dies at 0 HP.")
-                                .font(Theme.Typography.caption)
-                                .foregroundColor(Theme.textTertiary)
+                        Section {
+                            CharacterKindPicker(isCharacter: $isCharacter)
                         }
                         .listRowBackground(Theme.surfaceRaised)
                     }
@@ -54,13 +50,14 @@ struct CloneNameSheet: View {
             }
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear { nameFocused = true }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Clone") {
-                        onClone(trimmed, isPlayer)
+                        onClone(trimmed, isCharacter)
                         dismiss()
                     }
                     .fontWeight(.semibold)

@@ -133,15 +133,8 @@ struct CreatureDetailView: View {
                 }
                 .listRowBackground(Theme.surfaceRaised)
 
-                Section("Character") {
-                    Picker("Character", selection: $isPlayer) {
-                        Text("NPC").tag(false)
-                        Text("Player").tag(true)
-                    }
-                    .pickerStyle(.segmented)
-                    Text(isPlayer ? "Players roll death saves at 0 HP." : "Anything else simply dies at 0 HP.")
-                        .font(Theme.Typography.caption)
-                        .foregroundColor(Theme.textTertiary)
+                Section {
+                    CharacterKindPicker(isCharacter: $isPlayer)
                 }
                 .listRowBackground(Theme.surfaceRaised)
             }
