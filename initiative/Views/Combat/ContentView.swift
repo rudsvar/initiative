@@ -386,16 +386,21 @@ struct CombatantRow: View {
     /// the value flush right, then its icon trailing it, as on the rest of the app.
     private func statLine(_ systemImage: String, _ iconColor: Color, value: Text, temp: Int?) -> some View {
         HStack(spacing: 0) {
-            Text(temp.map { "temp \($0)" } ?? "")
-                .foregroundColor(Theme.statusInfo)
-                .frame(width: 52, alignment: .trailing)
-                .padding(.trailing, Theme.Spacing.xs)
+            // Temporary value: shield and number, left of the value.
+            Group {
+                if let temp {
+                    Text("\(Image(systemName: "shield.fill")) \(temp)")
+                        .foregroundColor(Theme.statusInfo)
+                }
+            }
+            .frame(width: 44, alignment: .trailing)
             value
-                .frame(width: 60, alignment: .trailing)
+                .frame(width: 50, alignment: .trailing)
+            // The icon is as large as the initiative number beside it.
             Image(systemName: systemImage)
-                .font(Theme.Typography.iconInline)
+                .font(Theme.Typography.numeric(18))
                 .foregroundColor(iconColor)
-                .frame(width: 14, alignment: .leading)
+                .frame(width: 20, alignment: .center)
                 .padding(.leading, Theme.Spacing.xxs)
         }
         .font(Theme.Typography.stat)
@@ -435,6 +440,9 @@ struct CombatantRow: View {
 
                 HStack(spacing: Theme.Spacing.xs + 2) {
                     Text(combatant.name)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.6)
+                        .layoutPriority(-1)
                         .font(Theme.Typography.rowTitle)
                         .foregroundColor(Theme.textPrimary)
                         .strikethrough(combatant.isDead)
@@ -462,7 +470,9 @@ struct CombatantRow: View {
                     healthRow
                     armorClassRow
                 }
+                // The stats keep their natural width; the name gives way to them.
                 .fixedSize()
+                .layoutPriority(1)
             }
 
             // Glance-at-a-glance list, not the detail screen — a short label
