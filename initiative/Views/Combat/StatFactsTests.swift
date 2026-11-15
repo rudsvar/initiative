@@ -1,8 +1,7 @@
 import XCTest
 @testable import initiative
 
-/// The stat facts under a creature's name: the initiative line comes first, from the
-/// stat block's modifier and passive score.
+/// The stat facts under a creature's name. Initiative has its own card, so it is not here.
 final class StatFactsTests: XCTestCase {
 
     private func wolf() throws -> StatBlock {
@@ -13,10 +12,9 @@ final class StatFactsTests: XCTestCase {
         return try XCTUnwrap(blocks.first { $0.name == "Wolf" })
     }
 
-    func testInitiativeIsTheFirstFactWithModifierAndScore() throws {
+    func testInitiativeIsNotRepeatedInTheStats() throws {
         let facts = StatFacts.facts(for: try wolf())
-        XCTAssertEqual(facts.first?.0, "Initiative")
-        XCTAssertEqual(facts.first?.1, "+2 (12)")
+        XCTAssertFalse(facts.contains { $0.0 == "Initiative" })
     }
 
     func testTheWolfHasItsSpeedAndChallengeToo() throws {

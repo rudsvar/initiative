@@ -6,10 +6,9 @@ import SwiftUI
 struct StatFacts: View {
     let block: StatBlock
 
-    /// The facts shown, in order. Initiative comes first: the modifier and the passive score.
+    /// The facts shown, in order. Initiative is not repeated here: it has its own card.
     static func facts(for block: StatBlock) -> [(String, String)] {
         var list: [(String, String)] = [
-            ("Initiative", "\(Format.signed(block.initiative.modifier)) (\(block.initiative.score))"),
             ("Type", "\(block.size) \(block.type), \(block.alignment)"),
             ("Speed", block.speed),
             ("CR", "\(block.challenge.cr) · \(block.challenge.xp) XP"),
