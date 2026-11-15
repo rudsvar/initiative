@@ -48,6 +48,17 @@ struct CombatantDetailView: View {
         )
     }
 
+    /// Temporary AC is typed in directly, like armor class; blank clears it.
+    private var temporaryACBinding: Binding<String> {
+        Binding(
+            get: { combatant?.temporaryAC.map(String.init) ?? "" },
+            set: { newValue in
+                guard let index = session.combatants.firstIndex(where: { $0.id == combatantId }) else { return }
+                session.combatants[index].temporaryAC = Int(newValue)
+            }
+        )
+    }
+
     private var armorClassBinding: Binding<String> {
         Binding(
             get: { combatant?.armorClass.map(String.init) ?? "" },
@@ -150,6 +161,18 @@ struct CombatantDetailView: View {
                 .keyboardType(.numberPad)
                 .font(Theme.Typography.statLarge)
                 .foregroundColor(Theme.textPrimary)
+                .multilineTextAlignment(.center)
+                .fieldStyle(width: 68)
+            }
+
+            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                Text("Temp AC").sectionLabel()
+                TextField(text: temporaryACBinding) {
+                    Text("—").foregroundColor(Theme.placeholderText)
+                }
+                .keyboardType(.numberPad)
+                .font(Theme.Typography.statLarge)
+                .foregroundColor(Theme.statusGood)
                 .multilineTextAlignment(.center)
                 .fieldStyle(width: 68)
             }

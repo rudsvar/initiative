@@ -380,7 +380,10 @@ struct CombatantRow: View {
                 let band = StatusBand.armorClass(ac)
                 statRow(systemImage: "shield.fill", iconColor: Theme.statusInfo, text: band.label, textColor: band.color)
             } else {
-                statRow(systemImage: "shield.fill", iconColor: Theme.statusInfo, text: "\(ac)", textColor: Theme.textSecondary)
+                // Same cue as temp HP: a green "+N" after the value while a buffer is on.
+                let temp = combatant.temporaryAC ?? 0
+                let content = Text("\(ac)") + (temp > 0 ? Text(" +\(temp)").foregroundStyle(Theme.statusGood) : Text(""))
+                statRow(systemImage: "shield.fill", iconColor: Theme.statusInfo, content: content, textColor: Theme.textSecondary)
             }
         }
     }

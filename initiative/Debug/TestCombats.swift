@@ -51,6 +51,13 @@ enum TestCombats {
         return session
     }
 
+    /// A character with temporary armor class granted, to check the green "+N" beside AC.
+    static func wrenWithTemporaryAC() -> CombatSession {
+        let session = wrenWithArmorClass()
+        session.grantTemporaryAC(to: session.combatants[0].id, amount: 2)
+        return session
+    }
+
     /// A character with an armor class and no buffers, for armor class tests.
     static func wrenWithArmorClass() -> CombatSession {
         let session = CombatSession()
@@ -67,6 +74,7 @@ extension TestCombats {
         "dyingCharacterKeepsItsTurns": dyingCharacterKeepsItsTurns,
         "lastStandingKeepsTheTurn": lastStandingKeepsTheTurn,
         "wrenWithArmorClass": wrenWithArmorClass,
+        "wrenWithTemporaryAC": wrenWithTemporaryAC,
     ]
 }
 #endif
