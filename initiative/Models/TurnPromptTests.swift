@@ -53,7 +53,7 @@ final class TurnPromptTests: XCTestCase {
 
         XCTAssertEqual(prompts.count, 1)
         XCTAssertEqual(prompts.first?.combatantName, "Wren")
-        XCTAssertEqual(prompts.first?.title, "Roll to recharge Recharging")
+        XCTAssertEqual(prompts.first?.title, "Roll: Recharging")
     }
 
     func testEndOfTurnEffectsPromptForTheOutgoingCombatant() {
@@ -156,5 +156,10 @@ final class TurnPromptTests: XCTestCase {
         ))
 
         XCTAssertEqual(session.pendingTurnPrompts().first?.title, "Roll a save vs Thing")
+    }
+
+    func testRechargeTitleDoesNotRepeatTheWord() {
+        XCTAssertEqual(CombatSession.rechargeTitle(for: "Recharging"), "Roll: Recharging")
+        XCTAssertEqual(CombatSession.rechargeTitle(for: "Breath Weapon"), "Roll to recharge Breath Weapon")
     }
 }

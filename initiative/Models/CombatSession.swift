@@ -548,6 +548,13 @@ class CombatSession {
         return prompts
     }
 
+    /// "Roll to recharge Breath Weapon". A recharge already named "Recharging"
+    /// (the default name) would read "Roll to recharge Recharging", so it is
+    /// phrased as "Roll: Recharging" instead.
+    static func rechargeTitle(for name: String) -> String {
+        name.lowercased().hasPrefix("recharg") ? "Roll: \(name)" : "Roll to recharge \(name)"
+    }
+
     private func rollPrompts(for combatant: Combatant, at boundary: TurnBoundary) -> [TurnPrompt] {
         combatant.effects.compactMap { effect in
             guard case .untilRollSucceeds(let effectBoundary, let hint) = effect.durationType,
@@ -557,7 +564,7 @@ class CombatSession {
                 combatantID: combatant.id,
                 combatantName: combatant.name,
                 subject: .effect(id: effect.id),
-                title: effect.kind == .cooldown ? "Roll to recharge \(effect.name)" : "Roll a save vs \(effect.name)",
+                title: effect.kind == .cooldown ? Self.rechargeTitle(for: effect.name) : "Roll a save vs \(effect.name)",
                 hint: hint,
                 deathSaves: nil
             )
