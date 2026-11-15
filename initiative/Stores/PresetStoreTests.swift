@@ -228,4 +228,25 @@ final class PresetStoreTests: XCTestCase {
         XCTAssertTrue(store.clone(goblin, named: "Goblin Scout", isPlayer: true).isPlayer)
         XCTAssertFalse(store.clone(goblin, named: "Goblin Raider", isPlayer: false).isPlayer)
     }
+
+    func testOneTimeCleanupRemovesOwnCreaturesAndKeepsBuiltIns() {
+        store.installDefaults()
+        store.upsert(name: "My Ogre", maxHP: 40)
+        let defaults = UserDefaults(suiteName: "cleanup-\(UUID().uuidString)")!
+
+        store.removeUserCreatures(once: "k", defaults: defaults)
+
+        XCTAssertNil(store.preset(named: "My Ogre"))
+        XCTAssertNotNil(store.preset(named: "Goblin"))
+    }
+
+    func testOneTimeCleanupRunsOnlyOnce() {
+        let defaults = UserDefaults(suiteName: "cleanup-\(UUID().uuidString)")!
+        store.removeUserCreatures(once: "k", defaults: defaults)
+
+        store.upsert(name: "Later Ogre", maxHP: 40)
+        store.removeUserCreatures(once: "k", defaults: defaults)
+
+        XCTAssertNotNil(store.preset(named: "Later Ogre"))
+    }
 }

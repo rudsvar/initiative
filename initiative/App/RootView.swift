@@ -56,6 +56,9 @@ struct RootView: View {
         // encounters are permanent fixtures, so anything missing — new in this
         // version, or renamed away by the user — is put back.
         .onAppear {
+            // One-time clean-up before the creature list is rebuilt: the owner's
+            // own creatures are removed, so the new built-in set starts clean.
+            presetStore.removeUserCreatures(once: "removedUserCreaturesV1")
             presetStore.installDefaults()
             encounterStore.installDefaults()
         }
