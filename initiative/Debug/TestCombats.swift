@@ -35,8 +35,7 @@ enum TestCombats {
         let session = CombatSession()
         session.addCombatant(name: "Alpha", initiative: 20, maxHP: 10)
         session.addCombatant(name: "Wren", initiative: 15, maxHP: 10, isPlayer: true)
-        let index = session.combatants.firstIndex { $0.name == "Wren" }!
-        session.combatants[index].deathSaves = DeathSaves()
+        _ = session.applyDamage(to: session.combatants.first { $0.name == "Wren" }!.id, amount: 10)
         return session
     }
 
@@ -82,6 +81,7 @@ enum TestCombats {
     static func dyingWithTally() -> CombatSession {
         let session = CombatSession()
         session.addCombatant(name: "Wren", initiative: 12, maxHP: 10, armorClass: 14, isPlayer: true)
+        _ = session.applyDamage(to: session.combatants[0].id, amount: 10)
         session.combatants[0].deathSaves = DeathSaves(successes: 2, failures: 1)
         return session
     }
@@ -93,8 +93,7 @@ enum TestCombats {
         let session = CombatSession()
         session.addCombatant(name: "Alpha", initiative: 20, maxHP: 10)
         session.addCombatant(name: "Wren", initiative: 10, maxHP: 10, isPlayer: true)
-        let index = session.combatants.firstIndex { $0.name == "Wren" }!
-        session.combatants[index].deathSaves = DeathSaves()
+        _ = session.applyDamage(to: session.combatants.first { $0.name == "Wren" }!.id, amount: 10)
         return session
     }
 
