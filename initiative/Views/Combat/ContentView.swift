@@ -457,7 +457,8 @@ struct CombatantRow: View {
                 // leading, sized to content — is what makes the icons line up
                 // vertically between rows whose names are different lengths;
                 // every row's health/AC column ends at the same right edge.
-                VStack(alignment: .trailing, spacing: Theme.Spacing.xxs) {
+                // HP and AC side by side, each with its own fixed columns.
+                HStack(spacing: Theme.Spacing.sm) {
                     healthRow
                     armorClassRow
                 }

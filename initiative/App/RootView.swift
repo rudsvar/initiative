@@ -21,6 +21,15 @@ struct RootView: View {
         Theme.applyNavigationBarAppearance()
     }
 
+    #if DEBUG
+    /// The scenario named after `-scenario`, if the app was launched with one.
+    private static var scenarioArgument: String? {
+        let args = ProcessInfo.processInfo.arguments
+        guard let i = args.firstIndex(of: "-scenario"), args.indices.contains(i + 1) else { return nil }
+        return args[i + 1]
+    }
+    #endif
+
     @State private var themeController = ThemeController.shared
     @State private var session = CombatSession()
     @State private var sessionStore = SessionStore()
@@ -63,6 +72,13 @@ struct RootView: View {
         // encounters are permanent fixtures, so anything missing — new in this
         // version, or renamed away by the user — is put back.
         .onAppear {
+            #if DEBUG
+            // Debug builds only: `-scenario <name>` opens that test-only combat at launch.
+            if session.combatants.isEmpty, let name = Self.scenarioArgument, let make = TestCombats.scenarios[name] {
+                session.load(make().makeRecord())
+                path.append(Route.combat)
+            }
+            #endif
             // One-time clean-up before the creature list is rebuilt: the owner's
             // own creatures are removed, so the new built-in set starts clean.
             presetStore.removeUserCreatures(once: "removedUserCreaturesV2")
