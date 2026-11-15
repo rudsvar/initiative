@@ -6,8 +6,10 @@ import SwiftUI
 struct StatFacts: View {
     let block: StatBlock
 
-    private var facts: [(String, String)] {
+    /// The facts shown, in order. Initiative comes first: the modifier and the passive score.
+    static func facts(for block: StatBlock) -> [(String, String)] {
         var list: [(String, String)] = [
+            ("Initiative", "\(Format.signed(block.initiative.modifier)) (\(block.initiative.score))"),
             ("Type", "\(block.size) \(block.type), \(block.alignment)"),
             ("Speed", block.speed),
             ("CR", "\(block.challenge.cr) · \(block.challenge.xp) XP"),
@@ -24,7 +26,7 @@ struct StatFacts: View {
 
     var body: some View {
         Grid(alignment: .leading, horizontalSpacing: Theme.Spacing.md, verticalSpacing: Theme.Spacing.xxs) {
-            ForEach(facts, id: \.0) { label, value in
+            ForEach(Self.facts(for: block), id: \.0) { label, value in
                 GridRow {
                     Text(label)
                         .font(Theme.Typography.label)
