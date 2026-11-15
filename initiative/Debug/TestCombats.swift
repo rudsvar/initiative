@@ -86,6 +86,18 @@ enum TestCombats {
         return session
     }
 
+    /// Alpha acts first; Wren is dying, so her start-of-turn death save is owed when
+    /// Alpha's turn ends. Next opens the prompt and the marker moves to Wren; Cancel
+    /// puts it back on Alpha.
+    static func startOfTurnPromptMovesTheMarker() -> CombatSession {
+        let session = CombatSession()
+        session.addCombatant(name: "Alpha", initiative: 20, maxHP: 10)
+        session.addCombatant(name: "Wren", initiative: 10, maxHP: 10, isPlayer: true)
+        let index = session.combatants.firstIndex { $0.name == "Wren" }!
+        session.combatants[index].deathSaves = DeathSaves()
+        return session
+    }
+
     /// Alpha has HP tracked; Gamma has none (shows −/−). Checks kill, revive, the swipes
     /// and Previous undoing them.
     static func killAndReviveAreUndoable() -> CombatSession {
@@ -116,6 +128,7 @@ extension TestCombats {
         "wolfWithChanges": wolfWithChanges,
         "dyingWithTally": dyingWithTally,
         "killAndReviveAreUndoable": killAndReviveAreUndoable,
+        "startOfTurnPromptMovesTheMarker": startOfTurnPromptMovesTheMarker,
     ]
 }
 #endif

@@ -474,6 +474,18 @@ class CombatSession {
     /// over: a creature at 0 HP, or a character whose death saves failed. `wrapped`
     /// is true when the walk passes the end of the list, which starts a new round.
     /// If nobody else can act, the result is `index` itself.
+    /// The combatant the roster marks as current. While start-of-turn prompts are
+    /// open, that is the one whose turn is about to start, so the marker shows who
+    /// the prompt is for. Cancelling clears the prompts and the marker returns to
+    /// the turn that is still in progress.
+    func highlightedCombatantID(awaitingPrompts: Bool) -> UUID? {
+        guard awaitingPrompts, combatants.indices.contains(currentTurnIndex) else {
+            return currentCombatant?.id
+        }
+        let (nextIndex, _) = nextActiveIndex(after: currentTurnIndex)
+        return combatants[nextIndex].id
+    }
+
     func nextActiveIndex(after index: Int) -> (index: Int, wrapped: Bool) {
         var next = index
         var wrapped = false
