@@ -1,0 +1,147 @@
+{
+  "source": "System Reference Document 5.2.1 (SRD 5.2.1), licensed under CC BY 4.0. The required attribution statement is in the repository's NOTICE file.",
+  "changes": "Stat blocks converted to JSON. Line breaks from the printed layout were joined and hyphenated words rejoined. No rules text was edited.",
+  "creatures": [
+    {
+      "name": "Wolf",
+      "size": "Medium",
+      "type": "Beast",
+      "alignment": "Unaligned",
+      "armorClass": 12,
+      "initiative": { "modifier": 2, "score": 12 },
+      "hitPoints": { "average": 11, "formula": "2d8 + 2" },
+      "speed": "40 ft.",
+      "abilities": {
+        "Str": { "score": 14, "modifier": 2, "save": 2 },
+        "Dex": { "score": 15, "modifier": 2, "save": 2 },
+        "Con": { "score": 12, "modifier": 1, "save": 1 },
+        "Int": { "score": 3, "modifier": -4, "save": -4 },
+        "Wis": { "score": 12, "modifier": 1, "save": 1 },
+        "Cha": { "score": 6, "modifier": -2, "save": -2 }
+      },
+      "skills": "Perception +5, Stealth +4",
+      "senses": "Darkvision 60 ft.; Passive Perception 15",
+      "languages": "None",
+      "challenge": { "cr": "1/4", "xp": 50, "proficiencyBonus": 2 },
+      "traits": [
+        { "name": "Pack Tactics", "text": "The wolf has Advantage on attack rolls against a creature if at least one of the wolf’s allies is within 5 feet of the creature and the ally doesn’t have the Incapacitated condition." }
+      ],
+      "actions": [
+        { "name": "Bite", "text": "Melee Attack Roll: +4, reach 5 ft. Hit: 5 (1d6 + 2) Piercing damage. If the target is a Medium or smaller creature, it has the Prone condition." }
+      ]
+    },
+    {
+      "name": "Giant Bat",
+      "size": "Large",
+      "type": "Beast",
+      "alignment": "Unaligned",
+      "armorClass": 13,
+      "initiative": { "modifier": 3, "score": 13 },
+      "hitPoints": { "average": 22, "formula": "4d10" },
+      "speed": "10 ft., Fly 60 ft.",
+      "abilities": {
+        "Str": { "score": 15, "modifier": 2, "save": 2 },
+        "Dex": { "score": 16, "modifier": 3, "save": 3 },
+        "Con": { "score": 11, "modifier": 0, "save": 0 },
+        "Int": { "score": 2, "modifier": -4, "save": -4 },
+        "Wis": { "score": 12, "modifier": 1, "save": 1 },
+        "Cha": { "score": 6, "modifier": -2, "save": -2 }
+      },
+      "skills": null,
+      "senses": "Blindsight 120 ft.; Passive Perception 11",
+      "languages": "None",
+      "challenge": { "cr": "1/4", "xp": 50, "proficiencyBonus": 2 },
+      "traits": [],
+      "actions": [
+        { "name": "Bite", "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 6 (1d6 + 3) Piercing damage." }
+      ]
+    },
+    {
+      "name": "Giant Spider",
+      "size": "Large",
+      "type": "Beast",
+      "alignment": "Unaligned",
+      "armorClass": 14,
+      "initiative": { "modifier": 3, "score": 13 },
+      "hitPoints": { "average": 26, "formula": "4d10 + 4" },
+      "speed": "30 ft., Climb 30 ft.",
+      "abilities": {
+        "Str": { "score": 14, "modifier": 2, "save": 2 },
+        "Dex": { "score": 16, "modifier": 3, "save": 3 },
+        "Con": { "score": 12, "modifier": 1, "save": 1 },
+        "Int": { "score": 2, "modifier": -4, "save": -4 },
+        "Wis": { "score": 11, "modifier": 0, "save": 0 },
+        "Cha": { "score": 4, "modifier": -3, "save": -3 }
+      },
+      "skills": "Perception +4, Stealth +7",
+      "senses": "Darkvision 60 ft.; Passive Perception 14",
+      "languages": "None",
+      "challenge": { "cr": "1", "xp": 200, "proficiencyBonus": 2 },
+      "traits": [
+        { "name": "Spider Climb", "text": "The spider can climb difficult surfaces, including along ceilings, without needing to make an ability check." },
+        { "name": "Web Walker", "text": "The spider ignores movement restrictions caused by webs, and it knows the location of any other creature in contact with the same web." }
+      ],
+      "actions": [
+        { "name": "Bite", "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 7 (1d8 + 3) Piercing damage plus 7 (2d6) Poison damage." },
+        { "name": "Web (Recharge 5–6)", "text": "Dexterity Saving Throw: DC 13, one creature the spider can see within 60 feet. Failure: The target has the Restrained condition until the web is destroyed (AC 10; HP 5; Vulnerability to Fire damage; Immunity to Poison and Psychic damage)." }
+      ]
+    },
+    {
+      "name": "Bandit",
+      "size": "Medium or Small",
+      "type": "Humanoid",
+      "alignment": "Neutral",
+      "armorClass": 12,
+      "initiative": { "modifier": 1, "score": 11 },
+      "hitPoints": { "average": 11, "formula": "2d8 + 2" },
+      "speed": "30 ft.",
+      "abilities": {
+        "Str": { "score": 11, "modifier": 0, "save": 0 },
+        "Dex": { "score": 12, "modifier": 1, "save": 1 },
+        "Con": { "score": 12, "modifier": 1, "save": 1 },
+        "Int": { "score": 10, "modifier": 0, "save": 0 },
+        "Wis": { "score": 10, "modifier": 0, "save": 0 },
+        "Cha": { "score": 10, "modifier": 0, "save": 0 }
+      },
+      "skills": null,
+      "gear": "Leather Armor, Light Crossbow, Scimitar",
+      "senses": "Passive Perception 10",
+      "languages": "Common, Thieves’ Cant",
+      "challenge": { "cr": "1/8", "xp": 25, "proficiencyBonus": 2 },
+      "traits": [],
+      "actions": [
+        { "name": "Scimitar", "text": "Melee Attack Roll: +3, reach 5 ft. Hit: 4 (1d6 + 1) Slashing damage." },
+        { "name": "Light Crossbow", "text": "Ranged Attack Roll: +3, range 80/320 ft. Hit: 5 (1d8 + 1) Piercing damage." }
+      ]
+    },
+    {
+      "name": "Commoner",
+      "size": "Medium or Small",
+      "type": "Humanoid",
+      "alignment": "Neutral",
+      "armorClass": 10,
+      "initiative": { "modifier": 0, "score": 10 },
+      "hitPoints": { "average": 4, "formula": "1d8" },
+      "speed": "30 ft.",
+      "abilities": {
+        "Str": { "score": 10, "modifier": 0, "save": 0 },
+        "Dex": { "score": 10, "modifier": 0, "save": 0 },
+        "Con": { "score": 10, "modifier": 0, "save": 0 },
+        "Int": { "score": 10, "modifier": 0, "save": 0 },
+        "Wis": { "score": 10, "modifier": 0, "save": 0 },
+        "Cha": { "score": 10, "modifier": 0, "save": 0 }
+      },
+      "skills": null,
+      "gear": "Club",
+      "senses": "Passive Perception 10",
+      "languages": "Common",
+      "challenge": { "cr": "0", "xp": 10, "proficiencyBonus": 2 },
+      "traits": [
+        { "name": "Training", "text": "The commoner has proficiency in one skill of the GM’s choice and has Advantage whenever it makes an ability check using that skill." }
+      ],
+      "actions": [
+        { "name": "Club", "text": "Melee Attack Roll: +2, reach 5 ft. Hit: 2 (1d4) Bludgeoning damage." }
+      ]
+    }
+  ]
+}

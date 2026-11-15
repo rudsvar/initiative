@@ -4,15 +4,18 @@ Some built-in creatures in initiative/Stores/DefaultContent.swift use stat
 blocks from the System Reference Document 5.2.1. The lines that come from it
 are marked "// SRD 5.2.1" in that file.
 
-This work includes material from the System Reference Document 5.2.1 ("SRD 5.2.1") by Wizards of the
+This work includes material from the System Reference Document 5.2.1 (“SRD 5.2.1”) by Wizards of the
 Coast LLC, available at https://www.dndbeyond.com/srd. The SRD 5.2.1 is licensed under the Creative
 Commons Attribution 4.0 International License, available at https://creativecommons.org/licenses/by/4.0/legalcode.
 
 Modifications: the hit points, armor class and initiative bonus for the SRD
-creatures listed below are taken from the SRD 5.2.1 stat blocks. The name Young
-Wyrm is used for the SRD's Young Red Dragon stat block. No other text from the
-SRD is included.
+creatures in the built-in list are taken from the SRD 5.2.1 stat blocks. The
+name Young Wyrm is used for the SRD's Young Red Dragon stat block.
 
-SRD creatures used: Wolf, Giant Bat, Giant Spider, Bandit, Berserker, Ogre,
-Shadow, Zombie, Wight, Gargoyle, Basilisk, Griffon, Air Elemental, Fire
-Elemental, Earth Elemental, Young Wyrm (SRD: Young Red Dragon).
+Full stat blocks are in initiative/Data/srd-creatures.json, converted from the
+SRD text: line breaks joined and hyphenated words rejoined, no rules text
+edited. Those are Wolf, Giant Bat, Giant Spider, Bandit and Commoner.
+
+SRD creatures in the built-in list: Wolf, Giant Bat, Giant Spider, Bandit,
+Berserker, Ogre, Shadow, Zombie, Wight, Gargoyle, Basilisk, Griffon, Air
+Elemental, Fire Elemental, Earth Elemental, Young Wyrm (SRD: Young Red Dragon).

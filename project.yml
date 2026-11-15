@@ -26,6 +26,8 @@ targets:
         excludes:
           - "**/*Tests.swift"
       - path: initiative/Assets.xcassets
+      # Bundled reference data (SRD stat blocks). XcodeGen copies JSON into the app.
+      - path: initiative/Data
     settings:
       ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
       PRODUCT_NAME: initiative
