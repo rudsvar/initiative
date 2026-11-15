@@ -370,16 +370,14 @@ struct CombatantRow: View {
     }
 
     /// A number that changed since its turn started: bold, red when down, green when
-    /// up, with a plain arrow after it pointing the way. No amount: the detail
-    /// screen shows that. An unchanged number is plain.
+    /// up. No arrow and no amount: the detail screen shows the amount. An unchanged
+    /// number is plain.
     private func marked(_ value: Int, change: Int?) -> Text {
         guard let change else {
             return Text("\(value)").foregroundColor(Theme.textSecondary)
         }
         let color = change < 0 ? Theme.statusBad : Theme.statusGood
-        let arrow = change < 0 ? "arrow.down" : "arrow.up"
         return Text("\(value)").fontWeight(.bold).foregroundColor(color)
-            + Text("\(Image(systemName: arrow))").font(Theme.Typography.label).foregroundColor(color)
     }
 
     /// One stat line in fixed columns, so every roster row lines up: temp text, then

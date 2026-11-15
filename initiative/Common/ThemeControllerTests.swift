@@ -76,7 +76,7 @@ final class ThemeControllerTests: XCTestCase {
             ThemeIdentifier.allCases.map(\.rawValue),
             [
                 "tavernCandlelight", "inkAndCinnabar", "slateAndBrass", "verdigris",
-                "abyssal", "nightshade", "highContrast", "parchment", "vellum",
+                "abyssal", "nightshade", "highContrast", "parchment", "vellum", "colorblindDark", "colorblindLight",
             ],
             "Renaming a case orphans every saved preference pointing at it"
         )

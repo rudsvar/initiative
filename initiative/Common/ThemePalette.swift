@@ -92,6 +92,71 @@ struct ThemePalette: Equatable {
 ///
 /// Order matters: this is the order the picker lists them in, dark themes first,
 /// so `allCases` is the running order and not an arbitrary one.
+/// Two themes for colour-blind use. Good is blue, bad is orange, warning is yellow,
+/// and info is teal, so no status pair depends on telling red from green. Each
+/// status colour stays clear of the accent.
+extension ThemePalette {
+    static let colorblindDark = ThemePalette(
+        background: Color(red: 0.10, green: 0.10, blue: 0.11),
+        backgroundLift: Color(red: 0.15, green: 0.15, blue: 0.16),
+        surface: Color(red: 0.17, green: 0.17, blue: 0.19),
+        surfaceRaised: Color(red: 0.24, green: 0.24, blue: 0.26),
+        border: Color(red: 0.38, green: 0.38, blue: 0.40),
+
+        accent: Color(red: 0.95, green: 0.95, blue: 0.97),
+        accentForeground: Color(red: 0.10, green: 0.10, blue: 0.11),
+
+        textPrimary: Color(red: 0.96, green: 0.96, blue: 0.96),
+        textSecondary: Color(red: 0.78, green: 0.78, blue: 0.80),
+        textTertiary: Color(red: 0.58, green: 0.58, blue: 0.60),
+        placeholderText: Color(red: 0.66, green: 0.66, blue: 0.68),
+
+        statusGood: Color(red: 0.34, green: 0.71, blue: 0.91),
+        statusWarn: Color(red: 0.94, green: 0.89, blue: 0.26),
+        statusBad: Color(red: 0.90, green: 0.50, blue: 0.20),
+        statusNeutral: Color(red: 0.55, green: 0.55, blue: 0.57),
+        statusInfo: Color(red: 0.00, green: 0.62, blue: 0.45),
+
+        conditionSensory: Color(red: 0.34, green: 0.71, blue: 0.91),
+        conditionMental: Color(red: 0.80, green: 0.48, blue: 0.65),
+        conditionRestraint: Color(red: 0.90, green: 0.62, blue: 0.00),
+        conditionDisabling: Color(red: 0.30, green: 0.75, blue: 0.60),
+        conditionOngoing: Color(red: 0.60, green: 0.60, blue: 0.62),
+
+        colorScheme: .dark
+    )
+
+    static let colorblindLight = ThemePalette(
+        background: Color(red: 0.80, green: 0.80, blue: 0.79),
+        backgroundLift: Color(red: 0.86, green: 0.86, blue: 0.85),
+        surface: Color(red: 0.91, green: 0.91, blue: 0.90),
+        surfaceRaised: Color(red: 0.99, green: 0.99, blue: 0.98),
+        border: Color(red: 0.62, green: 0.62, blue: 0.62),
+
+        accent: Color(red: 0.12, green: 0.12, blue: 0.12),
+        accentForeground: Color(red: 0.97, green: 0.97, blue: 0.96),
+
+        textPrimary: Color(red: 0.08, green: 0.08, blue: 0.08),
+        textSecondary: Color(red: 0.30, green: 0.30, blue: 0.30),
+        textTertiary: Color(red: 0.40, green: 0.40, blue: 0.40),
+        placeholderText: Color(red: 0.50, green: 0.50, blue: 0.50),
+
+        statusGood: Color(red: 0.00, green: 0.45, blue: 0.70),
+        statusWarn: Color(red: 0.62, green: 0.52, blue: 0.00),
+        statusBad: Color(red: 0.84, green: 0.37, blue: 0.00),
+        statusNeutral: Color(red: 0.50, green: 0.50, blue: 0.50),
+        statusInfo: Color(red: 0.00, green: 0.48, blue: 0.36),
+
+        conditionSensory: Color(red: 0.00, green: 0.45, blue: 0.70),
+        conditionMental: Color(red: 0.66, green: 0.30, blue: 0.50),
+        conditionRestraint: Color(red: 0.80, green: 0.50, blue: 0.00),
+        conditionDisabling: Color(red: 0.00, green: 0.48, blue: 0.36),
+        conditionOngoing: Color(red: 0.30, green: 0.30, blue: 0.32),
+
+        colorScheme: .light
+    )
+}
+
 enum ThemeIdentifier: String, CaseIterable, Identifiable, Codable {
     case tavernCandlelight
     case inkAndCinnabar
@@ -102,6 +167,8 @@ enum ThemeIdentifier: String, CaseIterable, Identifiable, Codable {
     case highContrast
     case parchment
     case vellum
+    case colorblindDark
+    case colorblindLight
 
     var id: String { rawValue }
 
@@ -116,6 +183,8 @@ enum ThemeIdentifier: String, CaseIterable, Identifiable, Codable {
         case .highContrast: return "High Contrast"
         case .parchment: return "Parchment"
         case .vellum: return "Vellum"
+        case .colorblindDark: return "Colour-blind Dark"
+        case .colorblindLight: return "Colour-blind Light"
         }
     }
 
@@ -130,6 +199,8 @@ enum ThemeIdentifier: String, CaseIterable, Identifiable, Codable {
         case .highContrast: return "Maximum legibility. For bad light and tired eyes."
         case .parchment: return "Light. Printed-page black on warm paper."
         case .vellum: return "Light and cool. Grey paper, deep teal ink."
+        case .colorblindDark: return "Blue for good, orange for bad. No red-green pairs."
+        case .colorblindLight: return "The same colour-blind-safe pairs on a light page."
         }
     }
 
@@ -148,6 +219,8 @@ enum ThemeIdentifier: String, CaseIterable, Identifiable, Codable {
         case .highContrast: return .highContrast
         case .parchment: return .parchment
         case .vellum: return .vellum
+        case .colorblindDark: return .colorblindDark
+        case .colorblindLight: return .colorblindLight
         }
     }
 }

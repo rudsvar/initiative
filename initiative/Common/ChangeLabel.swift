@@ -1,20 +1,14 @@
 import SwiftUI
 
-/// A change in a value, as an arrow and an unsigned number: a red down arrow for a
-/// fall, a green up arrow for a rise. The number is bold in the same colour. No
-/// minus sign, so "7 ↓3" can't be read as a subtraction the wrong way round.
+/// A change in a value, shown as the bold number in red (down) or green (up). No
+/// arrow and no sign: the colour carries the direction, and the number is the size.
 struct ChangeLabel: View {
     let change: Int
 
-    private var falling: Bool { change < 0 }
-
     var body: some View {
-        HStack(spacing: 1) {
-            Image(systemName: falling ? "arrow.down" : "arrow.up")
-            Text("\(abs(change))")
-        }
-        .fontWeight(.bold)
-        .foregroundColor(falling ? Theme.statusBad : Theme.statusGood)
+        Text("\(abs(change))")
+            .fontWeight(.bold)
+            .foregroundColor(change < 0 ? Theme.statusBad : Theme.statusGood)
     }
 }
 

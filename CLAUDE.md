@@ -283,6 +283,29 @@ This keeps the project structure reproducible and diffable (the generated `.pbxp
 - Currently no external packages; SwiftUI is built-in
 - If you add a package dependency, add it to `project.yml` under the target's `dependencies` section
 
+## Colour and colour-blindness
+
+Every theme must work for people with colour-vision deficiency. The palettes
+are built on the Okabe-Ito set, which was designed to stay distinct under the
+common types: protanopia and deuteranopia (red-green) and tritanopia (blue-yellow).
+
+- **Good is blue, bad is orange or vermillion, warning is yellow, info is
+  bluish green or teal.** Never pair red with green for status, and never pair
+  blue with purple or with green for two states that matter together.
+- **Colour is never the only cue.** A status also shows in text, weight, an
+  icon, or position. A changed number is bold and coloured, and the detail
+  screen shows the amount; a band is named in words ("Medium AC").
+- **Check every palette under simulated deficiency** before it ships: protanopia,
+  deuteranopia, tritanopia and achromatopsia. Chrome DevTools (Rendering tab)
+  and Firefox's Accessibility Inspector can simulate these on a running screen.
+  `ThemePaletteTests` checks contrast, the elevation ladder and accent clearance
+  for every palette; it does not simulate deficiency, so the check above is still
+  needed for any palette change.
+- **Keep the status colours apart by lightness as well as hue**, so they still
+  separate in greyscale and under low vision.
+- **Colour-blind themes** are `colorblindDark` and `colorblindLight`. They use the
+  same status roles as the others, with the Okabe-Ito pairs above.
+
 ## Testing
 
 The `initiativeTests` target (XCTest) covers `Models/Models.swift` and the `Stores/`
