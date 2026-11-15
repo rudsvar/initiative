@@ -202,8 +202,8 @@ project.yml            # XcodeGen configuration (regenerates .xcodeproj)
   `fieldStyle(width:)` (text input chrome), `Text.sectionLabel()` (tracked
   caps field label), `Text.cardHeading()` (serif card title),
   `appSearchable(text:prompt:isVisible:)` (`Common/SearchBar.swift` — the
-  system's own `.searchable`, plus `.searchToolbarBehavior(.minimize)` on
-  iOS 26+; not a hand-built bar), and `selfSizingSheet()` (sizes a sheet to
+  system's own `.searchable`, kept expanded as a text field, not minimized
+  to an icon; not a hand-built bar), and `selfSizingSheet()` (sizes a sheet to
   its own content height instead of a fixed `.presentationDetents` fraction
   — used by small popups like `TurnPromptView` and `LimitedUseEditorView`).
   These exist because each was previously copy-pasted per screen and
