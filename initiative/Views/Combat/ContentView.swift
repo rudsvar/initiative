@@ -332,15 +332,6 @@ struct CombatantRow: View {
         }
     }
 
-    private func stateBadge(_ systemImage: String, tint: Color) -> some View {
-        Image(systemName: systemImage)
-            .font(Theme.Typography.iconInline)
-            .foregroundColor(tint)
-            .padding(Theme.Spacing.xs)
-            .background(Theme.background.opacity(0.8))
-            .clipShape(Circle())
-    }
-
     @ViewBuilder
     private func statRow(systemImage: String, iconColor: Color, text: String, textColor: Color) -> some View {
         statRow(systemImage: systemImage, iconColor: iconColor, content: Text(text), textColor: textColor)
@@ -472,9 +463,6 @@ struct CombatantRow: View {
                         .font(Theme.Typography.rowTitle)
                         .foregroundColor(Theme.textPrimary)
                         .strikethrough(combatant.isDead)
-                    if combatant.isStabilised {
-                        stateBadge("bandage.fill", tint: Theme.statusWarn)
-                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
 
@@ -497,7 +485,7 @@ struct CombatantRow: View {
             // symbols alone. Reaction and Concentration live only on the
             // detail screen now, not here — this strip is conditions/
             // cooldowns only. FlowLayout wraps to the next line on overflow.
-            if !combatant.visibleEffects.isEmpty {
+            if !combatant.visibleEffects.isEmpty || combatant.isStabilised {
                 FlowLayout {
                     // The Dying effect shows as a plain "Dying" chip; its tally is beside the name.
                     ForEach(combatant.visibleEffects) { effect in
@@ -511,6 +499,12 @@ struct CombatantRow: View {
                                 color: chipTint(for: effect, condition: condition)
                             )
                         }
+                    }
+                    // Stabilised is a status, not a mark: at 0 HP, not rolling, not
+                    // waking up. Yellow, the warning colour, so it reads as "still
+                    // down" without the alarm of the red Dying chip.
+                    if combatant.isStabilised {
+                        StatusChip(symbolName: "bandage.fill", label: "Stabilised", color: Theme.statusWarn)
                     }
                 }
                 .frame(width: rowWidth, alignment: .leading)
