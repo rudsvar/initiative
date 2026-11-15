@@ -383,19 +383,19 @@ struct CombatantRow: View {
     }
 
     /// One stat line in fixed columns, so the lines of every roster row line up:
-    /// icon, the value, and any temporary value written out as text.
+    /// icon, temporary value as text, then the value flush right.
     private func statLine(_ systemImage: String, _ iconColor: Color, value: Text, temp: Int?) -> some View {
         HStack(spacing: 0) {
             Image(systemName: systemImage)
                 .font(Theme.Typography.iconInline)
                 .foregroundColor(iconColor)
                 .frame(width: 14, alignment: .center)
-            value
-                .frame(width: 72, alignment: .trailing)
-            Text(temp.map { "temp \($0)" } ?? "")
+            // Temp sits left of the value, so the values themselves stay flush right.
+            Text(temp.map { "temp \($0) " } ?? "")
                 .foregroundColor(Theme.statusInfo)
-                .frame(width: 50, alignment: .leading)
-                .padding(.leading, Theme.Spacing.xxs)
+                .frame(width: 54, alignment: .trailing)
+            value
+                .frame(width: 66, alignment: .trailing)
         }
         .font(Theme.Typography.stat)
     }
