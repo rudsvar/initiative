@@ -360,30 +360,38 @@ struct CombatantRow: View {
             } else {
                 statLine(
                     "heart.fill", Theme.statusBad,
-                    value: "\(current)/\(max)",
-                    change: combatant.recentHPChange,
+                    value: marked(current, change: combatant.recentHPChange)
+                        + Text("/").foregroundColor(Theme.textTertiary)
+                        + marked(max, change: combatant.recentMaxHPChange),
                     temp: combatant.temporaryHP
                 )
             }
         }
     }
 
+    /// A number that changed since its turn started: bold, red when down, green when
+    /// up, with a plain arrow after it pointing the way. No amount: the detail
+    /// screen shows that. An unchanged number is plain.
+    private func marked(_ value: Int, change: Int?) -> Text {
+        guard let change else {
+            return Text("\(value)").foregroundColor(Theme.textSecondary)
+        }
+        let color = change < 0 ? Theme.statusBad : Theme.statusGood
+        let arrow = change < 0 ? "arrow.down" : "arrow.up"
+        return Text("\(value)").fontWeight(.bold).foregroundColor(color)
+            + Text("\(Image(systemName: arrow))").foregroundColor(color)
+    }
+
     /// One stat line in fixed columns, so the lines of every roster row line up:
-    /// icon, value, the change since the turn started (red down, green up), and any
-    /// temporary value written out as text.
-    private func statLine(_ systemImage: String, _ iconColor: Color, value: String, change: Int?, temp: Int?) -> some View {
+    /// icon, the value, and any temporary value written out as text.
+    private func statLine(_ systemImage: String, _ iconColor: Color, value: Text, temp: Int?) -> some View {
         HStack(spacing: 0) {
             Image(systemName: systemImage)
                 .font(Theme.Typography.iconInline)
                 .foregroundColor(iconColor)
                 .frame(width: 14, alignment: .center)
-            Text(value)
-                .foregroundColor(Theme.textSecondary)
-                .frame(width: 44, alignment: .trailing)
-            Group {
-                if let change { ChangeLabel(change: change) } else { Text("") }
-            }
-            .frame(width: 30, alignment: .trailing)
+            value
+                .frame(width: 72, alignment: .trailing)
             Text(temp.map { "temp \($0)" } ?? "")
                 .foregroundColor(Theme.statusInfo)
                 .frame(width: 50, alignment: .leading)
@@ -403,8 +411,7 @@ struct CombatantRow: View {
             } else {
                 statLine(
                     "shield.fill", Theme.statusInfo,
-                    value: "\(ac)",
-                    change: combatant.recentACChange,
+                    value: marked(ac, change: combatant.recentACChange),
                     temp: combatant.temporaryAC
                 )
             }

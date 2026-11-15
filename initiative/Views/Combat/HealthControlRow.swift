@@ -28,7 +28,7 @@ struct HealthControlRow: View {
             VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
                 line("Current HP", "\(current)", change: combatant.recentHPChange) { sheet = .current }
                 tempLine(combatant)
-                line("Max HP", "\(max)", change: nil) { sheet = .max }
+                line("Max HP", "\(max)", change: combatant.recentMaxHPChange) { sheet = .max }
             }
             .foregroundColor(combatant.isDead ? Theme.textTertiary : Theme.textPrimary)
             .sheet(item: $sheet) { which in
