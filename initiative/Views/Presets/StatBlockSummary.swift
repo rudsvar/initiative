@@ -7,7 +7,7 @@ struct StatBlockSummary: View {
     let block: StatBlock
 
     var body: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+        VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
             header
             combatStrip
             abilityRow

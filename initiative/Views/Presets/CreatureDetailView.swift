@@ -75,7 +75,7 @@ struct CreatureDetailView: View {
     /// Scrolls, so the whole stat block can be read on a phone.
     private var builtInBody: some View {
         ScrollView {
-            VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
                 if let block {
                     StatBlockSummary(block: block)
                 } else {
@@ -93,7 +93,7 @@ struct CreatureDetailView: View {
                     .sectionCard()
                 }
             }
-            .padding(Theme.Spacing.md)
+            .padding(Theme.Spacing.lg)
         }
         .themedScreen()
     }
