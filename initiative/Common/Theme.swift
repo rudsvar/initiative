@@ -227,6 +227,8 @@ extension Theme {
 
         /// Tabular figures at a text style's size, for stat readouts (HP, AC).
         static let stat = Font.system(.caption, design: .rounded).monospacedDigit()
+        /// Roster HP and AC, at the size of the row's name, so the stats read as part of the row.
+        static let rowStat = Font.system(.headline, design: .rounded).monospacedDigit()
         static let statLarge = Font.system(.headline, design: .rounded).weight(.bold).monospacedDigit()
         /// A glyph that sits inline with adjacent text (the heart beside an HP
         /// value, the skull beside a name). A text style rather than a point size

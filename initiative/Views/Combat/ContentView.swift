@@ -399,7 +399,7 @@ struct CombatantRow: View {
             value
                 .padding(.leading, Theme.Spacing.xs)
         }
-        .font(Theme.Typography.stat)
+        .font(Theme.Typography.rowStat)
     }
 
     @ViewBuilder
