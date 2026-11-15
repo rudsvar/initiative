@@ -374,7 +374,9 @@ struct CombatantRow: View {
     @ViewBuilder
     private var armorClassRow: some View {
         if let ac = combatant.armorClass {
-            if hideNumbers {
+            // In player view AC is a band for every combatant, so no row shows a
+            // raw number that another row hides. HP keeps its own rule (hideNumbers).
+            if playerViewEnabled {
                 let band = StatusBand.armorClass(ac)
                 statRow(systemImage: "shield.fill", iconColor: Theme.statusInfo, text: band.label, textColor: band.color)
             } else {
