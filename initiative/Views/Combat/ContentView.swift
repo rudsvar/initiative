@@ -296,6 +296,16 @@ struct CombatantRow: View {
         UIScreen.main.bounds.width - (2 * Theme.Spacing.sm + 2 * Theme.Spacing.md)
     }
 
+    /// "Dying ✓●●○ ✕●○○", or "Stable" and "Dead" once the tally is decided.
+    private func dyingLabel(_ saves: DeathSaves) -> String {
+        if saves.isDead { return "Dead" }
+        if saves.isStable { return "Stable" }
+        func circles(_ filled: Int) -> String {
+            String(repeating: "●", count: filled) + String(repeating: "○", count: DeathSaves.required - filled)
+        }
+        return "Dying ✓\(circles(saves.successes)) ✕\(circles(saves.failures))"
+    }
+
     private func chipSymbol(for effect: Effect, condition: StandardCondition?) -> String {
         switch effect.kind {
         case .cooldown: return effect.durationType.awaitsRoll ? "hourglass" : "clock"
@@ -479,14 +489,24 @@ struct CombatantRow: View {
             if !combatant.visibleEffects.isEmpty {
                 FlowLayout {
                     ForEach(combatant.visibleEffects) { effect in
-                        let condition = ConditionLibrary.matching(name: effect.name)
-                        StatusChip(
-                            symbolName: chipSymbol(for: effect, condition: condition),
-                            label: effect.name,
-                            // A cooldown is something you can't do, not something
-                            // wrong with you — quiet, like the reaction chip.
-                            color: chipTint(for: effect, condition: condition)
-                        )
+                        if let saves = effect.deathSaves {
+                            // The Dying chip shows the tally: three circles for
+                            // successes (✓) and three for failures (✕), filled as recorded.
+                            StatusChip(
+                                symbolName: "heart.slash.fill",
+                                label: dyingLabel(saves),
+                                color: Theme.statusBad
+                            )
+                        } else {
+                            let condition = ConditionLibrary.matching(name: effect.name)
+                            StatusChip(
+                                symbolName: chipSymbol(for: effect, condition: condition),
+                                label: effect.name,
+                                // A cooldown is something you can't do, not something
+                                // wrong with you — quiet, like the reaction chip.
+                                color: chipTint(for: effect, condition: condition)
+                            )
+                        }
                     }
                 }
                 .frame(width: rowWidth, alignment: .leading)

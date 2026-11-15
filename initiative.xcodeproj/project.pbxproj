@@ -58,6 +58,7 @@
 		9E619E17AE246450D08A306D /* DebugScenariosView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FC75838D4FF442192212A7E /* DebugScenariosView.swift */; };
 		9FE8D77649E294094C52166C /* PlayerViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C86540C34D5CD3C7378276D /* PlayerViewTests.swift */; };
 		A487A5D42B5F78867A371A4C /* StatusBandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6636EDC413749080974CA625 /* StatusBandTests.swift */; };
+		A6CAC928C62BC2EFC03D965A /* DyingEffectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A9ED5BBE06EEC50B84DE4 /* DyingEffectTests.swift */; };
 		A846E1C8F6638A7F4F7591BA /* TurnPromptTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3FB96497CF923A7DB11289 /* TurnPromptTests.swift */; };
 		ADCD3ABB889BB6011688D66E /* ThemePalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9059D28D057C9E7FD6B83705 /* ThemePalette.swift */; };
 		AF4A3470A3AE7A137BD46058 /* Combatant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B266DEA642A436C6B0171B6 /* Combatant.swift */; };
@@ -185,6 +186,7 @@
 		F7082DB36F1CEF76E4B26086 /* initiative.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = initiative.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA68DB47192CE2E8140091B6 /* DefaultContent.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultContent.swift; sourceTree = "<group>"; };
 		FE0E8595FB2990C1DF76AD4C /* LogView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogView.swift; sourceTree = "<group>"; };
+		FE1A9ED5BBE06EEC50B84DE4 /* DyingEffectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DyingEffectTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
@@ -263,6 +265,7 @@
 				99016F78C287D6C3DE0A2F71 /* DeadCombatantTurnTests.swift */,
 				7DF8601F37841A579037DFC0 /* DeathSaves.swift */,
 				CABB9E34092EF513A3140A90 /* DeathSaveTests.swift */,
+				FE1A9ED5BBE06EEC50B84DE4 /* DyingEffectTests.swift */,
 				5105E7AA6B2BA4A20F4CBC35 /* Effect.swift */,
 				3613CF49D1C24697119764CE /* EffectOperationsTests.swift */,
 				9C033583CC9AE407903E6C47 /* LimitedUse.swift */,
@@ -570,6 +573,7 @@
 				15F35E2EC4CECF8F9D19A2BA /* DeadCombatantTurnTests.swift in Sources */,
 				45F8B42699C6E4ABE1A8FB2E /* DeathSaveTests.swift in Sources */,
 				4D5AF4D833355B9CDA7A42CE /* DefaultContentTests.swift in Sources */,
+				A6CAC928C62BC2EFC03D965A /* DyingEffectTests.swift in Sources */,
 				7E5C7BB027F7BC0907ECA434 /* EffectOperationsTests.swift in Sources */,
 				1A85F56E1359778680CB6BE8 /* EncounterStoreTests.swift in Sources */,
 				62C2CEF33F96A4573D4BC9C4 /* LimitedUseTests.swift in Sources */,

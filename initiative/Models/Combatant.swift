@@ -47,8 +47,23 @@ struct Combatant: Identifiable, Codable {
     /// full at the start of this combatant's own turn, same rule as `Reaction`.
     var limitedUses: [LimitedUse] = []
 
-    /// Non-nil once this combatant has started dying. See `DeathSaves`.
-    var deathSaves: DeathSaves?
+    /// The death-save tally, held by the Dying effect. Setting it adds, updates or
+    /// removes that effect, so the rest of the app reads and writes one value.
+    /// Nil until the combatant starts dying. See `DeathSaves`.
+    var deathSaves: DeathSaves? {
+        get { effects.first { $0.deathSaves != nil }?.deathSaves }
+        set {
+            guard let newValue else {
+                effects.removeAll { $0.deathSaves != nil }
+                return
+            }
+            if let index = effects.firstIndex(where: { $0.deathSaves != nil }) {
+                effects[index].deathSaves = newValue
+            } else {
+                effects.append(Effect(name: "Dying", durationType: .untilRemoved, deathSaves: newValue))
+            }
+        }
+    }
 
     /// Reaction tracking is implemented as a regular effect (untilStartOfTheirTurn,
     /// marked internal) rather than its own stored field, so it expires through the
@@ -104,8 +119,13 @@ struct Combatant: Identifiable, Codable {
 
     // MARK: - Codable
 
+    /// The one key that no longer exists as a stored property, read only when loading old saves.
+    private enum LegacyKeys: String, CodingKey {
+        case deathSaves
+    }
+
     private enum CodingKeys: String, CodingKey {
-        case id, name, initiative, effects, maxHP, currentHP, armorClass, temporaryHP, temporaryAC, recentHPChange, recentMaxHPChange, recentACChange, isPlayer, isConcentrating, limitedUses, deathSaves, maxHPIncreased
+        case id, name, initiative, effects, maxHP, currentHP, armorClass, temporaryHP, temporaryAC, recentHPChange, recentMaxHPChange, recentACChange, isPlayer, isConcentrating, limitedUses, maxHPIncreased
     }
 
     /// Written out by hand rather than synthesized: Swift's synthesized decoding
@@ -132,7 +152,12 @@ struct Combatant: Identifiable, Codable {
         isPlayer = try container.decodeIfPresent(Bool.self, forKey: .isPlayer) ?? false
         isConcentrating = try container.decodeIfPresent(Bool.self, forKey: .isConcentrating) ?? false
         limitedUses = try container.decodeIfPresent([LimitedUse].self, forKey: .limitedUses) ?? []
-        deathSaves = try container.decodeIfPresent(DeathSaves.self, forKey: .deathSaves)
+        // Saves from before the Dying effect carried the tally on the combatant itself.
+        // Move it onto a Dying effect so it keeps working.
+        let legacyKeys = try decoder.container(keyedBy: LegacyKeys.self)
+        if let legacy = try legacyKeys.decodeIfPresent(DeathSaves.self, forKey: .deathSaves) {
+            deathSaves = legacy
+        }
         maxHPIncreased = try container.decodeIfPresent(Bool.self, forKey: .maxHPIncreased) ?? false
     }
 }

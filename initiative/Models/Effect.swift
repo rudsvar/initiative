@@ -25,23 +25,27 @@ struct Effect: Identifiable, Codable {
     /// nil/false for every normal, user-created effect. Optional so old saved
     /// sessions (from before this existed) still decode.
     var isReactionMarker: Bool?
+    /// The death-save tally, present only on the Dying effect. See `Combatant.deathSaves`.
+    var deathSaves: DeathSaves?
 
     init(
         id: UUID = UUID(),
         name: String,
         durationType: DurationType,
         kind: EffectKind = .condition,
-        isReactionMarker: Bool? = nil
+        isReactionMarker: Bool? = nil,
+        deathSaves: DeathSaves? = nil
     ) {
         self.id = id
         self.name = name
         self.durationType = durationType
         self.kind = kind
         self.isReactionMarker = isReactionMarker
+        self.deathSaves = deathSaves
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, durationType, kind, isReactionMarker
+        case id, name, durationType, kind, isReactionMarker, deathSaves
     }
 
     /// Hand-written for the same reason as `Combatant`'s: a synthesized decoder
@@ -54,6 +58,7 @@ struct Effect: Identifiable, Codable {
         durationType = try container.decode(DurationType.self, forKey: .durationType)
         kind = try container.decodeIfPresent(EffectKind.self, forKey: .kind) ?? .condition
         isReactionMarker = try container.decodeIfPresent(Bool.self, forKey: .isReactionMarker)
+        deathSaves = try container.decodeIfPresent(DeathSaves.self, forKey: .deathSaves)
     }
 }
 
