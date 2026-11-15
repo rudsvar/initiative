@@ -358,12 +358,12 @@ struct CombatantRow: View {
                 let band = StatusBand.health(current: current, max: max)
                 statRow(systemImage: "heart.fill", iconColor: Theme.statusBad, text: band.label, textColor: band.color)
             } else {
-                // Bold carries the signal instead of a "+8" suffix: Current
-                // bolds while a temp buffer is active, Max bolds once it's
-                // ever been raised — same cue as HealthControlRow, so the
-                // roster reads it without opening the row. The exact buffer
-                // amount is still visible on the detail screen if it matters.
-                let content = Text("\(current)").fontWeight(combatant.temporaryHP != nil ? .bold : .regular)
+                // Max bolds once it has ever been raised, the same cue as
+                // HealthControlRow. An active temp buffer shows as a green
+                // "+N" after the current value, so it reads at a glance.
+                let temp = combatant.temporaryHP ?? 0
+                let content = Text("\(current)")
+                    + (temp > 0 ? Text(" +\(temp)").foregroundStyle(Theme.statusGood) : Text(""))
                     + Text("/")
                     + Text("\(max)").fontWeight(combatant.maxHPIncreased ? .bold : .regular)
                 statRow(systemImage: "heart.fill", iconColor: Theme.statusBad, content: content, textColor: Theme.textSecondary)
