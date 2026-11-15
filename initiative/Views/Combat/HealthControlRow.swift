@@ -1,15 +1,12 @@
 import SwiftUI
 
-/// Current and max HP, and how they are changed. Tap the current value to take
-/// damage or heal; tap the max to lower or raise it. Each opens `AdjustAmountSheet`,
-/// where the amount is chosen with − and +. Beside the numbers, the net change since
-/// the combatant's turn started shows in red (down) or green (up). The shield grants
-/// temporary HP, which replaces any earlier grant.
+/// Current HP and max HP, each on its own line with its own action. Tap the current
+/// value to take damage or heal; tap the max value to lower or raise it. Each opens
+/// `AdjustAmountSheet`. The change since the turn started shows beside current HP,
+/// red or green. "Grant temp" sets temporary HP, which replaces any earlier grant.
 struct HealthControlRow: View {
     let session: CombatSession
     let combatantId: UUID
-    /// Smaller controls for the roster, full size on the advanced screen.
-    var compact: Bool = false
     /// Surfaces a concentration check raised by damage, so the caller can present it.
     var onDamageApplied: (TurnPrompt?) -> Void = { _ in }
 
@@ -28,32 +25,12 @@ struct HealthControlRow: View {
 
     var body: some View {
         if let combatant, let current = combatant.currentHP, let max = combatant.maxHP {
-            HStack(spacing: Theme.Spacing.sm) {
-                HStack(alignment: .firstTextBaseline, spacing: Theme.Spacing.xs) {
-                    tapValue("\(current)") { sheet = .current }
-                    Text("/")
-                        .foregroundColor(Theme.textTertiary)
-                    tapValue("\(max)") { sheet = .max }
-                    if let change = combatant.recentHPChange {
-                        Text(Format.signed(change))
-                            .font(Theme.Typography.bodyEmphasis)
-                            .foregroundColor(change < 0 ? Theme.statusBad : Theme.statusGood)
-                    }
-                    if let temp = combatant.temporaryHP {
-                        Label("\(temp)", systemImage: "shield.fill")
-                            .font(Theme.Typography.caption)
-                            .foregroundColor(Theme.statusInfo)
-                    }
-                }
-                .font(compact ? Theme.Typography.bodyEmphasis : Theme.Typography.statLarge)
-                .foregroundColor(combatant.isDead ? Theme.textTertiary : Theme.textPrimary)
-
-                Spacer(minLength: Theme.Spacing.xs)
-
-                ControlButton(systemImage: "shield.fill", tint: Theme.statusInfo, label: "Grant Temporary HP", compact: compact) {
-                    grantingTemp = true
-                }
+            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                line("Current HP", "\(current)", change: combatant.recentHPChange) { sheet = .current }
+                tempLine(combatant)
+                line("Max HP", "\(max)", change: nil) { sheet = .max }
             }
+            .foregroundColor(combatant.isDead ? Theme.textTertiary : Theme.textPrimary)
             .sheet(item: $sheet) { which in
                 switch which {
                 case .current:
@@ -88,15 +65,46 @@ struct HealthControlRow: View {
         }
     }
 
-    /// A number you tap to open its sheet. Boxed so it reads as a control.
-    private func tapValue(_ text: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            Text(text)
-                .padding(.horizontal, Theme.Spacing.sm)
-                .padding(.vertical, Theme.Spacing.xxs)
-                .background(Theme.surfaceRaised)
-                .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous))
+    /// A label, the tappable value, and the change since the turn started.
+    private func line(_ label: String, _ value: String, change: Int?, action: @escaping () -> Void) -> some View {
+        HStack(spacing: Theme.Spacing.sm) {
+            Text(label)
+                .font(Theme.Typography.caption)
+                .foregroundColor(Theme.textTertiary)
+                .frame(width: 84, alignment: .leading)
+            Button(action: action) {
+                Text(value)
+                    .font(Theme.Typography.statLarge)
+                    .padding(.horizontal, Theme.Spacing.sm)
+                    .padding(.vertical, Theme.Spacing.xxs)
+                    .background(Theme.surfaceRaised)
+                    .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous))
+            }
+            .buttonStyle(.plain)
+            if let change {
+                Text(Format.signed(change))
+                    .font(Theme.Typography.bodyEmphasis)
+                    .foregroundColor(change < 0 ? Theme.statusBad : Theme.statusGood)
+            }
+            Spacer(minLength: 0)
         }
-        .buttonStyle(.plain)
+    }
+
+    /// The temporary HP line, with its own action beside it.
+    private func tempLine(_ combatant: Combatant) -> some View {
+        HStack(spacing: Theme.Spacing.sm) {
+            Text("Temp HP")
+                .font(Theme.Typography.caption)
+                .foregroundColor(Theme.textTertiary)
+                .frame(width: 84, alignment: .leading)
+            Text(combatant.temporaryHP.map { "\($0)" } ?? "none")
+                .font(Theme.Typography.statLarge)
+                .foregroundColor(combatant.temporaryHP == nil ? Theme.textTertiary : Theme.statusInfo)
+            Spacer(minLength: 0)
+            Button("Grant temp") { grantingTemp = true }
+                .font(Theme.Typography.bodyEmphasis)
+                .foregroundColor(Theme.statusInfo)
+                .buttonStyle(.plain)
+        }
     }
 }

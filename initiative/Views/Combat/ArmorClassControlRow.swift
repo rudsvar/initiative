@@ -1,9 +1,8 @@
 import SwiftUI
 
-/// Armor class, changed the same way as current HP: tap the value, choose the
-/// amount with − and +, then lower or raise. The change since the combatant's turn
-/// started shows beside it, in red or green. The shield grants a temporary buffer,
-/// which replaces any earlier grant.
+/// Armor class, on one line with its action: tap the value to lower or raise it
+/// (`AdjustAmountSheet`). The change since the turn started shows beside it, red or
+/// green. "Grant temp" sets a temporary buffer, which replaces any earlier grant.
 struct ArmorClassControlRow: View {
     let session: CombatSession
     let combatantId: UUID
@@ -18,10 +17,15 @@ struct ArmorClassControlRow: View {
 
     var body: some View {
         if let combatant, let ac = combatant.armorClass {
-            HStack(spacing: Theme.Spacing.sm) {
-                HStack(alignment: .firstTextBaseline, spacing: Theme.Spacing.xs) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                HStack(spacing: Theme.Spacing.sm) {
+                    Text("Armor Class")
+                        .font(Theme.Typography.caption)
+                        .foregroundColor(Theme.textTertiary)
+                        .frame(width: 84, alignment: .leading)
                     Button { adjusting = true } label: {
                         Text("\(ac)")
+                            .font(Theme.Typography.statLarge)
                             .padding(.horizontal, Theme.Spacing.sm)
                             .padding(.vertical, Theme.Spacing.xxs)
                             .background(Theme.surfaceRaised)
@@ -33,21 +37,24 @@ struct ArmorClassControlRow: View {
                             .font(Theme.Typography.bodyEmphasis)
                             .foregroundColor(change < 0 ? Theme.statusBad : Theme.statusGood)
                     }
-                    if let temp = combatant.temporaryAC {
-                        Label("\(temp)", systemImage: "shield.fill")
-                            .font(Theme.Typography.caption)
-                            .foregroundColor(Theme.statusInfo)
-                    }
+                    Spacer(minLength: 0)
                 }
-                .font(Theme.Typography.statLarge)
-                .foregroundColor(Theme.textPrimary)
-
-                Spacer(minLength: Theme.Spacing.xs)
-
-                ControlButton(systemImage: "shield.fill", tint: Theme.statusInfo, label: "Grant Temporary AC") {
-                    granting = true
+                HStack(spacing: Theme.Spacing.sm) {
+                    Text("Temp AC")
+                        .font(Theme.Typography.caption)
+                        .foregroundColor(Theme.textTertiary)
+                        .frame(width: 84, alignment: .leading)
+                    Text(combatant.temporaryAC.map { "\($0)" } ?? "none")
+                        .font(Theme.Typography.statLarge)
+                        .foregroundColor(combatant.temporaryAC == nil ? Theme.textTertiary : Theme.statusInfo)
+                    Spacer(minLength: 0)
+                    Button("Grant temp") { granting = true }
+                        .font(Theme.Typography.bodyEmphasis)
+                        .foregroundColor(Theme.statusInfo)
+                        .buttonStyle(.plain)
                 }
             }
+            .foregroundColor(Theme.textPrimary)
             .sheet(isPresented: $adjusting) {
                 AdjustAmountSheet(
                     title: "Armor Class",

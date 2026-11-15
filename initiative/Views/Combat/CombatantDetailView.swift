@@ -48,16 +48,6 @@ struct CombatantDetailView: View {
         )
     }
 
-    private var armorClassBinding: Binding<String> {
-        Binding(
-            get: { combatant?.armorClass.map(String.init) ?? "" },
-            set: { newValue in
-                guard let index = session.combatants.firstIndex(where: { $0.id == combatantId }) else { return }
-                session.combatants[index].armorClass = Int(newValue)
-            }
-        )
-    }
-
     /// Pushed from tapping a roster row — an inline-under-the-row disclosure
     /// was tried here and reverted (see CHANGELOG): SwiftUI's `List` animates
     /// a row's own height change internally regardless of whether the app
@@ -162,18 +152,6 @@ struct CombatantDetailView: View {
         VStack(alignment: .leading, spacing: Theme.Spacing.md) {
             Text("Armor Class").cardHeading()
             ArmorClassControlRow(session: session, combatantId: combatantId)
-            HStack(spacing: Theme.Spacing.sm) {
-                Text("Base")
-                    .font(Theme.Typography.caption)
-                    .foregroundColor(Theme.textTertiary)
-                TextField(text: armorClassBinding) {
-                    Text("—").foregroundColor(Theme.placeholderText)
-                }
-                .keyboardType(.numberPad)
-                .font(Theme.Typography.bodyEmphasis)
-                .foregroundColor(Theme.textPrimary)
-                .fieldStyle(width: 68)
-            }
         }
         .sectionCard()
     }
