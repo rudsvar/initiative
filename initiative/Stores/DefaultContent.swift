@@ -385,36 +385,36 @@ enum DefaultContent {
             Lineup("Wolf", 3),
             Lineup("Dire Wolf"),
         ]),
-        EncounterTemplate(name: "Toll Bridge", lineup: [
-            Lineup("Bandit", 5),
-            Lineup("Scout", 2),
-            Lineup("Bandit Captain"),
-        ]),
-        EncounterTemplate(name: "Spider Hollow", lineup: [
-            Lineup("Giant Spider", 4),
-            Lineup("Rat", 2),
-        ]),
-        EncounterTemplate(name: "The Crypt Stirs", lineup: [
-            Lineup("Skeleton", 6),
-            Lineup("Ghoul", 2),
-            Lineup("Wight"),
-        ]),
         EncounterTemplate(name: "Cult Ritual", lineup: [
             Lineup("Cultist", 6),
             Lineup("Cultist Fanatic"),
             Lineup("Rat", 3),
         ]),
+        EncounterTemplate(name: "Spider Hollow", lineup: [
+            Lineup("Giant Spider", 4),
+            Lineup("Rat", 2),
+        ]),
+        EncounterTemplate(name: "Toll Bridge", lineup: [
+            Lineup("Bandit", 5),
+            Lineup("Scout", 2),
+            Lineup("Bandit Captain"),
+        ]),
         EncounterTemplate(name: "Bridge Troll", lineup: [
             Lineup("Troll"),
-            Lineup("Giant Boar", 2),
-        ]),
-        EncounterTemplate(name: "Ogre Camp", lineup: [
-            Lineup("Gnoll Warrior", 4),
-            Lineup("Ogre", 2),
+            Lineup("Giant Boar"),
         ]),
         EncounterTemplate(name: "Elemental Breach", lineup: [
             Lineup("Imp", 4),
             Lineup("Fire Elemental"),
+        ]),
+        EncounterTemplate(name: "Ogre Camp", lineup: [
+            Lineup("Gnoll Warrior", 3),
+            Lineup("Ogre"),
+        ]),
+        EncounterTemplate(name: "The Crypt Stirs", lineup: [
+            Lineup("Skeleton", 6),
+            Lineup("Ghoul", 2),
+            Lineup("Wight"),
         ]),
         EncounterTemplate(name: "The Wyrm's Approach", lineup: [
             Lineup("Cultist", 4),
