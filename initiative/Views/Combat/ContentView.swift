@@ -358,17 +358,42 @@ struct CombatantRow: View {
                 let band = StatusBand.health(current: current, max: max)
                 statRow(systemImage: "heart.fill", iconColor: Theme.statusBad, text: band.label, textColor: band.color)
             } else {
-                // Max bolds once it has ever been raised, the same cue as
-                // HealthControlRow. An active temp buffer shows as a green
-                // "+N" after the current value, so it reads at a glance.
-                let temp = combatant.temporaryHP ?? 0
-                let content = Text("\(current)")
-                    + (temp > 0 ? Text(" +\(temp)").foregroundStyle(Theme.statusGood) : Text(""))
-                    + Text("/")
-                    + Text("\(max)").fontWeight(combatant.maxHPIncreased ? .bold : .regular)
+                // The net change since this combatant's turn started sits beside
+                // the value: red when down, green when up. A temp buffer is a shield.
+                let content = healthContent(current: current, max: max)
                 statRow(systemImage: "heart.fill", iconColor: Theme.statusBad, content: content, textColor: Theme.textSecondary)
             }
         }
+    }
+
+    /// "14 −10 / 20 🛡5": the current value, the change since the turn started, the
+    /// max, and any temporary HP. Shared by the roster row and tests.
+    private func healthContent(current: Int, max: Int) -> Text {
+        var text = Text("\(current)")
+        if let change = combatant.recentHPChange {
+            text = text + Text(" " + Format.signed(change)).fontWeight(.bold)
+                .foregroundStyle(change < 0 ? Theme.statusBad : Theme.statusGood)
+        }
+        text = text + Text("/") + Text("\(max)").fontWeight(combatant.maxHPIncreased ? .bold : .regular)
+        if let temp = combatant.temporaryHP {
+            text = text + Text(" ") + Text(Image(systemName: "shield.fill")).foregroundStyle(Theme.statusInfo)
+                + Text("\(temp)").foregroundStyle(Theme.statusInfo)
+        }
+        return text
+    }
+
+    /// "14 −2 🛡3": the value, the change since the turn started, and any temp buffer.
+    private func armorClassContent(_ ac: Int) -> Text {
+        var text = Text("\(ac)")
+        if let change = combatant.recentACChange {
+            text = text + Text(" " + Format.signed(change)).fontWeight(.bold)
+                .foregroundStyle(change < 0 ? Theme.statusBad : Theme.statusGood)
+        }
+        if let temp = combatant.temporaryAC {
+            text = text + Text(" ") + Text(Image(systemName: "shield.fill")).foregroundStyle(Theme.statusInfo)
+                + Text("\(temp)").foregroundStyle(Theme.statusInfo)
+        }
+        return text
     }
 
     @ViewBuilder
@@ -380,9 +405,7 @@ struct CombatantRow: View {
                 let band = StatusBand.armorClass(ac)
                 statRow(systemImage: "shield.fill", iconColor: Theme.statusInfo, text: band.label, textColor: band.color)
             } else {
-                // Same cue as temp HP: a green "+N" after the value while a buffer is on.
-                let temp = combatant.temporaryAC ?? 0
-                let content = Text("\(ac)") + (temp > 0 ? Text(" +\(temp)").foregroundStyle(Theme.statusGood) : Text(""))
+                let content = armorClassContent(ac)
                 statRow(systemImage: "shield.fill", iconColor: Theme.statusInfo, content: content, textColor: Theme.textSecondary)
             }
         }
