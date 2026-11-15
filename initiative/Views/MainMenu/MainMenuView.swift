@@ -50,12 +50,16 @@ struct MainMenuView: View {
                             path.append(Route.sessionList)
                         }
 
-                        MenuButton(title: "Encounters", systemImage: "shield.lefthalf.filled") {
-                            path.append(Route.encounterList)
+                        MenuButton(title: "Characters", systemImage: "person.fill") {
+                            path.append(Route.characterList)
                         }
 
                         MenuButton(title: "Creatures", systemImage: "pawprint") {
-                            path.append(Route.presetList)
+                            path.append(Route.creatureList)
+                        }
+
+                        MenuButton(title: "Encounters", systemImage: "shield.lefthalf.filled") {
+                            path.append(Route.encounterList)
                         }
 
                         MenuButton(title: "Appearance", systemImage: "paintpalette") {

@@ -1,10 +1,14 @@
 import SwiftUI
 
-/// Browse, open and delete creature presets. Presets accumulate automatically as
-/// combatants are added in a session (see AddCombatantSheet), and can also be
-/// created here. Opening a row pushes its detail screen (`CreatureDetailView`).
+/// Browse, open and delete one library: characters or creatures. Both come from the
+/// same saved store and differ only in the kind flag, so the two screens are this
+/// one view with a different kind. Presets accumulate automatically as combatants
+/// are added in a session (see AddCombatantSheet), and can also be created here.
+/// Opening a row pushes its detail screen (`CreatureDetailView`).
 struct PresetListView: View {
     let presetStore: PresetStore
+    /// True for the Characters library, false for Creatures.
+    let characters: Bool
 
     // Seeded eagerly from the store rather than defaulting to `[]` and
     // filling in via `.onAppear` — an empty-then-populated flip flips
@@ -18,10 +22,13 @@ struct PresetListView: View {
     @State private var pendingDelete: CreaturePreset?
     @State private var query = ""
 
-    init(presetStore: PresetStore) {
+    init(presetStore: PresetStore, characters: Bool) {
         self.presetStore = presetStore
-        _presets = State(initialValue: presetStore.listPresets())
+        self.characters = characters
+        _presets = State(initialValue: presetStore.listPresets(characters: characters))
     }
+
+    private var noun: String { characters ? "Character" : "Creature" }
 
     private var matches: [CreaturePreset] {
         presets.filter { ListSections.matches(query: query, in: $0.searchableText) }
@@ -31,9 +38,13 @@ struct PresetListView: View {
         Group {
             if presets.isEmpty {
                 ContentUnavailableView(
-                    "No Creatures Yet",
-                    systemImage: "pawprint",
-                    description: Text("Add one here, or add a combatant during a session — it's saved here automatically.")
+                    "No \(noun)s Yet",
+                    systemImage: characters ? "person.fill" : "pawprint",
+                    description: Text(
+                        characters
+                            ? "Add one here, or clone a creature and mark it as a character."
+                            : "Add one here, or add a combatant during a session — it's saved here automatically."
+                    )
                 )
             } else if matches.isEmpty {
                 ContentUnavailableView.search(text: query)
@@ -48,16 +59,16 @@ struct PresetListView: View {
                 .scrollDismissesKeyboard(.interactively)
             }
         }
-        .appSearchable(text: $query, prompt: "Search creatures", isVisible: !presets.isEmpty)
+        .appSearchable(text: $query, prompt: "Search \(noun.lowercased())s", isVisible: !presets.isEmpty)
         .themedScreen()
-        .navigationTitle("Creatures")
+        .navigationTitle(characters ? "Characters" : "Creatures")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: { creatingNew = true }) {
                     Image(systemName: "plus")
                 }
-                .accessibilityLabel("New Creature")
+                .accessibilityLabel("New \(noun)")
             }
         }
         .onAppear { reload() }
@@ -65,7 +76,7 @@ struct PresetListView: View {
             CreatureDetailView(presetStore: presetStore, preset: preset, onChange: reload)
         }
         .navigationDestination(isPresented: $creatingNew) {
-            CreatureDetailView(presetStore: presetStore, preset: CreaturePreset(name: ""), onChange: reload)
+            CreatureDetailView(presetStore: presetStore, preset: CreaturePreset(name: "", isPlayer: characters), onChange: reload)
         }
         .alert(
             "Delete creature?",
@@ -83,7 +94,7 @@ struct PresetListView: View {
     }
 
     private func reload() {
-        presets = presetStore.listPresets()
+        presets = presetStore.listPresets(characters: characters)
     }
 
     /// Hidden entirely when empty rather than shown as a bare header — a "Yours"
@@ -152,6 +163,6 @@ struct PresetListView: View {
 
 #Preview {
     NavigationStack {
-        PresetListView(presetStore: PresetStore())
+        PresetListView(presetStore: PresetStore(), characters: false)
     }
 }

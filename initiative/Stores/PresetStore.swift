@@ -78,6 +78,13 @@ class PresetStore {
         defaults.set(true, forKey: key)
     }
 
+    /// One library's entries: characters (player characters and friendly NPCs) or
+    /// creatures. Both come from the same store, so cloning between them is a copy
+    /// with the kind changed.
+    func listPresets(characters: Bool) -> [CreaturePreset] {
+        listPresets().filter { $0.isPlayer == characters }
+    }
+
     func listPresets() -> [CreaturePreset] {
         guard let files = try? fileManager.contentsOfDirectory(at: baseDirectory, includingPropertiesForKeys: nil) else {
             return []

@@ -30,6 +30,9 @@ struct CreatureDetailView: View {
 
     private var isBuiltIn: Bool { preset.isBuiltIn }
 
+    /// Which library this entry belongs to, for the titles. Built-ins are never characters.
+    private var kindNoun: String { preset.isPlayer ? "Character" : "Creature" }
+
     /// The full stat block for a built-in SRD creature, when the app has one.
     private var block: StatBlock? {
         SRDCatalog.bundled.first { $0.name == preset.name }
@@ -43,7 +46,7 @@ struct CreatureDetailView: View {
                 editableForm
             }
         }
-        .navigationTitle(isBuiltIn ? preset.name : (preset.name.isEmpty ? "New Creature" : "Edit Creature"))
+        .navigationTitle(isBuiltIn ? preset.name : (preset.name.isEmpty ? "New \(kindNoun)" : "Edit \(kindNoun)"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             if isBuiltIn {
@@ -61,9 +64,10 @@ struct CreatureDetailView: View {
         }
         .sheet(isPresented: $cloneNamePresented) {
             CloneNameSheet(
-                title: "Clone Creature",
+                title: "Clone \(kindNoun)",
                 existingNames: presetStore.listPresets().map(\.name),
-                asksCharacterKind: true
+                asksCharacterKind: true,
+                startsAsCharacter: preset.isPlayer
             ) { newName, kind in
                 presetStore.clone(preset, named: newName, isPlayer: kind)
                 onChange()

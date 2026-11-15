@@ -26,6 +26,16 @@ final class PresetStoreTests: XCTestCase {
         XCTAssertTrue(store.listPresets().isEmpty)
     }
 
+    /// Characters and creatures share one saved store but are separate libraries.
+    /// Each library lists only its own kind.
+    func testListPresetsSplitsByKind() {
+        store.save(CreaturePreset(name: "Wren", isPlayer: true))
+        store.save(CreaturePreset(name: "Goblin", isPlayer: false))
+
+        XCTAssertEqual(store.listPresets(characters: true).map(\.name), ["Wren"])
+        XCTAssertEqual(store.listPresets(characters: false).map(\.name), ["Goblin"])
+    }
+
     func testUpsertCreatesNewPreset() {
         store.upsert(name: "Bog Hulk", maxHP: 7)
 

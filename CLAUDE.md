@@ -158,7 +158,8 @@ initiative/
 │   │                     LimitedUseEditorView (name + count for one resource),
 │   │                     RoundEffectsView (effects owned by the fight), TurnPromptView
 │   ├── MainMenu/       # MainMenuView
-│   ├── Presets/        # PresetListView (Main Menu -> Creatures)
+│   ├── Presets/        # PresetListView (Main Menu -> Characters or Creatures: one view,
+│   │                     one library per kind), CreatureDetailView
 │   ├── Encounters/      # EncounterListView (+ its nested Edit/Add sheets)
 │   ├── Sessions/       # SessionListView (Main Menu -> Load Session)
 │   └── Settings/        # AppearanceView (Main Menu -> Appearance, theme picker)

@@ -3,7 +3,8 @@ import SwiftUI
 enum Route: Hashable {
     case combat
     case sessionList
-    case presetList
+    case characterList
+    case creatureList
     case encounterList
     case newSessionChooser
     case appearance
@@ -51,8 +52,10 @@ struct RootView: View {
                     ContentView(session: session, sessionStore: sessionStore, presetStore: presetStore, path: $path)
                 case .sessionList:
                     SessionListView(session: session, sessionStore: sessionStore, path: $path)
-                case .presetList:
-                    PresetListView(presetStore: presetStore)
+                case .characterList:
+                    PresetListView(presetStore: presetStore, characters: true)
+                case .creatureList:
+                    PresetListView(presetStore: presetStore, characters: false)
                 case .encounterList:
                     EncounterListView(encounterStore: encounterStore, presetStore: presetStore)
                 case .newSessionChooser:

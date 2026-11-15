@@ -9,6 +9,9 @@ struct CloneNameSheet: View {
     let existingNames: [String]
     /// Whether to ask for the character kind. Only creatures have one.
     var asksCharacterKind = false
+    /// The kind the copy starts as: a clone of a character starts as one, and the
+    /// owner can still switch it before cloning.
+    var startsAsCharacter = false
     /// Called with the trimmed name and the chosen kind (`false` when not asked).
     let onClone: (String, Bool) -> Void
 
@@ -50,7 +53,10 @@ struct CloneNameSheet: View {
             }
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
-            .onAppear { nameFocused = true }
+            .onAppear {
+                nameFocused = true
+                isCharacter = startsAsCharacter
+            }
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
