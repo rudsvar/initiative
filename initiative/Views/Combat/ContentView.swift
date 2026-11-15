@@ -392,16 +392,14 @@ struct CombatantRow: View {
                 .foregroundColor(iconColor)
                 .frame(width: 20, alignment: .center)
             // Temporary value: shield and number, then the value and its arrow.
-            Group {
-                if let temp {
-                    Text("\(Image(systemName: "shield.fill")) \(temp)")
-                        .foregroundColor(Theme.statusInfo)
-                }
+            // Only takes room when there is a temporary value.
+            if let temp {
+                Text("\(Image(systemName: "shield.fill")) \(temp)")
+                    .foregroundColor(Theme.statusInfo)
+                    .padding(.leading, Theme.Spacing.xxs)
             }
-            .frame(width: 44, alignment: .leading)
-            .padding(.leading, Theme.Spacing.xxs)
             value
-                .frame(width: 50, alignment: .trailing)
+                .padding(.leading, Theme.Spacing.xs)
         }
         .font(Theme.Typography.stat)
     }
