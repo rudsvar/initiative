@@ -205,8 +205,10 @@ private struct EditEncounterView: View {
                 // attached to the Form it is silently ignored, which is why
                 // every one of these was rendering system grey in all nine themes.
                 .scrollContentBackground(.hidden)
+                // Read-only on the fields, not `.disabled` on the screen: a disabled
+                // view stops scrolling, so a built-in's creatures could not be read.
+                .environment(\.isEnabled, !isReadOnly)
             }
-            .disabled(isReadOnly)
             .navigationTitle(isReadOnly ? encounter.name : "Edit Encounter")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

@@ -2,33 +2,41 @@ import SwiftUI
 
 /// The full stat block of an SRD creature, as read-only form sections. Shown
 /// under the three numbers on a built-in creature's detail screen, so the DM can
-/// look up the rest at the table.
+/// look up the rest at the table. Laid out densely: the stats a DM scans for
+/// (AC, initiative, HP, abilities) sit in single rows, not one line each.
 struct StatBlockSections: View {
     let block: StatBlock
 
     var body: some View {
-        Section("Stat Block") {
+        Section {
             Text("\(block.size) \(block.type), \(block.alignment)")
                 .font(Theme.Typography.caption)
                 .foregroundColor(Theme.textSecondary)
-        }
-        .listRowBackground(Theme.surfaceRaised)
 
-        Section("Combat") {
-            row("Armor Class", "\(block.armorClass)")
-            row("Initiative", "\(signed(block.initiative.modifier)) (\(block.initiative.score))")
-            row("Hit Points", "\(block.hitPoints.average) (\(block.hitPoints.formula))")
+            HStack(alignment: .top, spacing: Theme.Spacing.sm) {
+                stat("AC", "\(block.armorClass)")
+                stat("Init", "\(signed(block.initiative.modifier)) (\(block.initiative.score))")
+                stat("HP", "\(block.hitPoints.average)")
+            }
+            .frame(maxWidth: .infinity)
+
+            row("HP dice", block.hitPoints.formula)
             row("Speed", block.speed)
+        } header: {
+            Text("Stat Block")
         }
         .listRowBackground(Theme.surfaceRaised)
 
         Section("Abilities") {
-            ability("Str", block.abilities.str)
-            ability("Dex", block.abilities.dex)
-            ability("Con", block.abilities.con)
-            ability("Int", block.abilities.int)
-            ability("Wis", block.abilities.wis)
-            ability("Cha", block.abilities.cha)
+            HStack(alignment: .top, spacing: 0) {
+                ability("STR", block.abilities.str)
+                ability("DEX", block.abilities.dex)
+                ability("CON", block.abilities.con)
+                ability("INT", block.abilities.int)
+                ability("WIS", block.abilities.wis)
+                ability("CHA", block.abilities.cha)
+            }
+            .frame(maxWidth: .infinity)
         }
         .listRowBackground(Theme.surfaceRaised)
 
@@ -37,7 +45,7 @@ struct StatBlockSections: View {
             if let gear = block.gear { row("Gear", gear) }
             row("Senses", block.senses)
             row("Languages", block.languages)
-            row("Challenge", "\(block.challenge.cr) (\(block.challenge.xp) XP; PB \(signed(block.challenge.proficiencyBonus)))")
+            row("CR", "\(block.challenge.cr) · \(block.challenge.xp) XP · PB \(signed(block.challenge.proficiencyBonus))")
         }
         .listRowBackground(Theme.surfaceRaised)
 
@@ -60,12 +68,46 @@ struct StatBlockSections: View {
         }
     }
 
-    private func row(_ label: String, _ value: String) -> some View {
-        HStack(alignment: .top, spacing: Theme.Spacing.md) {
+    /// A label over a value, for the short numeric row (AC, Init, HP).
+    private func stat(_ label: String, _ value: String) -> some View {
+        VStack(spacing: 0) {
             Text(label)
                 .font(Theme.Typography.caption)
+                .foregroundColor(Theme.textTertiary)
+            Text(value)
+                .font(Theme.Typography.bodyEmphasis)
+                .foregroundColor(Theme.textPrimary)
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    /// One ability column: name, score, modifier, and the save only when it differs.
+    private func ability(_ label: String, _ value: StatBlock.Ability) -> some View {
+        VStack(spacing: 0) {
+            Text(label)
+                .font(Theme.Typography.caption)
+                .foregroundColor(Theme.textTertiary)
+            Text("\(value.score)")
+                .font(Theme.Typography.bodyEmphasis)
+                .foregroundColor(Theme.textPrimary)
+            Text(signed(value.modifier))
+                .font(Theme.Typography.caption)
                 .foregroundColor(Theme.textSecondary)
-            Spacer(minLength: Theme.Spacing.sm)
+            if value.save != value.modifier {
+                Text("save \(signed(value.save))")
+                    .font(Theme.Typography.caption)
+                    .foregroundColor(Theme.textTertiary)
+            }
+        }
+        .frame(maxWidth: .infinity)
+    }
+
+    private func row(_ label: String, _ value: String) -> some View {
+        HStack(alignment: .firstTextBaseline, spacing: Theme.Spacing.sm) {
+            Text(label)
+                .font(Theme.Typography.caption)
+                .foregroundColor(Theme.textTertiary)
+            Spacer(minLength: Theme.Spacing.xs)
             Text(value)
                 .font(Theme.Typography.caption)
                 .foregroundColor(Theme.textPrimary)
@@ -73,14 +115,8 @@ struct StatBlockSections: View {
         }
     }
 
-    /// One ability per line: score and modifier, then the save when it differs.
-    private func ability(_ label: String, _ value: StatBlock.Ability) -> some View {
-        let saveNote = value.save == value.modifier ? "" : ", save \(signed(value.save))"
-        return row(label, "\(value.score) (\(signed(value.modifier))\(saveNote))")
-    }
-
     private func entryView(_ entry: StatBlock.Entry) -> some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+        VStack(alignment: .leading, spacing: 2) {
             Text(entry.name)
                 .font(Theme.Typography.bodyEmphasis)
                 .foregroundColor(Theme.textPrimary)

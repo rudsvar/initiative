@@ -233,8 +233,10 @@ private struct EditPresetView: View {
                 // attached to the Form it is silently ignored, which is why
                 // every one of these was rendering system grey in all nine themes.
                 .scrollContentBackground(.hidden)
+                // Read-only on the fields, not `.disabled` on the Form: a disabled
+                // Form stops scrolling, so a built-in's stat block could not be read.
+                .environment(\.isEnabled, !isReadOnly)
             }
-            .disabled(isReadOnly)
             .navigationTitle(navigationTitle)
             .navigationBarTitleDisplayMode(.inline)
             .sheet(isPresented: $cloneNamePresented) {
