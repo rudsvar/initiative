@@ -91,6 +91,7 @@
 		EBBA0AC3F663F701FA9BBF31 /* ListSections.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4AF22B663D7FA19C198D9258 /* ListSections.swift */; };
 		ED661ADA54DE670B56E02F99 /* SRDCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = F42838166D90DE1E0C90E3EF /* SRDCatalog.swift */; };
 		F0AB6B80550C14113EDFDEAF /* CloneNameTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8B4421BB83F081DC1E8AD7C4 /* CloneNameTests.swift */; };
+		F0B9253CC9AF6782988E90BD /* DyingScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 884F46386C6E22DA935C6A65 /* DyingScenarioTests.swift */; };
 		F4A4F206E2F91BFEB9E107E2 /* TurnPromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54DD0236F790EE085E97A432 /* TurnPromptView.swift */; };
 		F8C4961FCB8EB1F87F440E63 /* AppearanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D970AC13228D90BB0630DD34 /* AppearanceView.swift */; };
 /* End PBXBuildFile section */
@@ -158,6 +159,7 @@
 		7DF8601F37841A579037DFC0 /* DeathSaves.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeathSaves.swift; sourceTree = "<group>"; };
 		7F6ECF4848029671F86C86AA /* CombatSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CombatSession.swift; sourceTree = "<group>"; };
 		827AFF0DCE5F8A198C4D1033 /* StatBlock.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatBlock.swift; sourceTree = "<group>"; };
+		884F46386C6E22DA935C6A65 /* DyingScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DyingScenarioTests.swift; sourceTree = "<group>"; };
 		8B4421BB83F081DC1E8AD7C4 /* CloneNameTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloneNameTests.swift; sourceTree = "<group>"; };
 		8C86540C34D5CD3C7378276D /* PlayerViewTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerViewTests.swift; sourceTree = "<group>"; };
 		8EB8924B9A672090A314E532 /* CloneName.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloneName.swift; sourceTree = "<group>"; };
@@ -211,6 +213,7 @@
 			isa = PBXGroup;
 			children = (
 				8FC75838D4FF442192212A7E /* DebugScenariosView.swift */,
+				884F46386C6E22DA935C6A65 /* DyingScenarioTests.swift */,
 				F2AB7AA7A046758596462089 /* TestCombats.swift */,
 			);
 			path = Debug;
@@ -587,6 +590,7 @@
 				45F8B42699C6E4ABE1A8FB2E /* DeathSaveTests.swift in Sources */,
 				4D5AF4D833355B9CDA7A42CE /* DefaultContentTests.swift in Sources */,
 				A6CAC928C62BC2EFC03D965A /* DyingEffectTests.swift in Sources */,
+				F0B9253CC9AF6782988E90BD /* DyingScenarioTests.swift in Sources */,
 				7E5C7BB027F7BC0907ECA434 /* EffectOperationsTests.swift in Sources */,
 				1A85F56E1359778680CB6BE8 /* EncounterStoreTests.swift in Sources */,
 				0B02BE41EBA8297838514FED /* KillReviveTests.swift in Sources */,
