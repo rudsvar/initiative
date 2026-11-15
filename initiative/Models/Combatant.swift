@@ -11,6 +11,9 @@ struct Combatant: Identifiable, Codable {
     /// A buffer taken off before real hit points. Not healing: it doesn't refill,
     /// isn't capped by `maxHP`, and once spent it's gone.
     var temporaryHP: Int?
+    /// A buffer on armor class for this fight, like temporary HP: replaced by a
+    /// new grant, not stacked, and gone once the fight ends.
+    var temporaryAC: Int?
 
     /// Set once `CombatSession.increaseMaxHP` has ever raised this combatant's
     /// ceiling (a buff, a level-up mid-fight). Drives bolding the Max readout in
@@ -95,7 +98,7 @@ struct Combatant: Identifiable, Codable {
     // MARK: - Codable
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, initiative, effects, maxHP, currentHP, armorClass, temporaryHP, isPlayer, isConcentrating, limitedUses, deathSaves, maxHPIncreased
+        case id, name, initiative, effects, maxHP, currentHP, armorClass, temporaryHP, temporaryAC, isPlayer, isConcentrating, limitedUses, deathSaves, maxHPIncreased
     }
 
     /// Written out by hand rather than synthesized: Swift's synthesized decoding
@@ -115,6 +118,7 @@ struct Combatant: Identifiable, Codable {
         currentHP = try container.decodeIfPresent(Int.self, forKey: .currentHP)
         armorClass = try container.decodeIfPresent(Int.self, forKey: .armorClass)
         temporaryHP = try container.decodeIfPresent(Int.self, forKey: .temporaryHP)
+        temporaryAC = try container.decodeIfPresent(Int.self, forKey: .temporaryAC)
         isPlayer = try container.decodeIfPresent(Bool.self, forKey: .isPlayer) ?? false
         isConcentrating = try container.decodeIfPresent(Bool.self, forKey: .isConcentrating) ?? false
         limitedUses = try container.decodeIfPresent([LimitedUse].self, forKey: .limitedUses) ?? []

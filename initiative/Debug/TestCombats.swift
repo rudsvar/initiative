@@ -1,5 +1,5 @@
+#if DEBUG
 import Foundation
-@testable import initiative
 
 /// Test-only combats. Each one is named for the rule it checks, so a failing test
 /// names the rule that broke. They are built with the session's own methods, the
@@ -50,4 +50,23 @@ enum TestCombats {
         _ = session.applyDamage(to: omega, amount: 7)
         return session
     }
+
+    /// A character with an armor class and no buffers, for armor class tests.
+    static func wrenWithArmorClass() -> CombatSession {
+        let session = CombatSession()
+        session.addCombatant(name: "Wren", initiative: 12, maxHP: 10, armorClass: 14, isPlayer: true)
+        return session
+    }
 }
+
+extension TestCombats {
+    /// Every scenario, by the name used on the command line: `-scenario <name>`.
+    static let scenarios: [String: () -> CombatSession] = [
+        "deadCreatureIsSkipped": deadCreatureIsSkipped,
+        "failedDeathSavesAreSkipped": failedDeathSavesAreSkipped,
+        "dyingCharacterKeepsItsTurns": dyingCharacterKeepsItsTurns,
+        "lastStandingKeepsTheTurn": lastStandingKeepsTheTurn,
+        "wrenWithArmorClass": wrenWithArmorClass,
+    ]
+}
+#endif

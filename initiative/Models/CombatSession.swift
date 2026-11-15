@@ -197,6 +197,13 @@ class CombatSession {
         )
     }
 
+    /// Grants temporary armor class, replacing any earlier grant, as temporary HP does.
+    func grantTemporaryAC(to id: UUID, amount: Int) {
+        guard amount > 0, let index = combatants.firstIndex(where: { $0.id == id }) else { return }
+        combatants[index].temporaryAC = amount
+        appendLog("\(combatants[index].name) gained \(amount) temporary AC", combatantId: id)
+    }
+
     /// Damage threatens concentration. Being dropped to 0 ends it outright —
     /// there's nothing to roll for — otherwise the DM is asked.
     private func concentrationCheck(at index: Int, afterTaking amount: Int) -> TurnPrompt? {
