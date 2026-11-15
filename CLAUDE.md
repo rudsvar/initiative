@@ -6,6 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Keep it simple.** The smallest change that works. No speculative
   abstractions, no features nobody asked for.
+- **One implementation for shared behaviour.** When the same functionality
+  appears in more than one place (a list, a picker, a clone action), it is
+  built once and reused, so the places cannot drift apart. Build the shared
+  piece first, then point each screen at it.
 - **Test first when possible (TDD).** Write the failing test, watch it fail,
   then make it pass. This applies to all model and store logic.
 - **Show the app after significant changes.** After a change to layout,
