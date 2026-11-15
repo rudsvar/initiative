@@ -433,27 +433,30 @@ struct CombatantRow: View {
                     .foregroundColor(isCurrent ? Theme.accent : Theme.textSecondary)
                     .frame(width: 34, alignment: .center)
 
-                Text(combatant.name)
-                    .lineLimit(1)
-                    .font(Theme.Typography.rowTitle)
-                    .foregroundColor(Theme.textPrimary)
-                    .strikethrough(combatant.isDead)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-
-                Group {
-                    if combatant.isDying, let saves = combatant.deathSaves {
-                        DeathSaveDots(saves: saves)
-                    } else if combatant.isStabilised {
+                HStack(spacing: Theme.Spacing.xs) {
+                    Text(combatant.name)
+                        .lineLimit(1)
+                        .font(Theme.Typography.rowTitle)
+                        .foregroundColor(Theme.textPrimary)
+                        .strikethrough(combatant.isDead)
+                    if combatant.isStabilised {
                         stateBadge("bandage.fill", tint: Theme.statusWarn)
                     }
                 }
-                .frame(width: 52, alignment: .leading)
+                .frame(maxWidth: .infinity, alignment: .leading)
 
-                healthRow
-                    .frame(width: 96, alignment: .trailing)
+                // While dying, the tally takes the HP column's place.
+                Group {
+                    if combatant.isDying, let saves = combatant.deathSaves {
+                        DeathSaveDots(saves: saves)
+                    } else {
+                        healthRow
+                    }
+                }
+                .frame(width: 88, alignment: .leading)
 
                 armorClassRow
-                    .frame(width: 72, alignment: .trailing)
+                    .frame(width: 60, alignment: .trailing)
             }
 
             // Glance-at-a-glance list, not the detail screen — a short label
