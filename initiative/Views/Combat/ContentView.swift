@@ -381,24 +381,36 @@ struct CombatantRow: View {
             } else {
                 statLine(
                     "heart.fill", Theme.statusBad,
-                    value: marked(current, change: combatant.recentHPChange)
+                    value: marked(current, change: combatant.recentHPChange, showsSign: combatant.temporaryHP != nil)
                         + Text("/").foregroundColor(Theme.textTertiary)
-                        + marked(max, change: combatant.recentMaxHPChange),
+                        + marked(max, change: combatant.recentMaxHPChange, showsSign: combatant.recentMaxHPChange != nil),
                     temp: combatant.temporaryHP
                 )
             }
         }
     }
 
-    /// A number that changed since its turn started: bold, red when down, green when
-    /// up. No arrow and no amount: the detail screen shows the amount. An unchanged
-    /// number is plain.
-    private func marked(_ value: Int, change: Int?) -> Text {
-        guard let change else {
-            return Text("\(value)").foregroundColor(Theme.textSecondary)
+    /// A number that changed since its turn started: bold, red when down, green when up.
+    /// When `showsSign` is set, a small + or − sits at its top right, so a changed max
+    /// or armor class reads as such. Current HP sets it only while temp HP is active.
+    /// No amount here: the detail screen shows that.
+    private func marked(_ value: Int, change: Int?, showsSign: Bool = false) -> Text {
+        let color = (change ?? 0) < 0 ? Theme.statusBad : Theme.statusGood
+        var text: Text
+        if let change {
+            text = Text("\(value)").fontWeight(.bold).foregroundColor(color)
+        } else {
+            text = Text("\(value)").foregroundColor(Theme.textSecondary)
         }
-        let color = change < 0 ? Theme.statusBad : Theme.statusGood
-        return Text("\(value)").fontWeight(.bold).foregroundColor(color)
+        if showsSign {
+            let sign = (change ?? 1) < 0 ? "−" : "+"
+            text = text + Text(sign)
+                .font(Theme.Typography.micro)
+                .fontWeight(.bold)
+                .foregroundColor(color)
+                .baselineOffset(6)
+        }
+        return text
     }
 
     /// One stat line in fixed columns, so every roster row lines up: temp text, then
@@ -436,7 +448,7 @@ struct CombatantRow: View {
                 Button(action: onArmorClassTap) {
                     statLine(
                         "shield.fill", Theme.statusInfo,
-                        value: marked(ac, change: combatant.recentACChange),
+                        value: marked(ac, change: combatant.recentACChange, showsSign: combatant.recentACChange != nil),
                         temp: nil
                     )
                 }
