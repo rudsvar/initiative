@@ -78,6 +78,14 @@ enum TestCombats {
         return session
     }
 
+    /// Wren is dying with two successes and one failure: checks the tally beside her name.
+    static func dyingWithTally() -> CombatSession {
+        let session = CombatSession()
+        session.addCombatant(name: "Wren", initiative: 12, maxHP: 10, isPlayer: true)
+        session.combatants[0].deathSaves = DeathSaves(successes: 2, failures: 1)
+        return session
+    }
+
     /// A character with an armor class and no buffers, for armor class tests.
     static func wrenWithArmorClass() -> CombatSession {
         let session = CombatSession()
@@ -97,6 +105,7 @@ extension TestCombats {
         "wrenWithTemporaryAC": wrenWithTemporaryAC,
         "hpAndACChangesShowUntilTurnStarts": hpAndACChangesShowUntilTurnStarts,
         "wolfWithChanges": wolfWithChanges,
+        "dyingWithTally": dyingWithTally,
     ]
 }
 #endif

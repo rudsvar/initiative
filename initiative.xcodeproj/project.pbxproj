@@ -52,6 +52,7 @@
 		7D58FB15FBAFA3FAAEB93866 /* EffectEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4F6E0061994D32447464ED0 /* EffectEditorView.swift */; };
 		7E5C7BB027F7BC0907ECA434 /* EffectOperationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3613CF49D1C24697119764CE /* EffectOperationsTests.swift */; };
 		7FF9D67C9EF8BB156F673248 /* SelectAllTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = F700581D6670C2CC2D6A5112 /* SelectAllTextField.swift */; };
+		85B333B893F29744D347B561 /* DeathSaveDots.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AD8C7E0ED4B9831B127F11C /* DeathSaveDots.swift */; };
 		87F1E56B91FF848A9C5E7C29 /* PresetStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F1E593E997D394D860933FA /* PresetStore.swift */; };
 		8D5002435663177D3D860CF4 /* FlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6427D74AA5360A780F88C8 /* FlowLayout.swift */; };
 		9D828DEFD356DF22B4C85C46 /* ChangeLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 198DAF52601518703A1CB383 /* ChangeLabel.swift */; };
@@ -160,6 +161,7 @@
 		9059D28D057C9E7FD6B83705 /* ThemePalette.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemePalette.swift; sourceTree = "<group>"; };
 		99016F78C287D6C3DE0A2F71 /* DeadCombatantTurnTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeadCombatantTurnTests.swift; sourceTree = "<group>"; };
 		99DA66AE6B5F5BF1053F2262 /* ThemePaletteTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemePaletteTests.swift; sourceTree = "<group>"; };
+		9AD8C7E0ED4B9831B127F11C /* DeathSaveDots.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeathSaveDots.swift; sourceTree = "<group>"; };
 		9C033583CC9AE407903E6C47 /* LimitedUse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LimitedUse.swift; sourceTree = "<group>"; };
 		9DCA52E935D84902ACB3727F /* srd-creatures.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = "srd-creatures.json"; sourceTree = "<group>"; };
 		9DF981AA6DF6B717D16FCD4F /* ConditionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConditionsTests.swift; sourceTree = "<group>"; };
@@ -315,6 +317,7 @@
 				5AB92BFBD1A901C57446D6A5 /* CombatantDetailView.swift */,
 				6D6B3D18CAD7D9BF42DBDB61 /* ContentView.swift */,
 				65B5DF696273E28426AAFFB3 /* ControlButton.swift */,
+				9AD8C7E0ED4B9831B127F11C /* DeathSaveDots.swift */,
 				D4F6E0061994D32447464ED0 /* EffectEditorView.swift */,
 				53836058E4AD08B15E3A2112 /* HealthControlRow.swift */,
 				7BF0472EB303236DC493667B /* LimitedUseEditorView.swift */,
@@ -521,6 +524,7 @@
 				225EF46465E704F3743A8A2E /* ControlButton.swift in Sources */,
 				D3CD6FBE48E2B828A0D1F6BD /* CooldownLibrary.swift in Sources */,
 				5AE6479CF565D61E1AB93011 /* CreatureDetailView.swift in Sources */,
+				85B333B893F29744D347B561 /* DeathSaveDots.swift in Sources */,
 				30612A0282CDFEEA1E7F79E6 /* DeathSaves.swift in Sources */,
 				9E619E17AE246450D08A306D /* DebugScenariosView.swift in Sources */,
 				497810B3563B071D9F877FB7 /* DefaultContent.swift in Sources */,

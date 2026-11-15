@@ -296,16 +296,6 @@ struct CombatantRow: View {
         UIScreen.main.bounds.width - (2 * Theme.Spacing.sm + 2 * Theme.Spacing.md)
     }
 
-    /// "Dying ✓●●○ ✕●○○", or "Stable" and "Dead" once the tally is decided.
-    private func dyingLabel(_ saves: DeathSaves) -> String {
-        if saves.isDead { return "Dead" }
-        if saves.isStable { return "Stable" }
-        func circles(_ filled: Int) -> String {
-            String(repeating: "●", count: filled) + String(repeating: "○", count: DeathSaves.required - filled)
-        }
-        return "Dying ✓\(circles(saves.successes)) ✕\(circles(saves.failures))"
-    }
-
     private func chipSymbol(for effect: Effect, condition: StandardCondition?) -> String {
         switch effect.kind {
         case .cooldown: return effect.durationType.awaitsRoll ? "hourglass" : "clock"
@@ -458,7 +448,9 @@ struct CombatantRow: View {
                         // A dying combatant is the most time-critical thing on
                         // this screen, so it gets the one treatment nothing else
                         // in the row uses: a filled status colour, not a tint.
-                        stateBadge("heart.slash.fill", tint: Theme.statusBad)
+                        if let saves = combatant.deathSaves {
+                            DeathSaveDots(saves: saves)
+                        }
                     } else if combatant.isStabilised {
                         stateBadge("bandage.fill", tint: Theme.statusWarn)
                     }
@@ -488,16 +480,9 @@ struct CombatantRow: View {
             // cooldowns only. FlowLayout wraps to the next line on overflow.
             if !combatant.visibleEffects.isEmpty {
                 FlowLayout {
-                    ForEach(combatant.visibleEffects) { effect in
-                        if let saves = effect.deathSaves {
-                            // The Dying chip shows the tally: three circles for
-                            // successes (✓) and three for failures (✕), filled as recorded.
-                            StatusChip(
-                                symbolName: "heart.slash.fill",
-                                label: dyingLabel(saves),
-                                color: Theme.statusBad
-                            )
-                        } else {
+                    // The Dying effect is not a chip: its tally shows beside the name.
+                    ForEach(combatant.visibleEffects.filter { $0.deathSaves == nil }) { effect in
+                        do {
                             let condition = ConditionLibrary.matching(name: effect.name)
                             StatusChip(
                                 symbolName: chipSymbol(for: effect, condition: condition),
