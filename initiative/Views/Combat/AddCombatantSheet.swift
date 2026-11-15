@@ -71,18 +71,12 @@ struct AddCombatantSheet: View {
                     }
                     .listRowBackground(Theme.surfaceRaised)
 
-                    Section("Type") {
+                    Section {
                         // Visible at the moment of creation rather than inferred
                         // later. The tempting heuristic — "count > 1 means
                         // monsters" — would be right often enough to be trusted
                         // and wrong often enough to hurt.
-                        Toggle("Player character", isOn: $isPlayer)
-                            .tint(Theme.accent)
-                        if isPlayer {
-                            Text("Rolls death saves at 0 HP instead of dying outright.")
-                                .font(Theme.Typography.caption)
-                                .foregroundColor(Theme.textTertiary)
-                        }
+                        CharacterKindPicker(isCharacter: $isPlayer)
                     }
                     .listRowBackground(Theme.surfaceRaised)
 
