@@ -284,6 +284,7 @@ class CombatSession {
               let maxHP = combatants[index].maxHP,
               let current = combatants[index].currentHP else { return }
         combatants[index].maxHP = maxHP + amount
+        noteMaxHPChange(at: index, by: amount)
         combatants[index].currentHP = current + amount
         combatants[index].maxHPIncreased = true
         noteHPChange(at: index, by: amount)
@@ -301,6 +302,7 @@ class CombatSession {
               let current = combatants[index].currentHP else { return }
         let newMax = max(1, maxHP - amount)
         combatants[index].maxHP = newMax
+        noteMaxHPChange(at: index, by: newMax - maxHP)
         combatants[index].currentHP = min(current, newMax)
         noteHPChange(at: index, by: combatants[index].currentHP! - current)
         appendLog(
@@ -319,6 +321,12 @@ class CombatSession {
         let total = (combatants[index].recentACChange ?? 0) + (newAC - ac)
         combatants[index].recentACChange = total == 0 ? nil : total
         appendLog("\(combatants[index].name)'s armor class \(newAC - ac >= 0 ? "rose" : "fell") to \(newAC)", combatantId: id)
+    }
+
+    private func noteMaxHPChange(at index: Int, by delta: Int) {
+        guard delta != 0 else { return }
+        let total = (combatants[index].recentMaxHPChange ?? 0) + delta
+        combatants[index].recentMaxHPChange = total == 0 ? nil : total
     }
 
     /// Adds a change to the combatant's running HP change for this turn cycle.
@@ -717,6 +725,7 @@ class CombatSession {
         }
         let startingCombatantId = combatants[currentTurnIndex].id
         combatants[currentTurnIndex].recentHPChange = nil
+        combatants[currentTurnIndex].recentMaxHPChange = nil
         combatants[currentTurnIndex].recentACChange = nil
 
         removeExpiredEffects(

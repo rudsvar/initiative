@@ -38,6 +38,7 @@ final class RecentChangeTests: XCTestCase {
         XCTAssertEqual(session.combatants[alpha(session)].maxHP, 10)
         XCTAssertEqual(session.combatants[alpha(session)].currentHP, 10)
         XCTAssertEqual(session.combatants[alpha(session)].recentHPChange, -10)
+        XCTAssertEqual(session.combatants[alpha(session)].recentMaxHPChange, -10)
     }
 
     func testArmorClassChangesNetOutAndNeverGoBelowZero() {

@@ -17,6 +17,8 @@ struct Combatant: Identifiable, Codable {
     /// Net change to current HP since this combatant's turn last started (damage is
     /// negative, healing positive). Shown beside current HP, cleared at turn start.
     var recentHPChange: Int?
+    /// Net change to max HP since this combatant's turn last started.
+    var recentMaxHPChange: Int?
     /// Net change to armor class since this combatant's turn last started.
     var recentACChange: Int?
 
@@ -103,7 +105,7 @@ struct Combatant: Identifiable, Codable {
     // MARK: - Codable
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, initiative, effects, maxHP, currentHP, armorClass, temporaryHP, temporaryAC, recentHPChange, recentACChange, isPlayer, isConcentrating, limitedUses, deathSaves, maxHPIncreased
+        case id, name, initiative, effects, maxHP, currentHP, armorClass, temporaryHP, temporaryAC, recentHPChange, recentMaxHPChange, recentACChange, isPlayer, isConcentrating, limitedUses, deathSaves, maxHPIncreased
     }
 
     /// Written out by hand rather than synthesized: Swift's synthesized decoding
@@ -125,6 +127,7 @@ struct Combatant: Identifiable, Codable {
         temporaryHP = try container.decodeIfPresent(Int.self, forKey: .temporaryHP)
         temporaryAC = try container.decodeIfPresent(Int.self, forKey: .temporaryAC)
         recentHPChange = try container.decodeIfPresent(Int.self, forKey: .recentHPChange)
+        recentMaxHPChange = try container.decodeIfPresent(Int.self, forKey: .recentMaxHPChange)
         recentACChange = try container.decodeIfPresent(Int.self, forKey: .recentACChange)
         isPlayer = try container.decodeIfPresent(Bool.self, forKey: .isPlayer) ?? false
         isConcentrating = try container.decodeIfPresent(Bool.self, forKey: .isConcentrating) ?? false
