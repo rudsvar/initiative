@@ -462,7 +462,7 @@ struct CombatantRow: View {
                 // vertically between rows whose names are different lengths;
                 // every row's health/AC column ends at the same right edge.
                 // HP and AC side by side, each with its own fixed columns.
-                HStack(spacing: Theme.Spacing.sm) {
+                HStack(spacing: Theme.Spacing.lg) {
                     healthRow
                     armorClassRow
                 }

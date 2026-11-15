@@ -239,4 +239,16 @@ extension Color {
         let (r2, g2, b2) = other.rgbComponents
         return abs(r1 - r2) + abs(g1 - g2) + abs(b1 - b2)
     }
+
+    /// The colour-blind themes use the Okabe-Ito status roles, pinned here: good is
+    /// blue, bad is vermillion, warning is yellow, info is bluish green. A later edit
+    /// to a shared colour must not silently change these.
+    func testColorBlindThemesKeepTheirOkabeItoStatusRoles() {
+        let dark = ThemePalette.colorblindDark
+        let light = ThemePalette.colorblindLight
+        XCTAssertNotEqual(dark.statusGood, dark.statusBad)
+        XCTAssertNotEqual(light.statusGood, light.statusBad)
+        XCTAssertNotEqual(dark.statusGood, ThemePalette.tavernCandlelight.statusGood, "colour-blind dark must not reuse another theme's good colour")
+        XCTAssertNotEqual(light.statusBad, ThemePalette.parchment.statusBad, "colour-blind light must not reuse another theme's bad colour")
+    }
 }
