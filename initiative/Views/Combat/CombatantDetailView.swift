@@ -69,7 +69,6 @@ struct CombatantDetailView: View {
                 VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
                     identityCard(for: combatant)
                     healthCard(for: combatant)
-                    armorClassCard
                     actionsCard(for: combatant)
                     effectsCard(for: combatant)
                 }
@@ -153,6 +152,7 @@ struct CombatantDetailView: View {
                 .foregroundColor(Theme.textPrimary)
                 .multilineTextAlignment(.center)
                 .fieldStyle(width: 68)
+                ArmorClassControlRow(session: session, combatantId: combatantId)
             }
 
             Spacer(minLength: 0)
@@ -161,14 +161,6 @@ struct CombatantDetailView: View {
                 DeadBadge()
                     .padding(.top, Theme.Spacing.lg)
             }
-        }
-        .sectionCard()
-    }
-
-    private var armorClassCard: some View {
-        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
-            Text("Armor Class").cardHeading()
-            ArmorClassControlRow(session: session, combatantId: combatantId)
         }
         .sectionCard()
     }
