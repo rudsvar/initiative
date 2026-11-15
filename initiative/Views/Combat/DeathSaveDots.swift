@@ -15,10 +15,10 @@ struct DeathSaveDots: View {
     }
 
     private func dots(filled: Int, symbol: String, tint: Color) -> some View {
-        HStack(spacing: 3) {
+        HStack(spacing: 2) {
             ForEach(0..<DeathSaves.required, id: \.self) { index in
                 Image(systemName: index < filled ? "\(symbol).circle.fill" : "circle")
-                    .font(Theme.Typography.caption)
+                    .font(Theme.Typography.label)
                     .foregroundColor(index < filled ? tint : Theme.textTertiary)
             }
         }
