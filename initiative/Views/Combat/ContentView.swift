@@ -297,6 +297,7 @@ struct CombatantRow: View {
     }
 
     private func chipSymbol(for effect: Effect, condition: StandardCondition?) -> String {
+        if effect.deathSaves != nil { return "heart.slash.fill" }
         switch effect.kind {
         case .cooldown: return effect.durationType.awaitsRoll ? "hourglass" : "clock"
         case .condition: return condition?.symbolName ?? "sparkles"
@@ -304,6 +305,7 @@ struct CombatantRow: View {
     }
 
     private func chipTint(for effect: Effect, condition: StandardCondition?) -> Color {
+        if effect.deathSaves != nil { return Theme.statusBad }
         switch effect.kind {
         // A cooldown is something you can't do, not something wrong with you —
         // quiet, like the reaction chip.
@@ -422,55 +424,36 @@ struct CombatantRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-            HStack(spacing: Theme.Spacing.md) {
-                // Big and on the far left, its own column — not a small caption
-                // tucked under the name — so it reads immediately as the value the
-                // list is actually sorted by. Tabular figures keep the column from
-                // shifting between one- and two-digit values. Only the current
-                // combatant's number is accent-colored: gold marks exactly one
-                // thing on this screen, and this is the screen's one thing.
+            // Five sections, each with its own column, so the same section lines up
+            // down the list: initiative, name, death-save tally, HP, AC. The tally's
+            // column is reserved even when the combatant is not dying.
+            HStack(spacing: Theme.Spacing.sm) {
                 Text("\(combatant.initiative)")
                     .font(Theme.Typography.numeric(21))
                     .foregroundColor(isCurrent ? Theme.accent : Theme.textSecondary)
                     .frame(width: 34, alignment: .center)
 
-                HStack(spacing: Theme.Spacing.xs + 2) {
-                    Text(combatant.name)
-                        .lineLimit(1)
-                        .layoutPriority(-1)
-                        .font(Theme.Typography.rowTitle)
-                        .foregroundColor(Theme.textPrimary)
-                        .strikethrough(combatant.isDead)
+                Text(combatant.name)
+                    .lineLimit(1)
+                    .font(Theme.Typography.rowTitle)
+                    .foregroundColor(Theme.textPrimary)
+                    .strikethrough(combatant.isDead)
+                    .frame(maxWidth: .infinity, alignment: .leading)
 
-                    // No skull for the dead: the strikethrough and the faded row already say it.
-                    if combatant.isDying {
-                        // A dying combatant is the most time-critical thing on
-                        // this screen, so it gets the one treatment nothing else
-                        // in the row uses: a filled status colour, not a tint.
-                        if let saves = combatant.deathSaves {
-                            DeathSaveDots(saves: saves)
-                                .fixedSize()
-                        }
+                Group {
+                    if combatant.isDying, let saves = combatant.deathSaves {
+                        DeathSaveDots(saves: saves)
                     } else if combatant.isStabilised {
                         stateBadge("bandage.fill", tint: Theme.statusWarn)
                     }
                 }
+                .frame(width: 52, alignment: .leading)
 
-                Spacer(minLength: Theme.Spacing.sm)
+                healthRow
+                    .frame(width: 96, alignment: .trailing)
 
-                // Icon-led (heart/shield) instead of text labels ("14/20 HP").
-                // A fixed minimum width plus trailing alignment — rather than
-                // leading, sized to content — is what makes the icons line up
-                // vertically between rows whose names are different lengths;
-                // every row's health/AC column ends at the same right edge.
-                // HP and AC side by side, each with its own fixed columns.
-                HStack(spacing: Theme.Spacing.lg) {
-                    healthRow
-                    armorClassRow
-                }
-                // The stats keep their natural width; the name gives way to them.
-                .fixedSize()
-                .layoutPriority(1)
+                armorClassRow
+                    .frame(width: 72, alignment: .trailing)
             }
 
             // Glance-at-a-glance list, not the detail screen — a short label
@@ -480,8 +463,8 @@ struct CombatantRow: View {
             // cooldowns only. FlowLayout wraps to the next line on overflow.
             if !combatant.visibleEffects.isEmpty {
                 FlowLayout {
-                    // The Dying effect is not a chip: its tally shows beside the name.
-                    ForEach(combatant.visibleEffects.filter { $0.deathSaves == nil }) { effect in
+                    // The Dying effect shows as a plain "Dying" chip; its tally is beside the name.
+                    ForEach(combatant.visibleEffects) { effect in
                         do {
                             let condition = ConditionLibrary.matching(name: effect.name)
                             StatusChip(
