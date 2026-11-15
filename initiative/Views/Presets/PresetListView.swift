@@ -129,6 +129,7 @@ struct PresetListView: View {
                             } label: {
                                 Label("Delete", systemImage: "trash")
                             }
+                            .tint(Theme.deleteAction)
                         }
                     }
                 }

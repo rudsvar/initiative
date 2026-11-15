@@ -75,6 +75,10 @@ enum Theme {
     static var statusNeutral: Color { palette.statusNeutral }
     static var statusInfo: Color { palette.statusInfo }
 
+    /// The swipe-to-delete red. Deliberately the same in every theme, so delete
+    /// always reads as delete; it is not a palette colour and is not themed.
+    static let deleteAction = Color(red: 0.84, green: 0.22, blue: 0.20)
+
     // MARK: - System appearance
 
     /// Forced app-wide from `RootView` so every system-provided color follows the
