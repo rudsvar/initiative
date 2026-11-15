@@ -18,11 +18,11 @@ enum StatusBand {
         return ("Critical", Theme.statusBad)
     }
 
-    /// Flavourful armor-coverage wording instead of a raw number — reads like a
-    /// DM's shorthand for "how hard is this to hit" rather than a bare stat.
+    /// A plain band for how hard the creature is to hit, instead of a bare number.
+    /// Named by AC level, not by the kind of armour worn.
     static func armorClass(_ ac: Int) -> (label: String, color: Color) {
-        if ac >= 17 { return ("Heavily Armored", Theme.statusGood) }
-        if ac >= 13 { return ("Lightly Armored", Theme.statusWarn) }
-        return ("Unarmored", Theme.statusBad)
+        if ac >= 17 { return ("High AC", Theme.statusGood) }
+        if ac >= 13 { return ("Medium AC", Theme.statusWarn) }
+        return ("Low AC", Theme.statusBad)
     }
 }
