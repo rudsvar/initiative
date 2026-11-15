@@ -38,8 +38,6 @@ struct HealthControlRow: View {
         session.combatants.first { $0.id == combatantId }
     }
 
-    private var buttonSize: CGFloat { compact ? 30 : 38 }
-
     var body: some View {
         if let combatant, let current = combatant.currentHP, let max = combatant.maxHP {
             HStack(spacing: Theme.Spacing.sm) {
@@ -87,17 +85,7 @@ struct HealthControlRow: View {
         label: String,
         action: @escaping () -> Void
     ) -> some View {
-        Button(action: action) {
-            Image(systemName: systemImage)
-                .font(compact ? Theme.Typography.iconInline : Theme.Typography.iconAction)
-                .foregroundColor(tint)
-                .frame(width: buttonSize, height: buttonSize)
-                .background(tint.opacity(0.16))
-                .clipShape(Circle())
-                .overlay(Circle().stroke(tint.opacity(0.35), lineWidth: Theme.hairline))
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel(label)
+        ControlButton(systemImage: systemImage, tint: tint, label: label, compact: compact, action: action)
     }
 
     private func apply() {

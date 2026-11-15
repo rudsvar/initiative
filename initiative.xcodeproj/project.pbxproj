@@ -15,7 +15,9 @@
 		13CAD1BE39F1418784A5E30D /* ThemePaletteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99DA66AE6B5F5BF1053F2262 /* ThemePaletteTests.swift */; };
 		15F35E2EC4CECF8F9D19A2BA /* DeadCombatantTurnTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99016F78C287D6C3DE0A2F71 /* DeadCombatantTurnTests.swift */; };
 		1A85F56E1359778680CB6BE8 /* EncounterStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 650EB50016E0916FF6F37644 /* EncounterStoreTests.swift */; };
+		225EF46465E704F3743A8A2E /* ControlButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B5DF696273E28426AAFFB3 /* ControlButton.swift */; };
 		2723E9ECA0DA43828FF450D2 /* Format.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E6FA70EC4196E9C9DA719A /* Format.swift */; };
+		275519FF6B2AD8A3A6F96E55 /* ArmorClassControlRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9814693E614CE77E0E7F81A /* ArmorClassControlRow.swift */; };
 		27FA5AC8318737D254E3AE64 /* HealthControlRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53836058E4AD08B15E3A2112 /* HealthControlRow.swift */; };
 		2AAA54B4FC8B4C17F033A092 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3CD596FC340B7FD1097C3070 /* Assets.xcassets */; };
 		30612A0282CDFEEA1E7F79E6 /* DeathSaves.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DF8601F37841A579037DFC0 /* DeathSaves.swift */; };
@@ -127,6 +129,7 @@
 		5AB92BFBD1A901C57446D6A5 /* CombatantDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CombatantDetailView.swift; sourceTree = "<group>"; };
 		611558F2EA5435F55E881973 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
 		650EB50016E0916FF6F37644 /* EncounterStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncounterStoreTests.swift; sourceTree = "<group>"; };
+		65B5DF696273E28426AAFFB3 /* ControlButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlButton.swift; sourceTree = "<group>"; };
 		6636EDC413749080974CA625 /* StatusBandTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBandTests.swift; sourceTree = "<group>"; };
 		66946360373B910B6577F839 /* AddCombatantSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AddCombatantSheet.swift; sourceTree = "<group>"; };
 		68CEAFB61475843F4368122B /* Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Theme.swift; sourceTree = "<group>"; };
@@ -154,6 +157,7 @@
 		9DF981AA6DF6B717D16FCD4F /* ConditionsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConditionsTests.swift; sourceTree = "<group>"; };
 		A2D4E292B2659AF52763DAC9 /* EncounterListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncounterListView.swift; sourceTree = "<group>"; };
 		A418113952E8ECEE42D913AA /* EncounterStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncounterStore.swift; sourceTree = "<group>"; };
+		A9814693E614CE77E0E7F81A /* ArmorClassControlRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArmorClassControlRow.swift; sourceTree = "<group>"; };
 		AE5F2E9E2F63F368EE903186 /* LogEntry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogEntry.swift; sourceTree = "<group>"; };
 		BBABE4259F27970917C4A30D /* DefaultContentTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DefaultContentTests.swift; sourceTree = "<group>"; };
 		C155049E0F660B15183A193A /* PresetStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetStoreTests.swift; sourceTree = "<group>"; };
@@ -294,8 +298,10 @@
 			isa = PBXGroup;
 			children = (
 				66946360373B910B6577F839 /* AddCombatantSheet.swift */,
+				A9814693E614CE77E0E7F81A /* ArmorClassControlRow.swift */,
 				5AB92BFBD1A901C57446D6A5 /* CombatantDetailView.swift */,
 				6D6B3D18CAD7D9BF42DBDB61 /* ContentView.swift */,
+				65B5DF696273E28426AAFFB3 /* ControlButton.swift */,
 				D4F6E0061994D32447464ED0 /* EffectEditorView.swift */,
 				53836058E4AD08B15E3A2112 /* HealthControlRow.swift */,
 				7BF0472EB303236DC493667B /* LimitedUseEditorView.swift */,
@@ -486,6 +492,7 @@
 			files = (
 				135F810397EE6974720E3937 /* AddCombatantSheet.swift in Sources */,
 				F8C4961FCB8EB1F87F440E63 /* AppearanceView.swift in Sources */,
+				275519FF6B2AD8A3A6F96E55 /* ArmorClassControlRow.swift in Sources */,
 				E424CC8B35F19372FF389522 /* CharacterKindPicker.swift in Sources */,
 				DD6E18340F781761C581432D /* CloneName.swift in Sources */,
 				0543723AC0B30CD5C7C48168 /* CloneNameSheet.swift in Sources */,
@@ -494,6 +501,7 @@
 				52F968B9382EEE7057F6E34D /* CombatantDetailView.swift in Sources */,
 				DDE914D718EDD7290930CEBC /* Conditions.swift in Sources */,
 				E2AC405FFEE29743B570354D /* ContentView.swift in Sources */,
+				225EF46465E704F3743A8A2E /* ControlButton.swift in Sources */,
 				D3CD6FBE48E2B828A0D1F6BD /* CooldownLibrary.swift in Sources */,
 				5AE6479CF565D61E1AB93011 /* CreatureDetailView.swift in Sources */,
 				30612A0282CDFEEA1E7F79E6 /* DeathSaves.swift in Sources */,
