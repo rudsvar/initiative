@@ -40,6 +40,7 @@
 		5CB09B2243D7D6297802150B /* PremadeBalanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B8E15FBD1B4F61AE31A398B /* PremadeBalanceTests.swift */; };
 		5DF210A51FC89A4BF19CF1A2 /* RoundEffectsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBD09D77A68BB93102AE4B6 /* RoundEffectsView.swift */; };
 		62C2CEF33F96A4573D4BC9C4 /* LimitedUseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB8DD2DEFF231D1EBD80E195 /* LimitedUseTests.swift */; };
+		686126023A8E84DB3503257E /* AdjustAmountSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E00EFEB700CF8637F2312A0 /* AdjustAmountSheet.swift */; };
 		69ADF2074766356C68EFDEEB /* CodableCompatibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 236012BD8426FA8D17541295 /* CodableCompatibilityTests.swift */; };
 		69F3532C839D8C92C63A3C74 /* StatBlockSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32C4237D94CE4556E30B5164 /* StatBlockSummary.swift */; };
 		6DA1B43A72527F8A95AF7ACE /* PresetListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8F82F2EA03A7A61F03D982C7 /* PresetListView.swift */; };
@@ -111,6 +112,7 @@
 		2A3EC616C676736F8FBC87E6 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
 		2B8E15FBD1B4F61AE31A398B /* PremadeBalanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremadeBalanceTests.swift; sourceTree = "<group>"; };
 		2C8308DCF55F94E73FD06573 /* ThemeControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeControllerTests.swift; sourceTree = "<group>"; };
+		2E00EFEB700CF8637F2312A0 /* AdjustAmountSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdjustAmountSheet.swift; sourceTree = "<group>"; };
 		2F15EDB5010AF863CF8F00C4 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		2F1E593E997D394D860933FA /* PresetStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresetStore.swift; sourceTree = "<group>"; };
 		2FC2E8E196F28000B570FBDA /* TemporaryHPTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemporaryHPTests.swift; sourceTree = "<group>"; };
@@ -301,6 +303,7 @@
 			isa = PBXGroup;
 			children = (
 				66946360373B910B6577F839 /* AddCombatantSheet.swift */,
+				2E00EFEB700CF8637F2312A0 /* AdjustAmountSheet.swift */,
 				A9814693E614CE77E0E7F81A /* ArmorClassControlRow.swift */,
 				5AB92BFBD1A901C57446D6A5 /* CombatantDetailView.swift */,
 				6D6B3D18CAD7D9BF42DBDB61 /* ContentView.swift */,
@@ -494,6 +497,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				135F810397EE6974720E3937 /* AddCombatantSheet.swift in Sources */,
+				686126023A8E84DB3503257E /* AdjustAmountSheet.swift in Sources */,
 				F8C4961FCB8EB1F87F440E63 /* AppearanceView.swift in Sources */,
 				275519FF6B2AD8A3A6F96E55 /* ArmorClassControlRow.swift in Sources */,
 				E424CC8B35F19372FF389522 /* CharacterKindPicker.swift in Sources */,
