@@ -69,6 +69,7 @@ struct CombatantDetailView: View {
                 VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
                     identityCard(for: combatant)
                     healthCard(for: combatant)
+                    armorClassCard
                     actionsCard(for: combatant)
                     effectsCard(for: combatant)
                 }
@@ -142,24 +143,31 @@ struct CombatantDetailView: View {
                 .fieldStyle(width: 68)
             }
 
-            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                Text("Armor Class").sectionLabel()
-                TextField(text: armorClassBinding) {
-                    Text("—").foregroundColor(Theme.placeholderText)
-                }
-                .keyboardType(.numberPad)
-                .font(Theme.Typography.statLarge)
-                .foregroundColor(Theme.textPrimary)
-                .multilineTextAlignment(.center)
-                .fieldStyle(width: 68)
-                ArmorClassControlRow(session: session, combatantId: combatantId)
-            }
-
             Spacer(minLength: 0)
 
             if combatant.isDead {
                 DeadBadge()
                     .padding(.top, Theme.Spacing.lg)
+            }
+        }
+        .sectionCard()
+    }
+
+    private var armorClassCard: some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.md) {
+            Text("Armor Class").cardHeading()
+            ArmorClassControlRow(session: session, combatantId: combatantId)
+            HStack(spacing: Theme.Spacing.sm) {
+                Text("Base")
+                    .font(Theme.Typography.caption)
+                    .foregroundColor(Theme.textTertiary)
+                TextField(text: armorClassBinding) {
+                    Text("—").foregroundColor(Theme.placeholderText)
+                }
+                .keyboardType(.numberPad)
+                .font(Theme.Typography.bodyEmphasis)
+                .foregroundColor(Theme.textPrimary)
+                .fieldStyle(width: 68)
             }
         }
         .sectionCard()
