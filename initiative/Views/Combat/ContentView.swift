@@ -386,22 +386,22 @@ struct CombatantRow: View {
     /// the value flush right, then its icon trailing it, as on the rest of the app.
     private func statLine(_ systemImage: String, _ iconColor: Color, value: Text, temp: Int?) -> some View {
         HStack(spacing: 0) {
-            // Temporary value: shield and number, left of the value.
+            // The icon comes first, as large as the initiative number beside it.
+            Image(systemName: systemImage)
+                .font(Theme.Typography.numeric(18))
+                .foregroundColor(iconColor)
+                .frame(width: 20, alignment: .center)
+            // Temporary value: shield and number, then the value and its arrow.
             Group {
                 if let temp {
                     Text("\(Image(systemName: "shield.fill")) \(temp)")
                         .foregroundColor(Theme.statusInfo)
                 }
             }
-            .frame(width: 44, alignment: .trailing)
+            .frame(width: 44, alignment: .leading)
+            .padding(.leading, Theme.Spacing.xxs)
             value
                 .frame(width: 50, alignment: .trailing)
-            // The icon is as large as the initiative number beside it.
-            Image(systemName: systemImage)
-                .font(Theme.Typography.numeric(18))
-                .foregroundColor(iconColor)
-                .frame(width: 20, alignment: .center)
-                .padding(.leading, Theme.Spacing.xxs)
         }
         .font(Theme.Typography.stat)
     }
