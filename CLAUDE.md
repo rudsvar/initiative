@@ -306,6 +306,27 @@ common types: protanopia and deuteranopia (red-green) and tritanopia (blue-yello
 - **Colour-blind themes** are `colorblindDark` and `colorblindLight`. They use the
   same status roles as the others, with the Okabe-Ito pairs above.
 
+## Verifying on the phone: test scenarios
+
+Every change that the owner should look at ends with a **test scenario** they can
+open on the phone. The scenario is a test-only combat, built with the same session
+methods the unit tests use, so the owner sees the rule working on the real screen.
+
+- **Where:** `initiative/Debug/TestCombats.swift`, behind `#if DEBUG`. Each scenario
+  is a static function, listed in `TestCombats.scenarios` under the same name. The
+  file is excluded from Release builds, so beta and store builds never contain it.
+- **Naming:** name the scenario after what it verifies (`deadCreatureIsSkipped`,
+  `dyingWithTally`), not after the screen. The unit tests use the same fixtures.
+- **Opening it:** the debug main menu has a **Test Scenarios** entry at the bottom.
+  Pick the scenario and the combat screen opens. From a terminal, a debug build also
+  opens one at launch with `-scenario <name>`.
+- **After each feature:** build the debug app for the phone, install it, and launch
+  the scenario, then tell the owner what to check, for example "Next from Alpha should
+  go to Omega". Give the exact steps. Use the device commands under "Looking at UI
+  changes" above.
+- **Checking the screen:** the owner can see the phone, not the agent. Ask the owner
+  what they see, and do not claim a visual result that has not been confirmed.
+
 ## Testing
 
 The `initiativeTests` target (XCTest) covers `Models/Models.swift` and the `Stores/`
