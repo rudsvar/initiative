@@ -57,6 +57,9 @@ enum DefaultContent {
         Creature(name: "Rat Swarm", maxHP: 20, armorClass: 11, initiativeBonus: 2),
         Creature(name: "Giant Bat", maxHP: 22, armorClass: 13, initiativeBonus: 3),  // SRD 5.2.1
         Creature(name: "Wolf", maxHP: 11, armorClass: 12, initiativeBonus: 2),  // SRD 5.2.1
+        Creature(name: "Dire Wolf", maxHP: 22, armorClass: 14, initiativeBonus: 2),  // SRD 5.2.1
+        Creature(name: "Warhorse", maxHP: 19, armorClass: 11, initiativeBonus: 1),  // SRD 5.2.1
+        Creature(name: "Commoner", maxHP: 4, armorClass: 10, initiativeBonus: 0),  // SRD 5.2.1
         Creature(name: "Panther", maxHP: 18, armorClass: 13, initiativeBonus: 4),
         Creature(name: "Crocodile", maxHP: 36, armorClass: 13, initiativeBonus: 0),
         Creature(name: "Giant Toad", maxHP: 40, armorClass: 12, initiativeBonus: -1),

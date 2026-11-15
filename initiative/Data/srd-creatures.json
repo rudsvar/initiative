@@ -142,6 +142,60 @@
       "actions": [
         { "name": "Club", "text": "Melee Attack Roll: +2, reach 5 ft. Hit: 2 (1d4) Bludgeoning damage." }
       ]
+    },
+    {
+      "name": "Dire Wolf",
+      "size": "Large",
+      "type": "Beast",
+      "alignment": "Unaligned",
+      "armorClass": 14,
+      "initiative": { "modifier": 2, "score": 12 },
+      "hitPoints": { "average": 22, "formula": "3d10 + 6" },
+      "speed": "50 ft.",
+      "abilities": {
+        "Str": { "score": 17, "modifier": 3, "save": 3 },
+        "Dex": { "score": 15, "modifier": 2, "save": 2 },
+        "Con": { "score": 15, "modifier": 2, "save": 2 },
+        "Int": { "score": 3, "modifier": -4, "save": -4 },
+        "Wis": { "score": 12, "modifier": 1, "save": 1 },
+        "Cha": { "score": 7, "modifier": -2, "save": -2 }
+      },
+      "skills": "Perception +5, Stealth +4",
+      "senses": "Darkvision 60 ft.; Passive Perception 15",
+      "languages": "None",
+      "challenge": { "cr": "1", "xp": 200, "proficiencyBonus": 2 },
+      "traits": [
+        { "name": "Pack Tactics", "text": "The wolf has Advantage on an attack roll against a creature if at least one of the wolf’s allies is within 5 feet of the creature and the ally doesn’t have the Incapacitated condition." }
+      ],
+      "actions": [
+        { "name": "Bite", "text": "Melee Attack Roll: +5, reach 5 ft. Hit: 8 (1d10 + 3) Piercing damage. If the target is a Large or smaller creature, it has the Prone condition." }
+      ]
+    },
+    {
+      "name": "Warhorse",
+      "size": "Large",
+      "type": "Beast",
+      "alignment": "Unaligned",
+      "armorClass": 11,
+      "initiative": { "modifier": 1, "score": 11 },
+      "hitPoints": { "average": 19, "formula": "3d10 + 3" },
+      "speed": "60 ft.",
+      "abilities": {
+        "Str": { "score": 18, "modifier": 4, "save": 4 },
+        "Dex": { "score": 12, "modifier": 1, "save": 1 },
+        "Con": { "score": 13, "modifier": 1, "save": 1 },
+        "Int": { "score": 2, "modifier": -4, "save": -4 },
+        "Wis": { "score": 12, "modifier": 1, "save": 3 },
+        "Cha": { "score": 7, "modifier": -2, "save": -2 }
+      },
+      "skills": null,
+      "senses": "Passive Perception 11",
+      "languages": "None",
+      "challenge": { "cr": "1/2", "xp": 100, "proficiencyBonus": 2 },
+      "traits": [],
+      "actions": [
+        { "name": "Hooves", "text": "Melee Attack Roll: +6, reach 5 ft. Hit: 9 (2d4 + 4) Bludgeoning damage. If the target is a Large or smaller creature and the horse moved 20+ feet straight toward it immediately before the hit, the target takes an extra 5 (2d4) Bludgeoning damage and has the Prone condition." }
+      ]
     }
   ]
 }

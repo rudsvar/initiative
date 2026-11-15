@@ -13,7 +13,7 @@ final class SRDCatalogTests: XCTestCase {
 
     func testFileLoadsWithTheExpectedCreatures() throws {
         let names = try repoStatBlocks().map(\.name)
-        XCTAssertEqual(names, ["Wolf", "Giant Bat", "Giant Spider", "Bandit", "Commoner"])
+        XCTAssertEqual(names, ["Wolf", "Giant Bat", "Giant Spider", "Bandit", "Commoner", "Dire Wolf", "Warhorse"])
     }
 
     func testWolfStatBlockKeepsItsPrintedDetails() throws {
@@ -40,6 +40,6 @@ final class SRDCatalogTests: XCTestCase {
             XCTAssertEqual(creature.armorClass, block.armorClass, creature.name)
             XCTAssertEqual(creature.initiativeBonus, block.initiative.modifier, creature.name)
         }
-        XCTAssertEqual(matched, 4, "Wolf, Giant Bat, Giant Spider and Bandit are the built-in SRD creatures in the file")
+        XCTAssertEqual(matched, 7, "Every SRD creature in the built-in list has a stat block in the file")
     }
 }
