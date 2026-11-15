@@ -57,7 +57,8 @@ struct CombatantDetailView: View {
         ScrollView {
             if let combatant = combatant {
                 VStack(alignment: .leading, spacing: Theme.Spacing.lg) {
-                    identityCard(for: combatant)
+                    statsCard(for: combatant)
+                    initiativeCard(for: combatant)
                     healthCard(for: combatant)
                     armorClassCard
                     actionsCard(for: combatant)
@@ -117,34 +118,41 @@ struct CombatantDetailView: View {
 
     // MARK: - Cards
 
-    /// Initiative and armor class only — the name is edited in the top bar
-    /// itself, not duplicated down here.
-    private func identityCard(for combatant: Combatant) -> some View {
-        HStack(alignment: .top, spacing: Theme.Spacing.md) {
-            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
-                VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                    Text("Initiative").sectionLabel()
-                    TextField(text: initiativeBinding) {
-                        Text("—").foregroundColor(Theme.placeholderText)
-                    }
-                    .keyboardType(.numberPad)
-                    .font(Theme.Typography.statLarge)
-                    .foregroundColor(Theme.accent)
-                    .multilineTextAlignment(.center)
-                    .fieldStyle(width: 68)
-                }
-                if let block = SRDCatalog.bundled.first(where: { $0.name == combatant.name }) {
-                    StatFacts(block: block)
-                }
-            }
-
-            Spacer(minLength: 0)
-
-            if combatant.isDead {
-                DeadBadge()
-                    .padding(.top, Theme.Spacing.lg)
+    /// The creature's stats: the facts from its stat block, when the app has one.
+    private func statsCard(for combatant: Combatant) -> some View {
+        VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+            Text("Stats").cardHeading()
+            if let block = SRDCatalog.bundled.first(where: { $0.name == combatant.name }) {
+                StatFacts(block: block)
+            } else {
+                Text("No stat block in the app for this name.")
+                    .font(Theme.Typography.caption)
+                    .foregroundColor(Theme.textTertiary)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .sectionCard()
+    }
+
+    /// Initiative on its own card, with a dead badge when the combatant is dead.
+    private func initiativeCard(for combatant: Combatant) -> some View {
+        HStack(alignment: .center, spacing: Theme.Spacing.md) {
+            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                Text("Initiative").cardHeading()
+                TextField(text: initiativeBinding) {
+                    Text("—").foregroundColor(Theme.placeholderText)
+                }
+                .keyboardType(.numberPad)
+                .font(Theme.Typography.statLarge)
+                .foregroundColor(Theme.accent)
+                .fieldStyle(width: 68)
+            }
+            Spacer(minLength: 0)
+            if combatant.isDead {
+                DeadBadge()
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
         .sectionCard()
     }
 

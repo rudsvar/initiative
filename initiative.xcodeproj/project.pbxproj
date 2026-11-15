@@ -54,6 +54,7 @@
 		7FF9D67C9EF8BB156F673248 /* SelectAllTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = F700581D6670C2CC2D6A5112 /* SelectAllTextField.swift */; };
 		87F1E56B91FF848A9C5E7C29 /* PresetStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F1E593E997D394D860933FA /* PresetStore.swift */; };
 		8D5002435663177D3D860CF4 /* FlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6427D74AA5360A780F88C8 /* FlowLayout.swift */; };
+		9D828DEFD356DF22B4C85C46 /* ChangeLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 198DAF52601518703A1CB383 /* ChangeLabel.swift */; };
 		9E619E17AE246450D08A306D /* DebugScenariosView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FC75838D4FF442192212A7E /* DebugScenariosView.swift */; };
 		9FE8D77649E294094C52166C /* PlayerViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C86540C34D5CD3C7378276D /* PlayerViewTests.swift */; };
 		A487A5D42B5F78867A371A4C /* StatusBandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6636EDC413749080974CA625 /* StatusBandTests.swift */; };
@@ -107,6 +108,7 @@
 		15E6FA70EC4196E9C9DA719A /* Format.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Format.swift; sourceTree = "<group>"; };
 		173E70DAD215FA1517F8B1AF /* initiativeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = initiativeApp.swift; sourceTree = "<group>"; };
 		18C53D0D096702F8E279A268 /* ViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewExtensions.swift; sourceTree = "<group>"; };
+		198DAF52601518703A1CB383 /* ChangeLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangeLabel.swift; sourceTree = "<group>"; };
 		1A7840FBA3A62622584D6A22 /* ThemeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeController.swift; sourceTree = "<group>"; };
 		236012BD8426FA8D17541295 /* CodableCompatibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodableCompatibilityTests.swift; sourceTree = "<group>"; };
 		255483B3F433841EC3581AEB /* initiativeTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = initiativeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -342,6 +344,7 @@
 		D8D1FC7B1737592BBB5BE632 /* Common */ = {
 			isa = PBXGroup;
 			children = (
+				198DAF52601518703A1CB383 /* ChangeLabel.swift */,
 				E39A23D6F350929CB9E41BC0 /* CharacterKindPicker.swift */,
 				8EB8924B9A672090A314E532 /* CloneName.swift */,
 				C8173780D06E58806AD3ECB9 /* CloneNameSheet.swift */,
@@ -503,6 +506,7 @@
 				686126023A8E84DB3503257E /* AdjustAmountSheet.swift in Sources */,
 				F8C4961FCB8EB1F87F440E63 /* AppearanceView.swift in Sources */,
 				275519FF6B2AD8A3A6F96E55 /* ArmorClassControlRow.swift in Sources */,
+				9D828DEFD356DF22B4C85C46 /* ChangeLabel.swift in Sources */,
 				E424CC8B35F19372FF389522 /* CharacterKindPicker.swift in Sources */,
 				DD6E18340F781761C581432D /* CloneName.swift in Sources */,
 				0543723AC0B30CD5C7C48168 /* CloneNameSheet.swift in Sources */,

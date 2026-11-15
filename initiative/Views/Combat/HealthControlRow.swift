@@ -82,9 +82,8 @@ struct HealthControlRow: View {
             }
             .buttonStyle(.plain)
             if let change {
-                Text(Format.signed(change))
+                ChangeLabel(change: change)
                     .font(Theme.Typography.bodyEmphasis)
-                    .foregroundColor(change < 0 ? Theme.statusBad : Theme.statusGood)
             }
             Spacer(minLength: 0)
         }

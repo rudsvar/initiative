@@ -376,18 +376,18 @@ struct CombatantRow: View {
             Image(systemName: systemImage)
                 .font(Theme.Typography.iconInline)
                 .foregroundColor(iconColor)
-                .frame(width: 16, alignment: .center)
+                .frame(width: 14, alignment: .center)
             Text(value)
                 .foregroundColor(Theme.textSecondary)
-                .frame(width: 60, alignment: .trailing)
-            Text(change.map { Format.signed($0) } ?? "")
-                .fontWeight(.bold)
-                .foregroundColor((change ?? 0) < 0 ? Theme.statusBad : Theme.statusGood)
-                .frame(width: 40, alignment: .trailing)
+                .frame(width: 44, alignment: .trailing)
+            Group {
+                if let change { ChangeLabel(change: change) } else { Text("") }
+            }
+            .frame(width: 30, alignment: .trailing)
             Text(temp.map { "temp \($0)" } ?? "")
                 .foregroundColor(Theme.statusInfo)
-                .frame(width: 60, alignment: .leading)
-                .padding(.leading, Theme.Spacing.xs)
+                .frame(width: 50, alignment: .leading)
+                .padding(.leading, Theme.Spacing.xxs)
         }
         .font(Theme.Typography.stat)
     }

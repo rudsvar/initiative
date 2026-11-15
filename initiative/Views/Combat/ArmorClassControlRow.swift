@@ -33,9 +33,8 @@ struct ArmorClassControlRow: View {
                     }
                     .buttonStyle(.plain)
                     if let change = combatant.recentACChange {
-                        Text(Format.signed(change))
+                        ChangeLabel(change: change)
                             .font(Theme.Typography.bodyEmphasis)
-                            .foregroundColor(change < 0 ? Theme.statusBad : Theme.statusGood)
                     }
                     Spacer(minLength: 0)
                 }
