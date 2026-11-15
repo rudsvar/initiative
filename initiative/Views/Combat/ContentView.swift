@@ -379,23 +379,24 @@ struct CombatantRow: View {
         let color = change < 0 ? Theme.statusBad : Theme.statusGood
         let arrow = change < 0 ? "arrow.down" : "arrow.up"
         return Text("\(value)").fontWeight(.bold).foregroundColor(color)
-            + Text("\(Image(systemName: arrow))").foregroundColor(color)
+            + Text("\(Image(systemName: arrow))").font(Theme.Typography.label).foregroundColor(color)
     }
 
-    /// One stat line in fixed columns, so the lines of every roster row line up:
-    /// icon, temporary value as text, then the value flush right.
+    /// One stat line in fixed columns, so every roster row lines up: temp text, then
+    /// the value flush right, then its icon trailing it, as on the rest of the app.
     private func statLine(_ systemImage: String, _ iconColor: Color, value: Text, temp: Int?) -> some View {
         HStack(spacing: 0) {
+            Text(temp.map { "temp \($0)" } ?? "")
+                .foregroundColor(Theme.statusInfo)
+                .frame(width: 52, alignment: .trailing)
+                .padding(.trailing, Theme.Spacing.xs)
+            value
+                .frame(width: 60, alignment: .trailing)
             Image(systemName: systemImage)
                 .font(Theme.Typography.iconInline)
                 .foregroundColor(iconColor)
-                .frame(width: 14, alignment: .center)
-            // Temp sits left of the value, so the values themselves stay flush right.
-            Text(temp.map { "temp \($0) " } ?? "")
-                .foregroundColor(Theme.statusInfo)
-                .frame(width: 54, alignment: .trailing)
-            value
-                .frame(width: 66, alignment: .trailing)
+                .frame(width: 14, alignment: .leading)
+                .padding(.leading, Theme.Spacing.xxs)
         }
         .font(Theme.Typography.stat)
     }
