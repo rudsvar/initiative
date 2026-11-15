@@ -392,8 +392,18 @@ class CombatSession {
 
     /// True when the *next* advance rolls the round over. Round-anchored things
     /// key off this rather than off any combatant's turn.
-    var isLastTurnOfRound: Bool {
-        !combatants.isEmpty && currentTurnIndex == combatants.count - 1
+    /// The next combatant who can act after `index`. Dead combatants are passed
+    /// over: a creature at 0 HP, or a character whose death saves failed. `wrapped`
+    /// is true when the walk passes the end of the list, which starts a new round.
+    /// If nobody else can act, the result is `index` itself.
+    func nextActiveIndex(after index: Int) -> (index: Int, wrapped: Bool) {
+        var next = index
+        var wrapped = false
+        repeat {
+            if next == combatants.count - 1 { wrapped = true }
+            next = (next + 1) % combatants.count
+        } while combatants[next].isDead && next != index
+        return (next, wrapped)
     }
 
     private func tickRoundEffects() {
@@ -510,14 +520,15 @@ class CombatSession {
         guard combatants.count > 0, combatants.indices.contains(currentTurnIndex) else { return [] }
 
         let ending = combatants[currentTurnIndex]
-        let starting = combatants[(currentTurnIndex + 1) % combatants.count]
+        let (nextIndex, wrapsRound) = nextActiveIndex(after: currentTurnIndex)
+        let starting = combatants[nextIndex]
 
         var prompts = rollPrompts(for: ending, at: .endOfTurn)
         prompts += rollPrompts(for: starting, at: .startOfTurn)
 
         // Round-anchored rolls come due when the round turns over, not on
         // anyone's turn — so they ride on the advance that wraps.
-        if isLastTurnOfRound {
+        if wrapsRound {
             prompts += roundEffects.compactMap { effect in
                 guard effect.durationType.awaitsRoll else { return nil }
                 guard case .untilRollSucceeds(_, let hint) = effect.durationType else { return nil }
@@ -652,8 +663,8 @@ class CombatSession {
         }
 
         let endingCombatantId = combatants[currentTurnIndex].id
-        let wrapped = currentTurnIndex == combatants.count - 1
-        currentTurnIndex = (currentTurnIndex + 1) % combatants.count
+        let (nextIndex, wrapped) = nextActiveIndex(after: currentTurnIndex)
+        currentTurnIndex = nextIndex
         if wrapped {
             roundNumber += 1
             appendLog("Round \(roundNumber) began")
