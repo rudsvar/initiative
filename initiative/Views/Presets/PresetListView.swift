@@ -14,6 +14,8 @@ struct PresetListView: View {
     // present, correctly, from frame one.
     @State private var presets: [CreaturePreset]
     @State private var creatingNew = false
+    @State private var openPreset: CreaturePreset?
+    @State private var pendingDelete: CreaturePreset?
     @State private var query = ""
 
     init(presetStore: PresetStore) {
@@ -59,11 +61,24 @@ struct PresetListView: View {
             }
         }
         .onAppear { reload() }
-        .navigationDestination(for: CreaturePreset.self) { preset in
+        .navigationDestination(item: $openPreset) { preset in
             CreatureDetailView(presetStore: presetStore, preset: preset, onChange: reload)
         }
         .navigationDestination(isPresented: $creatingNew) {
             CreatureDetailView(presetStore: presetStore, preset: CreaturePreset(name: ""), onChange: reload)
+        }
+        .alert(
+            "Delete creature?",
+            isPresented: Binding(get: { pendingDelete != nil }, set: { if !$0 { pendingDelete = nil } }),
+            presenting: pendingDelete
+        ) { preset in
+            Button("Delete", role: .destructive) {
+                presetStore.delete(id: preset.id)
+                reload()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: { preset in
+            Text("\(preset.name) will be removed. This can't be undone.")
         }
     }
 
@@ -87,7 +102,7 @@ struct PresetListView: View {
                     .listRowBackground(Color.clear)
 
                 ForEach(sectionPresets) { preset in
-                    NavigationLink(value: preset) {
+                    Button(action: { openPreset = preset }) {
                         HStack(spacing: Theme.Spacing.md) {
                             Text(preset.name)
                                 .font(Theme.Typography.rowTitle)
@@ -109,11 +124,8 @@ struct PresetListView: View {
                     // the detail screen, where the name is asked for first.
                     .swipeActions(edge: .trailing) {
                         if !preset.isBuiltIn {
-                            // No extra confirmation dialog: swipe-to-reveal + tap
-                            // Delete is already two deliberate actions.
                             Button(role: .destructive) {
-                                presetStore.delete(id: preset.id)
-                                reload()
+                                pendingDelete = preset
                             } label: {
                                 Label("Delete", systemImage: "trash")
                             }
