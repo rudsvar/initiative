@@ -437,7 +437,6 @@ struct CombatantRow: View {
                 HStack(spacing: Theme.Spacing.xs + 2) {
                     Text(combatant.name)
                         .lineLimit(1)
-                        .minimumScaleFactor(0.6)
                         .layoutPriority(-1)
                         .font(Theme.Typography.rowTitle)
                         .foregroundColor(Theme.textPrimary)
@@ -450,6 +449,7 @@ struct CombatantRow: View {
                         // in the row uses: a filled status colour, not a tint.
                         if let saves = combatant.deathSaves {
                             DeathSaveDots(saves: saves)
+                                .fixedSize()
                         }
                     } else if combatant.isStabilised {
                         stateBadge("bandage.fill", tint: Theme.statusWarn)
