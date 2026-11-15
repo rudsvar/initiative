@@ -381,7 +381,12 @@ struct CombatantRow: View {
             } else {
                 statLine(
                     "heart.fill", Theme.statusBad,
-                    value: marked(current, change: combatant.recentHPChange, showsSign: combatant.temporaryHP != nil)
+                    // Plain unless temp HP is active: ordinary damage and healing do not colour it.
+                    value: marked(
+                        current,
+                        change: combatant.temporaryHP != nil ? combatant.recentHPChange : nil,
+                        showsSign: combatant.temporaryHP != nil
+                    )
                         + Text("/").foregroundColor(Theme.textTertiary)
                         + marked(max, change: combatant.recentMaxHPChange, showsSign: combatant.recentMaxHPChange != nil),
                     temp: combatant.temporaryHP
