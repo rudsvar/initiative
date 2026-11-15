@@ -87,6 +87,10 @@ secret the workflow fails on purpose.
 - **One commit per completed change.** Commit each change as it finishes, not
   in one batch at the end. Put the tests for that change in the same commit
   when they make sense. Run `scripts/public-check.sh` before each commit.
+- **Never push without the owner's go-ahead.** Commit locally when a change is
+  done, then wait. A push to `main` starts a beta build upload, and a push
+  of any kind is outward-facing, so only push when the owner says to, for that
+  specific push.
 - **Prune redundant tests.** When a test repeats what another test already
   covers, remove or merge it, in its own commit. Clean up a few at a time as
   you go, not in a separate big pass.
