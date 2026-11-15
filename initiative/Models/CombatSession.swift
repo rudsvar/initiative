@@ -155,6 +155,7 @@ class CombatSession {
         let result = Self.absorb(damage: amount, temporaryHP: combatants[index].temporaryHP, currentHP: current)
         combatants[index].temporaryHP = result.temporaryHP
         combatants[index].currentHP = result.currentHP
+        noteHPChange(at: index, by: (result.currentHP ?? current) - current)
 
         let absorbed = before - (result.temporaryHP ?? 0)
         let note = absorbed > 0 ? ", \(absorbed) absorbed" : ""
@@ -243,6 +244,7 @@ class CombatSession {
               let current = combatants[index].currentHP,
               let maxHP = combatants[index].maxHP else { return }
         combatants[index].currentHP = min(maxHP, current + amount)
+        noteHPChange(at: index, by: combatants[index].currentHP! - current)
         appendLog(
             "\(combatants[index].name) healed \(amount) HP (\(combatants[index].currentHP!)/\(maxHP) HP)",
             combatantId: id,
@@ -284,11 +286,46 @@ class CombatSession {
         combatants[index].maxHP = maxHP + amount
         combatants[index].currentHP = current + amount
         combatants[index].maxHPIncreased = true
+        noteHPChange(at: index, by: amount)
         appendLog(
             "\(combatants[index].name)'s max HP increased by \(amount) (\(combatants[index].currentHP!)/\(combatants[index].maxHP!) HP)",
             combatantId: id,
             hpOperation: .maxHPIncrease(amount: amount)
         )
+    }
+
+    /// Lowers max HP by `amount`, and brings current HP down with it if it is now above the max.
+    func decreaseMaxHP(for id: UUID, amount: Int) {
+        guard amount > 0, let index = combatants.firstIndex(where: { $0.id == id }),
+              let maxHP = combatants[index].maxHP,
+              let current = combatants[index].currentHP else { return }
+        let newMax = max(1, maxHP - amount)
+        combatants[index].maxHP = newMax
+        combatants[index].currentHP = min(current, newMax)
+        noteHPChange(at: index, by: combatants[index].currentHP! - current)
+        appendLog(
+            "\(combatants[index].name)'s max HP decreased by \(maxHP - newMax) (\(combatants[index].currentHP!)/\(newMax) HP)",
+            combatantId: id
+        )
+    }
+
+    /// Changes armor class by `delta` (negative lowers it), for the rest of the
+    /// encounter. Armor class never goes below zero.
+    func adjustArmorClass(for id: UUID, by delta: Int) {
+        guard delta != 0, let index = combatants.firstIndex(where: { $0.id == id }),
+              let ac = combatants[index].armorClass else { return }
+        let newAC = max(0, ac + delta)
+        combatants[index].armorClass = newAC
+        let total = (combatants[index].recentACChange ?? 0) + (newAC - ac)
+        combatants[index].recentACChange = total == 0 ? nil : total
+        appendLog("\(combatants[index].name)'s armor class \(newAC - ac >= 0 ? "rose" : "fell") to \(newAC)", combatantId: id)
+    }
+
+    /// Adds a change to the combatant's running HP change for this turn cycle.
+    private func noteHPChange(at index: Int, by delta: Int) {
+        guard delta != 0 else { return }
+        let total = (combatants[index].recentHPChange ?? 0) + delta
+        combatants[index].recentHPChange = total == 0 ? nil : total
     }
 
     /// Deletes a log entry. If it carried an HP operation, the affected combatant's
@@ -679,6 +716,8 @@ class CombatSession {
             resetLimitedUses()
         }
         let startingCombatantId = combatants[currentTurnIndex].id
+        combatants[currentTurnIndex].recentHPChange = nil
+        combatants[currentTurnIndex].recentACChange = nil
 
         removeExpiredEffects(
             turnEndingCombatantId: endingCombatantId,

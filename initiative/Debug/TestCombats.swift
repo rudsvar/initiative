@@ -58,6 +58,15 @@ enum TestCombats {
         return session
     }
 
+    /// Alpha and Omega, both at 20 HP and AC 14. Changes to them show beside their
+    /// numbers until their own turn starts.
+    static func hpAndACChangesShowUntilTurnStarts() -> CombatSession {
+        let session = CombatSession()
+        session.addCombatant(name: "Alpha", initiative: 20, maxHP: 20, armorClass: 14)
+        session.addCombatant(name: "Omega", initiative: 10, maxHP: 20, armorClass: 14)
+        return session
+    }
+
     /// A character with an armor class and no buffers, for armor class tests.
     static func wrenWithArmorClass() -> CombatSession {
         let session = CombatSession()
@@ -75,6 +84,7 @@ extension TestCombats {
         "lastStandingKeepsTheTurn": lastStandingKeepsTheTurn,
         "wrenWithArmorClass": wrenWithArmorClass,
         "wrenWithTemporaryAC": wrenWithTemporaryAC,
+        "hpAndACChangesShowUntilTurnStarts": hpAndACChangesShowUntilTurnStarts,
     ]
 }
 #endif
