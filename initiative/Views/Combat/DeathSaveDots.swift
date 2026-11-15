@@ -18,7 +18,7 @@ struct DeathSaveDots: View {
         HStack(spacing: 2) {
             ForEach(0..<DeathSaves.required, id: \.self) { index in
                 Image(systemName: index < filled ? "\(symbol).circle.fill" : "circle")
-                    .font(Theme.Typography.label)
+                    .font(Theme.Typography.micro)
                     .foregroundColor(index < filled ? tint : Theme.textTertiary)
             }
         }

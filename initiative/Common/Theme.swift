@@ -224,6 +224,8 @@ extension Theme {
         static let caption = Font.system(.caption)
         /// Small all-caps field/section labels — see `Text.sectionLabel()`.
         static let label = Font.system(.caption2).weight(.semibold)
+        /// The smallest text: the dying tally's circles.
+        static let micro = Font.system(.caption2)
 
         /// Tabular figures at a text style's size, for stat readouts (HP, AC).
         static let stat = Font.system(.caption, design: .rounded).monospacedDigit()

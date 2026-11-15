@@ -448,8 +448,14 @@ struct CombatantRow: View {
                         // this screen, so it gets the one treatment nothing else
                         // in the row uses: a filled status colour, not a tint.
                         if let saves = combatant.deathSaves {
-                            DeathSaveDots(saves: saves)
-                                .fixedSize()
+                            HStack(spacing: Theme.Spacing.xs) {
+                                // A skull the height of the name, for a dying combatant.
+                                Image(systemName: "skull.fill")
+                                    .font(Theme.Typography.rowTitle)
+                                    .foregroundColor(Theme.statusBad)
+                                DeathSaveDots(saves: saves)
+                            }
+                            .fixedSize()
                         }
                     } else if combatant.isStabilised {
                         stateBadge("bandage.fill", tint: Theme.statusWarn)
