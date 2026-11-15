@@ -78,6 +78,24 @@ final class DeathSaveTests: XCTestCase {
         XCTAssertEqual(wrenNow.currentHP, 0)
     }
 
+    /// Once the tally is resolved the Dying chip goes: a stabilised character shows
+    /// the bandage beside the name instead, and a dead one shows neither.
+    func testResolvedTallyHidesTheDyingChip() {
+        let (session, wren) = session()
+        session.applyDamage(to: wren, amount: 10)
+        for _ in 0..<3 { answerDeathSave(session, success: true) }
+
+        XCTAssertFalse(combatant(session, "Wren").visibleEffects.contains { $0.deathSaves != nil })
+    }
+
+    func testDeadCombatantShowsNoDyingChip() {
+        let (session, wren) = session()
+        session.applyDamage(to: wren, amount: 10)
+        for _ in 0..<3 { answerDeathSave(session, success: false) }
+
+        XCTAssertFalse(combatant(session, "Wren").visibleEffects.contains { $0.deathSaves != nil })
+    }
+
     func testMixedResultsKeepBothTallies() {
         let (session, wren) = session()
         session.applyDamage(to: wren, amount: 10)

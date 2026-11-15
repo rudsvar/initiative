@@ -75,9 +75,15 @@ struct Combatant: Identifiable, Codable {
         effects.contains { $0.isReactionMarker == true }
     }
 
-    /// Effects meant for user-facing display — excludes the internal reaction marker.
+    /// Effects meant for user-facing display. Excludes the internal reaction marker,
+    /// and the Dying effect once its tally is resolved: stabilised and dead have
+    /// their own marks, so a "Dying" chip would contradict them.
     var visibleEffects: [Effect] {
-        effects.filter { $0.isReactionMarker != true }
+        effects.filter { effect in
+            if effect.isReactionMarker == true { return false }
+            if let saves = effect.deathSaves, saves.isResolved { return false }
+            return true
+        }
     }
 
     /// Down but not out: rolling death saves, neither stabilised nor dead.
