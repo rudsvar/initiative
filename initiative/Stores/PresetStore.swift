@@ -32,6 +32,18 @@ struct CreaturePreset: Identifiable, Codable, Equatable, Hashable {
         self.isPlayer = isPlayer
     }
 
+    /// A new, unnamed entry started from an existing one: the stats are copied, the
+    /// name is left blank for the owner to type, and the kind is the library's own.
+    static func draft(from template: CreaturePreset, isPlayer: Bool) -> CreaturePreset {
+        CreaturePreset(
+            name: "",
+            maxHP: template.maxHP,
+            armorClass: template.armorClass,
+            initiativeBonus: template.initiativeBonus,
+            isPlayer: isPlayer
+        )
+    }
+
     private enum CodingKeys: String, CodingKey {
         case id, name, maxHP, armorClass, initiativeBonus, isPlayer
     }

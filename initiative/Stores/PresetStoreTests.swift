@@ -36,6 +36,22 @@ final class PresetStoreTests: XCTestCase {
         XCTAssertEqual(store.listPresets(characters: false).map(\.name), ["Goblin"])
     }
 
+    /// A new entry made from a template takes its stats, but never its name (that
+    /// must be unique and is typed by the owner), and it takes the kind of the
+    /// library it is being added to, not the template's.
+    func testDraftFromTemplateKeepsStatsButNotNameOrKind() {
+        let template = CreaturePreset(name: "Goblin", maxHP: 7, armorClass: 15, initiativeBonus: 2, isPlayer: false)
+
+        let draft = CreaturePreset.draft(from: template, isPlayer: true)
+
+        XCTAssertEqual(draft.name, "")
+        XCTAssertEqual(draft.maxHP, 7)
+        XCTAssertEqual(draft.armorClass, 15)
+        XCTAssertEqual(draft.initiativeBonus, 2)
+        XCTAssertTrue(draft.isPlayer)
+        XCTAssertNotEqual(draft.id, template.id)
+    }
+
     func testUpsertCreatesNewPreset() {
         store.upsert(name: "Bog Hulk", maxHP: 7)
 
