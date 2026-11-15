@@ -82,7 +82,7 @@ struct CreatureDetailView: View {
                     // Built-ins without a stat block in the app: only the three numbers.
                     VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                         Text(preset.name).cardHeading()
-                        Text("Hit Points \(preset.maxHP.map(String.init) ?? "–") · Armor \(preset.armorClass.map(String.init) ?? "–") · Initiative \(signed(preset.initiativeBonus))")
+                        Text("Hit Points \(preset.maxHP.map(String.init) ?? "–") · Armor \(preset.armorClass.map(String.init) ?? "–") · Initiative \(signedOrDash(preset.initiativeBonus))")
                             .font(Theme.Typography.caption)
                             .foregroundColor(Theme.textSecondary)
                         Text("Full stat block not in the app yet.")
@@ -157,9 +157,9 @@ struct CreatureDetailView: View {
         dismiss()
     }
 
-    private func signed(_ n: Int?) -> String {
+    private func signedOrDash(_ n: Int?) -> String {
         guard let n else { return "–" }
-        return n >= 0 ? "+\(n)" : "\(n)"
+        return Format.signed(n)
     }
 }
 

@@ -14,6 +14,7 @@
 		13A8DA4DB83B14C9EB1F0D0E /* ConcentrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7265419AD964CF0CC71037D4 /* ConcentrationTests.swift */; };
 		13CAD1BE39F1418784A5E30D /* ThemePaletteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99DA66AE6B5F5BF1053F2262 /* ThemePaletteTests.swift */; };
 		1A85F56E1359778680CB6BE8 /* EncounterStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 650EB50016E0916FF6F37644 /* EncounterStoreTests.swift */; };
+		2723E9ECA0DA43828FF450D2 /* Format.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E6FA70EC4196E9C9DA719A /* Format.swift */; };
 		27FA5AC8318737D254E3AE64 /* HealthControlRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 53836058E4AD08B15E3A2112 /* HealthControlRow.swift */; };
 		2AAA54B4FC8B4C17F033A092 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3CD596FC340B7FD1097C3070 /* Assets.xcassets */; };
 		30612A0282CDFEEA1E7F79E6 /* DeathSaves.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DF8601F37841A579037DFC0 /* DeathSaves.swift */; };
@@ -93,6 +94,7 @@
 		0B11A437D714C86669EA9B73 /* CooldownLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CooldownLibrary.swift; sourceTree = "<group>"; };
 		0B266DEA642A436C6B0171B6 /* Combatant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Combatant.swift; sourceTree = "<group>"; };
 		0DB17045A5515409AF2FD680 /* TurnPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TurnPrompt.swift; sourceTree = "<group>"; };
+		15E6FA70EC4196E9C9DA719A /* Format.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Format.swift; sourceTree = "<group>"; };
 		173E70DAD215FA1517F8B1AF /* initiativeApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = initiativeApp.swift; sourceTree = "<group>"; };
 		18C53D0D096702F8E279A268 /* ViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewExtensions.swift; sourceTree = "<group>"; };
 		1A7840FBA3A62622584D6A22 /* ThemeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeController.swift; sourceTree = "<group>"; };
@@ -313,6 +315,7 @@
 				9DF981AA6DF6B717D16FCD4F /* ConditionsTests.swift */,
 				0B11A437D714C86669EA9B73 /* CooldownLibrary.swift */,
 				6D6427D74AA5360A780F88C8 /* FlowLayout.swift */,
+				15E6FA70EC4196E9C9DA719A /* Format.swift */,
 				4AF22B663D7FA19C198D9258 /* ListSections.swift */,
 				43F9C4DC2EAC8723C1CF43AF /* ListSectionsTests.swift */,
 				CC27CA470043E0B89A9580AA /* SearchBar.swift */,
@@ -480,6 +483,7 @@
 				494371ED7B27C47A81A55FA0 /* EncounterListView.swift in Sources */,
 				753B7A6563DA08CED59C9981 /* EncounterStore.swift in Sources */,
 				8D5002435663177D3D860CF4 /* FlowLayout.swift in Sources */,
+				2723E9ECA0DA43828FF450D2 /* Format.swift in Sources */,
 				27FA5AC8318737D254E3AE64 /* HealthControlRow.swift in Sources */,
 				453BB0488A8740205F8EEB32 /* LimitedUse.swift in Sources */,
 				E0B050CE61AD8A4D0D279D0D /* LimitedUseEditorView.swift in Sources */,

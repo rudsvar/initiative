@@ -27,7 +27,7 @@ struct StatBlockSummary: View {
             Text("\(block.size) \(block.type), \(block.alignment)")
                 .font(Theme.Typography.caption)
                 .foregroundColor(Theme.textSecondary)
-            Text("CR \(block.challenge.cr) · \(block.challenge.xp) XP · PB \(signed(block.challenge.proficiencyBonus))")
+            Text("CR \(block.challenge.cr) · \(block.challenge.xp) XP · PB \(Format.signed(block.challenge.proficiencyBonus))")
                 .font(Theme.Typography.caption)
                 .foregroundColor(Theme.textTertiary)
         }
@@ -39,7 +39,7 @@ struct StatBlockSummary: View {
     private var combatStrip: some View {
         HStack(spacing: Theme.Spacing.sm) {
             tile("Armor", "\(block.armorClass)", detail: nil)
-            tile("Initiative", signed(block.initiative.modifier), detail: "(\(block.initiative.score))")
+            tile("Initiative", Format.signed(block.initiative.modifier), detail: "(\(block.initiative.score))")
             tile("Hit Points", "\(block.hitPoints.average)", detail: block.hitPoints.formula)
             tile("Speed", block.speed, detail: nil)
         }
@@ -121,11 +121,11 @@ struct StatBlockSummary: View {
             Text("\(value.score)")
                 .font(Theme.Typography.bodyEmphasis)
                 .foregroundColor(Theme.textPrimary)
-            Text(signed(value.modifier))
+            Text(Format.signed(value.modifier))
                 .font(Theme.Typography.caption)
                 .foregroundColor(Theme.textSecondary)
             if value.save != value.modifier {
-                Text("save \(signed(value.save))")
+                Text("save \(Format.signed(value.save))")
                     .font(Theme.Typography.label)
                     .foregroundColor(Theme.textTertiary)
             }
@@ -143,9 +143,5 @@ struct StatBlockSummary: View {
                 .font(Theme.Typography.caption)
                 .foregroundColor(Theme.textPrimary)
         }
-    }
-
-    private func signed(_ n: Int) -> String {
-        n >= 0 ? "+\(n)" : "\(n)"
     }
 }
