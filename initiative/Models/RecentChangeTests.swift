@@ -51,4 +51,29 @@ final class RecentChangeTests: XCTestCase {
         session.adjustArmorClass(for: id, by: -100)
         XCTAssertEqual(session.combatants[alpha(session)].armorClass, 0)
     }
+
+    func testHealingPastMaxCanGoAboveAsTemporaryHP() {
+        let session = CombatSession()
+        session.addCombatant(name: "Wren", initiative: 12, maxHP: 10, isPlayer: true)
+        let wren = session.combatants[0].id
+        _ = session.applyDamage(to: wren, amount: 4)
+        session.heal(wren, amount: 6, goAboveMax: true)
+        XCTAssertEqual(session.combatants[0].currentHP, 10)
+        XCTAssertEqual(session.combatants[0].temporaryHP, 2)
+    }
+
+    func testHealingPastMaxCanCapAtMax() {
+        let session = CombatSession()
+        session.addCombatant(name: "Wren", initiative: 12, maxHP: 10, isPlayer: true)
+        let wren = session.combatants[0].id
+        _ = session.applyDamage(to: wren, amount: 4)
+        session.heal(wren, amount: 6, goAboveMax: false)
+        XCTAssertEqual(session.combatants[0].currentHP, 10)
+        XCTAssertNil(session.combatants[0].temporaryHP)
+    }
+
+    func testOverflowIsZeroWithinMax() {
+        XCTAssertEqual(CombatSession.healOverflow(current: 6, max: 10, amount: 4), 0)
+        XCTAssertEqual(CombatSession.healOverflow(current: 6, max: 10, amount: 7), 3)
+    }
 }

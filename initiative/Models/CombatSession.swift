@@ -295,6 +295,32 @@ class CombatSession {
         )
     }
 
+    /// How far a heal would take current HP past max. Zero when it stays within max.
+    static func healOverflow(current: Int, max: Int, amount: Int) -> Int {
+        Swift.max(0, current + amount - max)
+    }
+
+    /// Heals a combatant. A heal past max either goes above max as temporary HP, which
+    /// replaces any earlier temporary HP, or caps at max. Within max, both are the same.
+    func heal(_ id: UUID, amount: Int, goAboveMax: Bool) {
+        guard amount > 0, let index = combatants.firstIndex(where: { $0.id == id }),
+              let current = combatants[index].currentHP,
+              let maxHP = combatants[index].maxHP else { return }
+        let overflow = Self.healOverflow(current: current, max: maxHP, amount: amount)
+        guard goAboveMax, overflow > 0 else {
+            applyHealing(to: id, amount: amount)
+            return
+        }
+        combatants[index].currentHP = maxHP
+        combatants[index].temporaryHP = overflow
+        noteHPChange(at: index, by: maxHP - current)
+        clearDeathSavesIfAboveZero(at: index)
+        appendLog(
+            "\(combatants[index].name) healed \(amount) HP and gained \(overflow) temporary HP (\(maxHP)/\(maxHP) HP)",
+            combatantId: id
+        )
+    }
+
     /// Lowers max HP by `amount`, and brings current HP down with it if it is now above the max.
     func decreaseMaxHP(for id: UUID, amount: Int) {
         guard amount > 0, let index = combatants.firstIndex(where: { $0.id == id }),
