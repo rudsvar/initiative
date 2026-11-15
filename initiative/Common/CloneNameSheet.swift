@@ -1,15 +1,20 @@
 import SwiftUI
 
-/// Asks for the name of a copy before making it. Clone stays disabled until the
-/// name is usable, so a copy can't be made without one, and the owner always
-/// types the name themselves. Used by both the creature and encounter screens.
+/// Asks for the name of a copy before making it, and, for creatures, whether the
+/// copy is a player character or an NPC. Clone stays disabled until the name is
+/// usable, so a copy is never made without one. Used by the creature and
+/// encounter screens; encounters have no character kind, so they skip that row.
 struct CloneNameSheet: View {
     let title: String
     let existingNames: [String]
-    let onClone: (String) -> Void
+    /// Whether to ask for the character kind. Only creatures have one.
+    var asksCharacterKind = false
+    /// Called with the trimmed name and the chosen kind (`false` when not asked).
+    let onClone: (String, Bool) -> Void
 
     @Environment(\.dismiss) private var dismiss
     @State private var name = ""
+    @State private var isPlayer = false
 
     private var trimmed: String { name.trimmingCharacters(in: .whitespaces) }
     private var isValid: Bool { CloneName.isValid(name, avoiding: existingNames) }
@@ -30,6 +35,20 @@ struct CloneNameSheet: View {
                         }
                     }
                     .listRowBackground(Theme.surfaceRaised)
+
+                    if asksCharacterKind {
+                        Section("Character") {
+                            Picker("Character", selection: $isPlayer) {
+                                Text("NPC").tag(false)
+                                Text("Player").tag(true)
+                            }
+                            .pickerStyle(.segmented)
+                            Text(isPlayer ? "Players roll death saves at 0 HP." : "Anything else simply dies at 0 HP.")
+                                .font(Theme.Typography.caption)
+                                .foregroundColor(Theme.textTertiary)
+                        }
+                        .listRowBackground(Theme.surfaceRaised)
+                    }
                 }
                 .scrollContentBackground(.hidden)
             }
@@ -41,7 +60,7 @@ struct CloneNameSheet: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Clone") {
-                        onClone(trimmed)
+                        onClone(trimmed, isPlayer)
                         dismiss()
                     }
                     .fontWeight(.semibold)
@@ -53,5 +72,5 @@ struct CloneNameSheet: View {
 }
 
 #Preview {
-    CloneNameSheet(title: "Clone Creature", existingNames: ["Goblin"]) { _ in }
+    CloneNameSheet(title: "Clone Creature", existingNames: ["Goblin"], asksCharacterKind: true) { _, _ in }
 }

@@ -1,8 +1,8 @@
 import SwiftUI
 
-/// Browse/edit/delete creature presets. Presets accumulate automatically as
+/// Browse, open and delete creature presets. Presets accumulate automatically as
 /// combatants are added in a session (see AddCombatantSheet), and can also be
-/// created directly here.
+/// created here. Opening a row pushes its detail screen (`CreatureDetailView`).
 struct PresetListView: View {
     let presetStore: PresetStore
 
@@ -10,12 +10,10 @@ struct PresetListView: View {
     // filling in via `.onAppear` — an empty-then-populated flip flips
     // `appSearchable`'s `isVisible` from false to true right after the first
     // frame, which mounts `.searchable` for the first time on a *later*
-    // render instead of the first one. That cold mount is what animates in
-    // and reads as the search field's text doing a tiny resize on load.
-    // Loading here means `.searchable` is present, correctly, from frame one.
+    // render instead of the first one. Loading here means `.searchable` is
+    // present, correctly, from frame one.
     @State private var presets: [CreaturePreset]
-    @State private var editingPreset: CreaturePreset?
-    @State private var cloning: CreaturePreset?
+    @State private var creatingNew = false
     @State private var query = ""
 
     init(presetStore: PresetStore) {
@@ -54,24 +52,23 @@ struct PresetListView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: { editingPreset = CreaturePreset(name: "") }) {
+                Button(action: { creatingNew = true }) {
                     Image(systemName: "plus")
                 }
                 .accessibilityLabel("New Creature")
             }
         }
-        .onAppear { presets = presetStore.listPresets() }
-        .sheet(item: $editingPreset) { preset in
-            EditPresetView(presetStore: presetStore, preset: preset) {
-                presets = presetStore.listPresets()
-            }
+        .onAppear { reload() }
+        .navigationDestination(for: CreaturePreset.self) { preset in
+            CreatureDetailView(presetStore: presetStore, preset: preset, onChange: reload)
         }
-        .sheet(item: $cloning) { preset in
-            CloneNameSheet(title: "Clone Creature", existingNames: presets.map(\.name)) { name in
-                presetStore.clone(preset, named: name)
-                presets = presetStore.listPresets()
-            }
+        .navigationDestination(isPresented: $creatingNew) {
+            CreatureDetailView(presetStore: presetStore, preset: CreaturePreset(name: ""), onChange: reload)
         }
+    }
+
+    private func reload() {
+        presets = presetStore.listPresets()
     }
 
     /// Hidden entirely when empty rather than shown as a bare header — a "Yours"
@@ -90,18 +87,12 @@ struct PresetListView: View {
                     .listRowBackground(Color.clear)
 
                 ForEach(sectionPresets) { preset in
-                    Button(action: { editingPreset = preset }) {
+                    NavigationLink(value: preset) {
                         HStack(spacing: Theme.Spacing.md) {
                             Text(preset.name)
                                 .font(Theme.Typography.rowTitle)
                                 .foregroundColor(Theme.textPrimary)
                             Spacer(minLength: Theme.Spacing.sm)
-                            // Icon-led like the combatant row, so a creature
-                            // reads the same wherever it appears — but laid out
-                            // across rather than stacked. Stacked, three stats
-                            // make every row three lines tall, and at 70-odd
-                            // creatures that costs more scrolling than the
-                            // aligned columns are worth.
                             // Fixed-width columns so each stat lines up down the list.
                             // A missing stat keeps its column, shown as a dash.
                             HStack(spacing: Theme.Spacing.md) {
@@ -114,22 +105,15 @@ struct PresetListView: View {
                     .buttonStyle(CardRowButtonStyle())
                     .cardRowLayout()
                     // Built-in creatures are fixtures: they can't be deleted or
-                    // edited, only copied. So a built-in row offers Clone
-                    // where a user's own offers Delete, rather than offering
-                    // actions that then refuse.
+                    // edited, and they can't be swiped at all. Copying is done on
+                    // the detail screen, where the name is asked for first.
                     .swipeActions(edge: .trailing) {
-                        if preset.isBuiltIn {
-                            Button {
-                                cloning = preset
-                            } label: {
-                                Label("Clone", systemImage: "plus.square.on.square")
-                            }
-                        } else {
+                        if !preset.isBuiltIn {
                             // No extra confirmation dialog: swipe-to-reveal + tap
                             // Delete is already two deliberate actions.
                             Button(role: .destructive) {
                                 presetStore.delete(id: preset.id)
-                                presets = presetStore.listPresets()
+                                reload()
                             } label: {
                                 Label("Delete", systemImage: "trash")
                             }
@@ -150,138 +134,6 @@ struct PresetListView: View {
         .font(Theme.Typography.stat)
         .foregroundColor(value == nil ? Theme.textTertiary : color)
         .frame(width: Theme.Layout.statColumn, alignment: .trailing)
-    }
-}
-
-/// Doubles as the read-only view of a built-in creature. Built-ins can't be
-/// edited, but they still need to be *inspectable* — and showing the same fields
-/// greyed out, with Clone where Save would be, makes the relationship between
-/// the two obvious in a way a separate detail screen wouldn't.
-private struct EditPresetView: View {
-    let presetStore: PresetStore
-    let preset: CreaturePreset
-    let onSave: () -> Void
-
-    @Environment(\.dismiss) private var dismiss
-    @State private var cloneNamePresented = false
-    @State private var name: String
-    @State private var hpText: String
-    @State private var acText: String
-    @State private var bonusText: String
-    @State private var isPlayer: Bool
-
-    private var isReadOnly: Bool { preset.isBuiltIn }
-
-    init(presetStore: PresetStore, preset: CreaturePreset, onSave: @escaping () -> Void) {
-        self.presetStore = presetStore
-        self.preset = preset
-        self.onSave = onSave
-        _name = State(initialValue: preset.name)
-        _hpText = State(initialValue: preset.maxHP.map(String.init) ?? "")
-        _acText = State(initialValue: preset.armorClass.map(String.init) ?? "")
-        _bonusText = State(initialValue: preset.initiativeBonus.map(String.init) ?? "")
-        _isPlayer = State(initialValue: preset.isPlayer)
-    }
-
-    var body: some View {
-        NavigationStack {
-            ZStack {
-                Theme.backgroundGradient.ignoresSafeArea()
-                Form {
-                    Section("Name") {
-                        TextField(text: $name) {
-                            Text("Name").foregroundColor(Theme.placeholderText)
-                        }
-                    }
-                    .listRowBackground(Theme.surfaceRaised)
-                    Section("Max HP") {
-                        TextField(text: $hpText) {
-                            Text("Optional").foregroundColor(Theme.placeholderText)
-                        }
-                            .keyboardType(.numberPad)
-                    }
-                    .listRowBackground(Theme.surfaceRaised)
-                    Section("Armor Class") {
-                        TextField(text: $acText) {
-                            Text("Optional").foregroundColor(Theme.placeholderText)
-                        }
-                            .keyboardType(.numberPad)
-                    }
-                    .listRowBackground(Theme.surfaceRaised)
-                    Section("Type") {
-                        Toggle("Player character", isOn: $isPlayer)
-                            .tint(Theme.accent)
-                        Text("Players roll death saves at 0 HP; anything else simply dies.")
-                            .font(Theme.Typography.caption)
-                            .foregroundColor(Theme.textTertiary)
-                    }
-                    .listRowBackground(Theme.surfaceRaised)
-
-                    Section("Initiative Bonus") {
-                        TextField(text: $bonusText) {
-                            Text("Optional, added to random rolls").foregroundColor(Theme.placeholderText)
-                        }
-                            .keyboardType(.numbersAndPunctuation)
-                    }
-                    .listRowBackground(Theme.surfaceRaised)
-
-                    if isReadOnly, let block = SRDCatalog.bundled.first(where: { $0.name == preset.name }) {
-                        StatBlockSections(block: block)
-                    }
-                }
-                // Row background goes on each Section, never on the Form:
-                // attached to the Form it is silently ignored, which is why
-                // every one of these was rendering system grey in all nine themes.
-                .scrollContentBackground(.hidden)
-                // Read-only on the fields, not `.disabled` on the Form: a disabled
-                // Form stops scrolling, so a built-in's stat block could not be read.
-                .environment(\.isEnabled, !isReadOnly)
-            }
-            .navigationTitle(navigationTitle)
-            .navigationBarTitleDisplayMode(.inline)
-            .sheet(isPresented: $cloneNamePresented) {
-                CloneNameSheet(title: "Clone Creature", existingNames: presetStore.listPresets().map(\.name)) { newName in
-                    presetStore.clone(preset, named: newName)
-                    onSave()
-                    dismiss()
-                }
-            }
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(isReadOnly ? "Done" : "Cancel") { dismiss() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    if isReadOnly {
-                        // The only way to customise a built-in. The copy lands in
-                        // "Yours" at the top of the list, where it's editable.
-                        Button("Clone") {
-                            cloneNamePresented = true
-                        }
-                        .fontWeight(.semibold)
-                    } else {
-                    Button("Save") {
-                        var updated = preset
-                        updated.name = name.trimmingCharacters(in: .whitespaces)
-                        updated.maxHP = Int(hpText)
-                        updated.armorClass = Int(acText)
-                        updated.initiativeBonus = Int(bonusText)
-                        updated.isPlayer = isPlayer
-                        guard !updated.name.isEmpty else { return }
-                        presetStore.save(updated)
-                        onSave()
-                        dismiss()
-                    }
-                    .fontWeight(.semibold)
-                    .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
-                    }
-                }
-            }
-        }
-    }
-
-    private var navigationTitle: String {
-        if isReadOnly { return preset.name }
-        return preset.name.isEmpty ? "New Creature" : "Edit Creature"
     }
 }
 

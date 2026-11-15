@@ -211,7 +211,7 @@ final class PresetStoreTests: XCTestCase {
         store.installDefaults()
         let goblin = store.preset(named: "Goblin")!
 
-        let copy = store.clone(goblin, named: "Goblin Warlord")
+        let copy = store.clone(goblin, named: "Goblin Warlord", isPlayer: false)
 
         XCTAssertEqual(copy.name, "Goblin Warlord", "the copy takes the name the owner typed")
         XCTAssertEqual(copy.maxHP, goblin.maxHP)
@@ -219,5 +219,13 @@ final class PresetStoreTests: XCTestCase {
         XCTAssertNotEqual(copy.id, goblin.id)
         XCTAssertFalse(copy.isBuiltIn, "a copy must be editable, so it can't count as built-in")
         XCTAssertNotNil(store.preset(named: "Goblin"), "duplicating must not disturb the original")
+    }
+
+    func testCloneKeepsTheChosenCharacterKind() {
+        store.installDefaults()
+        let goblin = store.preset(named: "Goblin")!
+
+        XCTAssertTrue(store.clone(goblin, named: "Goblin Scout", isPlayer: true).isPlayer)
+        XCTAssertFalse(store.clone(goblin, named: "Goblin Raider", isPlayer: false).isPlayer)
     }
 }

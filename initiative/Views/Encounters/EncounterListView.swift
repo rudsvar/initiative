@@ -15,7 +15,6 @@ struct EncounterListView: View {
     // search field's text doing a tiny resize on load.
     @State private var encounters: [Encounter]
     @State private var editingEncounter: Encounter?
-    @State private var cloning: Encounter?
     @State private var query = ""
 
     init(encounterStore: EncounterStore, presetStore: PresetStore) {
@@ -67,12 +66,6 @@ struct EncounterListView: View {
                 encounters = encounterStore.listEncounters()
             }
         }
-        .sheet(item: $cloning) { encounter in
-            CloneNameSheet(title: "Clone Encounter", existingNames: encounters.map(\.name)) { name in
-                encounterStore.clone(encounter, named: name)
-                encounters = encounterStore.listEncounters()
-            }
-        }
     }
 
     /// Hidden entirely when empty rather than shown as a bare header — see the
@@ -105,16 +98,11 @@ struct EncounterListView: View {
                     }
                     .buttonStyle(CardRowButtonStyle())
                     .cardRowLayout()
-                    // Built-in encounters are fixtures: no deleting, no editing,
-                    // only copying. Same rule as the Creatures screen.
+                    // Built-in encounters are fixtures: they can't be deleted, and
+                    // they can't be swiped at all. Copying happens on the detail
+                    // screen. Same rule as the Creatures screen.
                     .swipeActions(edge: .trailing) {
-                        if encounter.isBuiltIn {
-                            Button {
-                                cloning = encounter
-                            } label: {
-                                Label("Clone", systemImage: "plus.square.on.square")
-                            }
-                        } else {
+                        if !encounter.isBuiltIn {
                             Button(role: .destructive) {
                                 encounterStore.delete(id: encounter.id)
                                 encounters = encounterStore.listEncounters()
@@ -236,7 +224,7 @@ private struct EditEncounterView: View {
                 }
             }
             .sheet(isPresented: $cloneNamePresented) {
-                CloneNameSheet(title: "Clone Encounter", existingNames: encounterStore.listEncounters().map(\.name)) { newName in
+                CloneNameSheet(title: "Clone Encounter", existingNames: encounterStore.listEncounters().map(\.name)) { newName, _ in
                     encounterStore.clone(encounter, named: newName)
                     onSave()
                     dismiss()

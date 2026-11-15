@@ -1,7 +1,7 @@
 import Foundation
 
 /// A reusable combatant template — just enough to prefill the add-combatant modal.
-struct CreaturePreset: Identifiable, Codable, Equatable {
+struct CreaturePreset: Identifiable, Codable, Equatable, Hashable {
     let id: UUID
     var name: String
     var maxHP: Int?
@@ -123,13 +123,13 @@ class PresetStore {
     /// returns it. The caller checks the name with `CloneName.isValid` first.
     /// This is the only route from a built-in creature to a customised one.
     @discardableResult
-    func clone(_ preset: CreaturePreset, named name: String) -> CreaturePreset {
+    func clone(_ preset: CreaturePreset, named name: String, isPlayer: Bool) -> CreaturePreset {
         let copy = CreaturePreset(
             name: name.trimmingCharacters(in: .whitespaces),
             maxHP: preset.maxHP,
             armorClass: preset.armorClass,
             initiativeBonus: preset.initiativeBonus,
-            isPlayer: preset.isPlayer
+            isPlayer: isPlayer
         )
         save(copy)
         return copy
