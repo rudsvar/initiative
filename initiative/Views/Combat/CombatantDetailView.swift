@@ -131,16 +131,21 @@ struct CombatantDetailView: View {
     /// itself, not duplicated down here.
     private func identityCard(for combatant: Combatant) -> some View {
         HStack(alignment: .top, spacing: Theme.Spacing.md) {
-            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                Text("Initiative").sectionLabel()
-                TextField(text: initiativeBinding) {
-                    Text("—").foregroundColor(Theme.placeholderText)
+            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                    Text("Initiative").sectionLabel()
+                    TextField(text: initiativeBinding) {
+                        Text("—").foregroundColor(Theme.placeholderText)
+                    }
+                    .keyboardType(.numberPad)
+                    .font(Theme.Typography.statLarge)
+                    .foregroundColor(Theme.accent)
+                    .multilineTextAlignment(.center)
+                    .fieldStyle(width: 68)
                 }
-                .keyboardType(.numberPad)
-                .font(Theme.Typography.statLarge)
-                .foregroundColor(Theme.accent)
-                .multilineTextAlignment(.center)
-                .fieldStyle(width: 68)
+                if let block = SRDCatalog.bundled.first(where: { $0.name == combatant.name }) {
+                    StatFacts(block: block)
+                }
             }
 
             Spacer(minLength: 0)

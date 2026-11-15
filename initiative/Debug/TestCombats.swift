@@ -67,6 +67,17 @@ enum TestCombats {
         return session
     }
 
+    /// A Wolf (SRD stat block) at 7 of 11 HP, AC 12 lowered by 2: checks the stat facts
+    /// in the top box, the HP and AC changes beside their numbers, and the colours.
+    static func wolfWithChanges() -> CombatSession {
+        let session = CombatSession()
+        session.addCombatant(name: "Wolf", initiative: 12, maxHP: 11, armorClass: 12)
+        let wolf = session.combatants[0].id
+        _ = session.applyDamage(to: wolf, amount: 4)
+        session.adjustArmorClass(for: wolf, by: -2)
+        return session
+    }
+
     /// A character with an armor class and no buffers, for armor class tests.
     static func wrenWithArmorClass() -> CombatSession {
         let session = CombatSession()
@@ -85,6 +96,7 @@ extension TestCombats {
         "wrenWithArmorClass": wrenWithArmorClass,
         "wrenWithTemporaryAC": wrenWithTemporaryAC,
         "hpAndACChangesShowUntilTurnStarts": hpAndACChangesShowUntilTurnStarts,
+        "wolfWithChanges": wolfWithChanges,
     ]
 }
 #endif

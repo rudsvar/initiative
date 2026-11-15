@@ -40,6 +40,7 @@
 		5CB09B2243D7D6297802150B /* PremadeBalanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2B8E15FBD1B4F61AE31A398B /* PremadeBalanceTests.swift */; };
 		5DF210A51FC89A4BF19CF1A2 /* RoundEffectsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BBD09D77A68BB93102AE4B6 /* RoundEffectsView.swift */; };
 		62C2CEF33F96A4573D4BC9C4 /* LimitedUseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB8DD2DEFF231D1EBD80E195 /* LimitedUseTests.swift */; };
+		65C550C5514624576C649BEB /* StatFacts.swift in Sources */ = {isa = PBXBuildFile; fileRef = 776059DB6888872F48F9A800 /* StatFacts.swift */; };
 		686126023A8E84DB3503257E /* AdjustAmountSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E00EFEB700CF8637F2312A0 /* AdjustAmountSheet.swift */; };
 		69ADF2074766356C68EFDEEB /* CodableCompatibilityTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 236012BD8426FA8D17541295 /* CodableCompatibilityTests.swift */; };
 		69F3532C839D8C92C63A3C74 /* StatBlockSummary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 32C4237D94CE4556E30B5164 /* StatBlockSummary.swift */; };
@@ -142,6 +143,7 @@
 		6D6B3D18CAD7D9BF42DBDB61 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		7265419AD964CF0CC71037D4 /* ConcentrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConcentrationTests.swift; sourceTree = "<group>"; };
 		74CF92255CFA4102CC5F52CE /* StatusBand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBand.swift; sourceTree = "<group>"; };
+		776059DB6888872F48F9A800 /* StatFacts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatFacts.swift; sourceTree = "<group>"; };
 		7BBD09D77A68BB93102AE4B6 /* RoundEffectsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundEffectsView.swift; sourceTree = "<group>"; };
 		7BF0472EB303236DC493667B /* LimitedUseEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LimitedUseEditorView.swift; sourceTree = "<group>"; };
 		7DF8601F37841A579037DFC0 /* DeathSaves.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeathSaves.swift; sourceTree = "<group>"; };
@@ -314,6 +316,7 @@
 				FE0E8595FB2990C1DF76AD4C /* LogView.swift */,
 				8C86540C34D5CD3C7378276D /* PlayerViewTests.swift */,
 				7BBD09D77A68BB93102AE4B6 /* RoundEffectsView.swift */,
+				776059DB6888872F48F9A800 /* StatFacts.swift */,
 				54DD0236F790EE085E97A432 /* TurnPromptView.swift */,
 			);
 			path = Combat;
@@ -539,6 +542,7 @@
 				09EC53CC26EE7304C61FC102 /* SessionStore.swift in Sources */,
 				5B555695D0B60C83505F615B /* StatBlock.swift in Sources */,
 				69F3532C839D8C92C63A3C74 /* StatBlockSummary.swift in Sources */,
+				65C550C5514624576C649BEB /* StatFacts.swift in Sources */,
 				41724A9D8898DA716DFF4960 /* StatusBand.swift in Sources */,
 				C742A29052DE3290D694ACE6 /* TestCombats.swift in Sources */,
 				E85ABEBA0550A2E492543652 /* Theme.swift in Sources */,
