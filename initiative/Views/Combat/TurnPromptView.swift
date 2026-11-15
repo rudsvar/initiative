@@ -16,9 +16,9 @@ import SwiftUI
 struct TurnPromptView: View {
     let prompts: [TurnPrompt]
     /// Called with every prompt's outcome once all of them have one.
-    let onComplete: ([TurnPrompt: Bool]) -> Void
+    let onComplete: ([TurnPrompt: RollOutcome]) -> Void
 
-    @State private var answers: [TurnPrompt: Bool] = [:]
+    @State private var answers: [TurnPrompt: RollOutcome] = [:]
 
     /// One at a time rather than every prompt stacked in the sheet at once —
     /// with several owed together (a few death saves plus a recharge, say)
@@ -80,12 +80,24 @@ struct TurnPromptView: View {
                 }
             }
 
-            HStack(spacing: Theme.Spacing.sm) {
-                answerButton(prompt.successLabel, tint: Theme.statusGood) {
-                    answers[prompt] = true
+            if case .deathSave = prompt.subject {
+                // A death save can be a natural 20 or a natural 1, as well as a plain result.
+                HStack(spacing: Theme.Spacing.sm) {
+                    answerButton("Success", tint: Theme.statusGood) { answers[prompt] = .success }
+                    answerButton("Failure", tint: Theme.statusBad) { answers[prompt] = .failure }
                 }
-                answerButton(prompt.failureLabel, tint: Theme.statusBad) {
-                    answers[prompt] = false
+                HStack(spacing: Theme.Spacing.sm) {
+                    answerButton("Natural 20", tint: Theme.statusGood) { answers[prompt] = .criticalSuccess }
+                    answerButton("Natural 1", tint: Theme.statusBad) { answers[prompt] = .criticalFailure }
+                }
+            } else {
+                HStack(spacing: Theme.Spacing.sm) {
+                    answerButton(prompt.successLabel, tint: Theme.statusGood) {
+                        answers[prompt] = .success
+                    }
+                    answerButton(prompt.failureLabel, tint: Theme.statusBad) {
+                        answers[prompt] = .failure
+                    }
                 }
             }
         }

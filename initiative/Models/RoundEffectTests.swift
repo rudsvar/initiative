@@ -94,7 +94,7 @@ final class RoundEffectTests: XCTestCase {
         session.nextTurn()
         let prompt = session.pendingTurnPrompts().first!
 
-        session.nextTurn(resolving: [prompt: true])
+        session.nextTurn(resolving: [prompt: .success])
 
         XCTAssertTrue(session.roundEffects.isEmpty)
     }
@@ -104,7 +104,7 @@ final class RoundEffectTests: XCTestCase {
         session.addRoundEffect(Effect(name: "The lair stirs", durationType: .untilRollSucceeds(at: .startOfTurn, hint: nil)))
         session.nextTurn()
 
-        session.nextTurn(resolving: [session.pendingTurnPrompts().first!: false])
+        session.nextTurn(resolving: [session.pendingTurnPrompts().first!: .failure])
         session.nextTurn()
 
         XCTAssertEqual(session.pendingTurnPrompts().count, 1)

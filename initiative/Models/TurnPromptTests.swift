@@ -111,7 +111,7 @@ final class TurnPromptTests: XCTestCase {
         ))
         let prompt = session.pendingTurnPrompts().first!
 
-        session.nextTurn(resolving: [prompt: true])
+        session.nextTurn(resolving: [prompt: .success])
 
         XCTAssertTrue(session.combatants.first { $0.name == "Wren" }!.effects.isEmpty)
     }
@@ -124,7 +124,7 @@ final class TurnPromptTests: XCTestCase {
             kind: .cooldown
         ))
 
-        session.nextTurn(resolving: [session.pendingTurnPrompts().first!: false])
+        session.nextTurn(resolving: [session.pendingTurnPrompts().first!: .failure])
         // Round the table back to Wren.
         session.nextTurn()
 
@@ -139,7 +139,7 @@ final class TurnPromptTests: XCTestCase {
             kind: .cooldown
         ))
 
-        session.nextTurn(resolving: [session.pendingTurnPrompts().first!: true])
+        session.nextTurn(resolving: [session.pendingTurnPrompts().first!: .success])
         session.previousTurn()
 
         XCTAssertEqual(session.combatants.first { $0.name == "Wren" }?.effects.count, 1)

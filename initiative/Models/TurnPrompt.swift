@@ -6,6 +6,16 @@ import Foundation
 /// actually gets forgotten mid-combat — not to roll it or judge it. Every prompt
 /// is answered with one tap, and the two answers always mean the same shape of
 /// thing: it went the good way, or it didn't.
+/// The result of a roll the DM reports. A death save can be a natural 20 or a natural 1;
+/// every other prompt is a plain success or failure.
+enum RollOutcome: Equatable, Hashable {
+    case criticalFailure, failure, success, criticalSuccess
+
+    var succeeded: Bool { self == .success || self == .criticalSuccess }
+
+    init(succeeded: Bool) { self = succeeded ? .success : .failure }
+}
+
 struct TurnPrompt: Identifiable, Hashable {
     enum Subject: Hashable {
         /// A `.untilRollSucceeds` effect: succeeding removes it.

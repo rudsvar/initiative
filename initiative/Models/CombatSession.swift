@@ -669,6 +669,11 @@ class CombatSession {
     /// turn boundary, so the detail screen resolves them directly instead of
     /// handing them to `nextTurn`.
     func resolvePrompt(_ prompt: TurnPrompt, succeeded: Bool) {
+        resolvePrompt(prompt, outcome: RollOutcome(succeeded: succeeded))
+    }
+
+    func resolvePrompt(_ prompt: TurnPrompt, outcome: RollOutcome) {
+        let succeeded = outcome.succeeded
         if case .roundEffect(let effectID) = prompt.subject {
             guard let effect = roundEffects.first(where: { $0.id == effectID }) else { return }
             if succeeded {
@@ -711,10 +716,22 @@ class CombatSession {
 
         case .deathSave:
             guard combatants[index].deathSaves != nil else { return }
-            combatants[index].deathSaves?.record(success: succeeded)
+            if outcome == .criticalSuccess {
+                // A natural 20 regains 1 HP, which ends the dying state.
+                combatants[index].deathSaves = nil
+                combatants[index].currentHP = 1
+                appendLog("\(combatants[index].name) rolled a natural 20 and regained 1 HP", combatantId: combatants[index].id)
+                return
+            }
+            if outcome == .criticalFailure {
+                combatants[index].deathSaves?.recordCriticalFailure()
+            } else {
+                combatants[index].deathSaves?.record(success: succeeded)
+            }
             guard let saves = combatants[index].deathSaves else { return }
+            let roll = outcome == .criticalFailure ? "a natural 1 (two failures)" : "a death save"
             appendLog(
-                "\(combatants[index].name) \(succeeded ? "made" : "failed") a death save (\(saves.successes) made, \(saves.failures) failed)",
+                "\(combatants[index].name) \(succeeded ? "made" : "failed") \(roll) (\(saves.successes) made, \(saves.failures) failed)",
                 combatantId: combatants[index].id
             )
             if saves.isStable {
@@ -731,13 +748,13 @@ class CombatSession {
     /// advance, deliberately: that puts them inside the same undo step, so
     /// Previous rewinds the save you just recorded along with the turn it
     /// belonged to, rather than leaving it stranded.
-    func nextTurn(resolving answers: [TurnPrompt: Bool] = [:]) {
+    func nextTurn(resolving answers: [TurnPrompt: RollOutcome] = [:]) {
         guard !combatants.isEmpty else { return }
 
         history.append((combatants: combatants, roundEffects: roundEffects, currentTurnIndex: currentTurnIndex, roundNumber: roundNumber, logCount: log.count))
 
-        for (prompt, succeeded) in answers.sorted(by: { $0.key.combatantName < $1.key.combatantName }) {
-            resolvePrompt(prompt, succeeded: succeeded)
+        for (prompt, outcome) in answers.sorted(by: { $0.key.combatantName < $1.key.combatantName }) {
+            resolvePrompt(prompt, outcome: outcome)
         }
 
         let endingCombatantId = combatants[currentTurnIndex].id

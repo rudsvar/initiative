@@ -166,11 +166,41 @@ final class DeathSaveTests: XCTestCase {
     private func answerDeathSave(_ session: CombatSession, success: Bool) {
         for _ in 0..<(session.combatants.count + 1) {
             if let prompt = session.pendingTurnPrompts().first(where: { $0.subject == .deathSave }) {
-                session.nextTurn(resolving: [prompt: success])
+                session.nextTurn(resolving: [prompt: RollOutcome(succeeded: success)])
                 return
             }
             session.nextTurn()
         }
         XCTFail("no death save prompt appeared")
+    }
+
+    /// A natural 20 on a death save regains 1 HP and ends the dying state.
+    func testNaturalTwentyRegainsOneHPAndEndsDying() {
+        let session = CombatSession()
+        session.addCombatant(name: "Wren", initiative: 12, maxHP: 10, isPlayer: true)
+        let wren = session.combatants[0].id
+        session.combatants[0].currentHP = 0
+        session.combatants[0].deathSaves = DeathSaves()
+        let prompt = session.pendingTurnPrompts().first ?? TurnPrompt(
+            id: wren, combatantID: wren, combatantName: "Wren", subject: .deathSave,
+            title: "Death save", hint: nil, deathSaves: DeathSaves()
+        )
+        session.resolvePrompt(prompt, outcome: .criticalSuccess)
+        XCTAssertNil(session.combatants[0].deathSaves)
+        XCTAssertEqual(session.combatants[0].currentHP, 1)
+    }
+
+    /// A natural 1 on a death save counts as two failures.
+    func testNaturalOneCountsTwoFailures() {
+        let session = CombatSession()
+        session.addCombatant(name: "Wren", initiative: 12, maxHP: 10, isPlayer: true)
+        let wren = session.combatants[0].id
+        session.combatants[0].deathSaves = DeathSaves()
+        let prompt = TurnPrompt(
+            id: wren, combatantID: wren, combatantName: "Wren", subject: .deathSave,
+            title: "Death save", hint: nil, deathSaves: DeathSaves()
+        )
+        session.resolvePrompt(prompt, outcome: .criticalFailure)
+        XCTAssertEqual(session.combatants[0].deathSaves?.failures, 2)
     }
 }
