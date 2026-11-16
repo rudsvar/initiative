@@ -1,7 +1,8 @@
 import SwiftUI
 
 /// One creature, pushed from the Creatures list. A built-in creature is read-only:
-/// its full stat block when we have one, and Clone in the toolbar. A creature the
+/// its full stat block when we have one (copying is the Clone button on the list
+/// row, not here). A creature the
 /// owner made is an editable form with Save.
 struct CreatureDetailView: View {
     let presetStore: PresetStore
@@ -10,7 +11,6 @@ struct CreatureDetailView: View {
     let onChange: () -> Void
 
     @Environment(\.dismiss) private var dismiss
-    @State private var cloneNamePresented = false
     @State private var name: String
     @State private var hpText: String
     @State private var acText: String
@@ -49,29 +49,12 @@ struct CreatureDetailView: View {
         .navigationTitle(isBuiltIn ? preset.name : (preset.name.isEmpty ? "New \(kindNoun)" : "Edit \(kindNoun)"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            if isBuiltIn {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("Clone") { cloneNamePresented = true }
-                        .fontWeight(.semibold)
-                }
-            } else {
+            if !isBuiltIn {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save", action: save)
                         .fontWeight(.semibold)
                         .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
-            }
-        }
-        .sheet(isPresented: $cloneNamePresented) {
-            CloneNameSheet(
-                title: "Clone \(kindNoun)",
-                existingNames: presetStore.listPresets().map(\.name),
-                asksCharacterKind: true,
-                startsAsCharacter: preset.isPlayer
-            ) { newName, kind in
-                presetStore.clone(preset, named: newName, isPlayer: kind)
-                onChange()
-                dismiss()
             }
         }
     }

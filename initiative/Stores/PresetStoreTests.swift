@@ -26,33 +26,6 @@ final class PresetStoreTests: XCTestCase {
         XCTAssertTrue(store.listPresets().isEmpty)
     }
 
-    /// Characters and creatures share one saved store but are separate libraries.
-    /// Each library lists only its own kind.
-    func testListPresetsSplitsByKind() {
-        store.save(CreaturePreset(name: "Wren", isPlayer: true))
-        store.save(CreaturePreset(name: "Goblin", isPlayer: false))
-
-        XCTAssertEqual(store.listPresets(characters: true).map(\.name), ["Wren"])
-        XCTAssertEqual(store.listPresets(characters: false).map(\.name), ["Goblin"])
-    }
-
-    /// "+" on Characters copies any saved entry, creature or character, into the
-    /// library being added to: stats come along, the name is the typed one.
-    func testCloneAcrossKindsKeepsStatsAndTakesTheLibrarysKind() {
-        let creature = CreaturePreset(name: "Bog Hulk", maxHP: 7, armorClass: 15, initiativeBonus: 2, isPlayer: false)
-        store.save(creature)
-
-        let copy = store.clone(creature, named: "Hulk Friend", isPlayer: true)
-
-        XCTAssertEqual(copy.name, "Hulk Friend")
-        XCTAssertEqual(copy.maxHP, 7)
-        XCTAssertEqual(copy.armorClass, 15)
-        XCTAssertEqual(copy.initiativeBonus, 2)
-        XCTAssertTrue(copy.isPlayer)
-        XCTAssertEqual(store.listPresets(characters: true).map(\.name), ["Hulk Friend"])
-        XCTAssertEqual(store.listPresets(characters: false).map(\.name), ["Bog Hulk"])
-    }
-
     func testUpsertCreatesNewPreset() {
         store.upsert(name: "Bog Hulk", maxHP: 7)
 

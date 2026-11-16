@@ -15,6 +15,7 @@ struct EncounterListView: View {
     // search field's text doing a tiny resize on load.
     @State private var encounters: [Encounter]
     @State private var editingEncounter: Encounter?
+    @State private var cloning: Encounter?
     @State private var query = ""
 
     init(encounterStore: EncounterStore, presetStore: PresetStore) {
@@ -40,8 +41,8 @@ struct EncounterListView: View {
             } else {
                 let groups = ListSections.split(matches, isBuiltIn: \.isBuiltIn)
                 List {
-                    section("Yours", encounters: groups.mine)
-                    section("Included", encounters: groups.builtIn)
+                    section("Your encounters", encounters: groups.mine)
+                    section("All encounters", encounters: groups.builtIn)
                 }
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
@@ -61,6 +62,12 @@ struct EncounterListView: View {
             }
         }
         .onAppear { encounters = encounterStore.listEncounters() }
+        .sheet(item: $cloning) { source in
+            CloneNameSheet(title: "Clone \(source.name)", existingNames: encounters.map(\.name)) { newName in
+                encounterStore.clone(source, named: newName)
+                encounters = encounterStore.listEncounters()
+            }
+        }
         .sheet(item: $editingEncounter) { encounter in
             EditEncounterView(encounterStore: encounterStore, presetStore: presetStore, encounter: encounter) {
                 encounters = encounterStore.listEncounters()
@@ -84,7 +91,7 @@ struct EncounterListView: View {
                     .listRowBackground(Color.clear)
 
                 ForEach(sectionEncounters) { encounter in
-                    Button(action: { editingEncounter = encounter }) {
+                    CloneableRow(open: { editingEncounter = encounter }, clone: { cloning = encounter }) {
                         VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                             Text(encounter.name)
                                 .font(Theme.Typography.rowTitle)
@@ -96,11 +103,8 @@ struct EncounterListView: View {
                                 .multilineTextAlignment(.leading)
                         }
                     }
-                    .buttonStyle(CardRowButtonStyle())
-                    .cardRowLayout()
                     // Built-in encounters are fixtures: they can't be deleted, and
-                    // they can't be swiped at all. Copying happens on the detail
-                    // screen. Same rule as the Creatures screen.
+                    // they can't be swiped at all. Same rule as the Creatures screen.
                     .swipeActions(edge: .trailing) {
                         if !encounter.isBuiltIn {
                             Button(role: .destructive) {
@@ -135,7 +139,6 @@ private struct EditEncounterView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var encounter: Encounter
     @State private var showAddEntry = false
-    @State private var cloneNamePresented = false
 
     /// Fixed at presentation time from the encounter as saved, *not* from the
     /// editable `@State` copy — otherwise typing over a built-in's name in the
@@ -205,12 +208,7 @@ private struct EditEncounterView: View {
                     Button(isReadOnly ? "Done" : "Cancel") { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    if isReadOnly {
-                        Button("Clone") {
-                            cloneNamePresented = true
-                        }
-                        .fontWeight(.semibold)
-                    } else {
+                    if !isReadOnly {
                     Button("Save") {
                         let trimmed = encounter.name.trimmingCharacters(in: .whitespaces)
                         guard !trimmed.isEmpty else { return }
@@ -222,13 +220,6 @@ private struct EditEncounterView: View {
                     .fontWeight(.semibold)
                     .disabled(encounter.name.trimmingCharacters(in: .whitespaces).isEmpty)
                     }
-                }
-            }
-            .sheet(isPresented: $cloneNamePresented) {
-                CloneNameSheet(title: "Clone Encounter", existingNames: encounterStore.listEncounters().map(\.name)) { newName, _ in
-                    encounterStore.clone(encounter, named: newName)
-                    onSave()
-                    dismiss()
                 }
             }
             .sheet(isPresented: $showAddEntry) {
