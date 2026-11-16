@@ -99,7 +99,7 @@ struct EncounterListView: View {
                             if let worth = worth(of: encounter) {
                                 Text(worth)
                                     .font(Theme.Typography.caption)
-                                    .foregroundColor(Theme.textSecondary)
+                                    .foregroundColor(Theme.textTertiary)
                             }
                             Text(summary(for: encounter))
                                 .font(Theme.Typography.caption)
@@ -126,12 +126,8 @@ struct EncounterListView: View {
         }
     }
 
-    /// "≈ CR 3 · 900 XP", with a note when some creatures have no rating.
     private func worth(of encounter: Encounter) -> String? {
-        let result = EncounterXP.estimate(for: encounter) { presetStore.preset(named: $0)?.effectiveXP }
-        guard let rating = result.estimatedRating else { return nil }
-        let note = result.unratedCount > 0 ? " · \(result.unratedCount) unrated" : ""
-        return "≈ CR \(rating) · \(result.totalXP) XP\(note)"
+        encounter.worthText(presetStore: presetStore)
     }
 
     private func summary(for encounter: Encounter) -> String {
@@ -179,21 +175,22 @@ private struct EditEncounterView: View {
                     }
                     .listRowBackground(Theme.surfaceRaised)
 
+                    if let worth = encounter.worthText(presetStore: presetStore) {
+                        Section {
+                            Text(worth)
+                                .font(Theme.Typography.caption)
+                                .foregroundColor(Theme.textTertiary)
+                        }
+                        .listRowBackground(Theme.surfaceRaised)
+                    }
+
                     Section("Creatures") {
                         if encounter.entries.isEmpty {
                             Text("No creatures added yet")
                                 .foregroundColor(Theme.textTertiary)
                         } else {
                             ForEach(encounter.entries) { entry in
-                                HStack {
-                                    Text(entry.count > 1 ? "\(entry.count)x \(entry.name)" : entry.name)
-                                    Spacer()
-                                    if let maxHP = entry.maxHP {
-                                        Text("\(maxHP) HP")
-                                            .font(Theme.Typography.caption)
-                                            .foregroundColor(Theme.textTertiary)
-                                    }
-                                }
+                                PresetRowLabel(preset: presetStore.overview(of: entry), count: entry.count)
                             }
                             .onDelete { encounter.entries.remove(atOffsets: $0) }
                         }
@@ -210,6 +207,7 @@ private struct EditEncounterView: View {
                 // attached to the Form it is silently ignored, which is why
                 // every one of these was rendering system grey in all nine themes.
                 .scrollContentBackground(.hidden)
+                .sharedStatColumns()
                 // Read-only on the fields, not `.disabled` on the screen: a disabled
                 // view stops scrolling, so a built-in's creatures could not be read.
                 .environment(\.isEnabled, !isReadOnly)
@@ -367,5 +365,32 @@ private struct AddEncounterEntryView: View {
 #Preview {
     NavigationStack {
         EncounterListView(encounterStore: EncounterStore(), presetStore: PresetStore())
+    }
+}
+
+extension Encounter {
+    /// "CR 3 · 900 XP", with a note when some creatures have no rating. The same
+    /// wording the creature rows use. Nil when nothing in it has a rating.
+    func worthText(presetStore: PresetStore) -> String? {
+        let result = EncounterXP.estimate(for: self) { presetStore.preset(named: $0)?.effectiveXP }
+        guard let rating = result.estimatedRating else { return nil }
+        let note = result.unratedCount > 0 ? " · \(result.unratedCount) unrated" : ""
+        return "CR \(rating) · \(result.totalXP) XP\(note)"
+    }
+}
+
+extension PresetStore {
+    /// An encounter entry shown like a library row: the numbers saved on the entry,
+    /// falling back to the creature's own, plus its rating.
+    func overview(of entry: EncounterEntry) -> CreaturePreset {
+        let known = preset(named: entry.name)
+        return CreaturePreset(
+            name: entry.name,
+            maxHP: entry.maxHP ?? known?.maxHP,
+            armorClass: entry.armorClass ?? known?.armorClass,
+            initiativeBonus: entry.initiativeBonus ?? known?.initiativeBonus,
+            isPlayer: known?.isPlayer ?? false,
+            challengeRating: known?.effectiveChallengeRating
+        )
     }
 }

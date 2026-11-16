@@ -9,12 +9,14 @@ import SwiftUI
 /// column on its own, and the name keeps whatever is left.
 struct PresetRowLabel: View {
     let preset: CreaturePreset
+    /// More than one of it, as in an encounter's lineup: shown as "3× Goblin".
+    var count = 1
     @Environment(\.statColumnWidths) private var widths
 
     var body: some View {
         HStack(spacing: Theme.Spacing.md) {
             VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                Text(preset.name)
+                Text(count > 1 ? "\(count)× \(preset.name)" : preset.name)
                     .font(Theme.Typography.rowTitle)
                     .foregroundColor(Theme.textPrimary)
                 if let rating = preset.effectiveChallengeRating {
