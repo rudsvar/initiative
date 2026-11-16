@@ -229,6 +229,10 @@ extension Theme {
         static let stat = Font.system(.caption, design: .rounded).monospacedDigit()
         /// Roster HP and AC, at the size of the row's name, so the stats read as part of the row.
         static let rowStat = Font.system(.headline, design: .rounded).monospacedDigit()
+        /// HP, AC and initiative on library rows: a step above `stat`, since the name
+        /// there wraps onto two lines anyway. The icon scales with it.
+        static let listStat = Font.system(.subheadline, design: .rounded).monospacedDigit()
+        static let listStatIcon = Font.system(.caption)
         static let statLarge = Font.system(.headline, design: .rounded).weight(.bold).monospacedDigit()
         /// A glyph that sits inline with adjacent text (the heart beside an HP
         /// value, the skull beside a name). A text style rather than a point size

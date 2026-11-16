@@ -44,10 +44,10 @@ struct PresetRowLabel: View {
     ) -> some View {
         HStack(spacing: Theme.Spacing.xs) {
             Image(systemName: systemImage)
-                .font(Theme.Typography.iconInline)
+                .font(Theme.Typography.listStatIcon)
             Text(value ?? "–")
         }
-        .font(Theme.Typography.stat)
+        .font(Theme.Typography.listStat)
         .foregroundColor(value == nil ? Theme.textTertiary : color)
         .fixedSize()
         .background(
