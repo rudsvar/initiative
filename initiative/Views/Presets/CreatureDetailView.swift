@@ -124,6 +124,12 @@ struct CreatureDetailView: View {
 
                 Section {
                     ChallengeRatingPicker(selection: $challenge)
+                } footer: {
+                    if challenge == nil,
+                       let guess = ChallengeEstimator.shared.estimate(maxHP: Int(hpText), armorClass: Int(acText)) {
+                        Text("Not set. Estimated CR \(guess) from hit points and armor class.")
+                            .foregroundColor(Theme.textTertiary)
+                    }
                 }
                 .listRowBackground(Theme.surfaceRaised)
 
