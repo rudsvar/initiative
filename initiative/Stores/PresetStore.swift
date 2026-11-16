@@ -10,11 +10,9 @@ struct CreaturePreset: Identifiable, Codable, Equatable, Hashable {
     /// Only applies when initiative is rolled, never on top of an explicit value.
     var initiativeBonus: Int?
     /// Whether combatants spawned from this are party members rather than
-    /// something the party is fighting. Defaults to **true** for anything the user
-    /// creates by hand: the built-in roster already covers the bestiary, so a
-    /// creature typed in from scratch is most often a player. Every built-in is
-    /// explicitly `false`.
-    var isPlayer: Bool = true
+    /// something the party is fighting. Defaults to **false**: a character is chosen
+    /// on purpose (the Characters screen and clone set it), never assumed.
+    var isPlayer: Bool = false
     /// Challenge rating as printed ("1/4", "3"), one of `ChallengeRating.all`. Set on
     /// entries the owner made or cloned; built-ins take theirs from the stat block
     /// (see `effectiveChallengeRating`).
@@ -52,7 +50,7 @@ struct CreaturePreset: Identifiable, Codable, Equatable, Hashable {
         maxHP: Int? = nil,
         armorClass: Int? = nil,
         initiativeBonus: Int? = nil,
-        isPlayer: Bool = true,
+        isPlayer: Bool = false,
         challengeRating: String? = nil
     ) {
         self.id = id
@@ -149,7 +147,7 @@ class PresetStore {
     /// Goblin's stats — an edit to read-only content through the back door.
     /// Nothing is saved in that case; to keep customised stats, copy the built-in
     /// and name the copy.
-    func upsert(name: String, maxHP: Int?, armorClass: Int? = nil, initiativeBonus: Int? = nil, isPlayer: Bool = true) {
+    func upsert(name: String, maxHP: Int?, armorClass: Int? = nil, initiativeBonus: Int? = nil, isPlayer: Bool = false) {
         let trimmed = name.trimmingCharacters(in: .whitespaces)
         guard !trimmed.isEmpty else { return }
         if var existing = preset(named: trimmed) {

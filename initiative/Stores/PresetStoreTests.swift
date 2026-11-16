@@ -207,6 +207,14 @@ final class PresetStoreTests: XCTestCase {
         XCTAssertEqual(store.preset(named: "Hexed Duke")?.maxHP, 55)
     }
 
+    func testNewEntriesAreCreaturesUnlessSaidOtherwise() {
+        XCTAssertFalse(CreaturePreset(name: "Plain").isPlayer)
+        store.upsert(name: "Quiet One", maxHP: 5)
+        XCTAssertEqual(store.preset(named: "Quiet One")?.isPlayer, false)
+        store.upsert(name: "Hero", maxHP: 5, isPlayer: true)
+        XCTAssertEqual(store.preset(named: "Hero")?.isPlayer, true)
+    }
+
     func testCloneMakesAnEditableCopyUnderANewName() {
         store.installDefaults()
         let goblin = store.preset(named: "Wolf")!
