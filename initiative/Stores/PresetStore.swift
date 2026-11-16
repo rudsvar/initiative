@@ -20,13 +20,13 @@ struct CreaturePreset: Identifiable, Codable, Equatable, Hashable {
 
     /// What the screens show: the owner's own value, else the built-in's.
     var effectiveChallengeRating: String? {
-        challengeRating ?? SRDCatalog.bundled.first { $0.name == name }?.challenge.cr
+        challengeRating ?? SRDCatalog.block(named: name)?.challenge.cr
     }
 
     /// The XP it is worth: a built-in's own stat block prints it, anything else
     /// comes from its rating.
     var effectiveXP: Int? {
-        if let printed = SRDCatalog.bundled.first(where: { $0.name == name })?.challenge.xp, challengeRating == nil {
+        if let printed = SRDCatalog.block(named: name)?.challenge.xp, challengeRating == nil {
             return printed
         }
         return challengeRating.flatMap(ChallengeRating.xp(for:))
@@ -109,7 +109,19 @@ class PresetStore {
         defaults.set(true, forKey: key)
     }
 
+    /// Every saved preset, decoded once and kept until something is saved or deleted.
+    /// Screens ask for it on every redraw (each encounter row looks up its creatures),
+    /// and reading hundreds of files each time made scrolling and swiping stutter.
+    @ObservationIgnored private var cache: [CreaturePreset]?
+
     func listPresets() -> [CreaturePreset] {
+        if let cache { return cache }
+        let loaded = readPresets()
+        cache = loaded
+        return loaded
+    }
+
+    private func readPresets() -> [CreaturePreset] {
         guard let files = try? fileManager.contentsOfDirectory(at: baseDirectory, includingPropertiesForKeys: nil) else {
             return []
         }
@@ -125,11 +137,13 @@ class PresetStore {
         let url = baseDirectory.appendingPathComponent("\(preset.id.uuidString).json")
         guard let data = try? JSONEncoder().encode(preset) else { return }
         try? data.write(to: url)
+        cache = nil
     }
 
     func delete(id: UUID) {
         let url = baseDirectory.appendingPathComponent("\(id.uuidString).json")
         try? fileManager.removeItem(at: url)
+        cache = nil
     }
 
     func preset(named name: String) -> CreaturePreset? {

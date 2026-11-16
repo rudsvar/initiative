@@ -207,6 +207,19 @@ final class PresetStoreTests: XCTestCase {
         XCTAssertEqual(store.preset(named: "Hexed Duke")?.maxHP, 55)
     }
 
+    func testListStaysCurrentAfterSavingAndDeleting() {
+        XCTAssertNil(store.listPresets().first { $0.name == "Cached One" })
+        let preset = CreaturePreset(name: "Cached One", maxHP: 3)
+        store.save(preset)
+        XCTAssertNotNil(store.listPresets().first { $0.name == "Cached One" })
+        var changed = preset
+        changed.maxHP = 9
+        store.save(changed)
+        XCTAssertEqual(store.listPresets().first { $0.name == "Cached One" }?.maxHP, 9)
+        store.delete(id: preset.id)
+        XCTAssertNil(store.listPresets().first { $0.name == "Cached One" })
+    }
+
     func testNewEntriesAreCreaturesUnlessSaidOtherwise() {
         XCTAssertFalse(CreaturePreset(name: "Plain").isPlayer)
         store.upsert(name: "Quiet One", maxHP: 5)

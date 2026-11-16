@@ -25,4 +25,14 @@ enum SRDCatalog {
         }
         return (try? load(from: url)) ?? []
     }()
+
+    private static let byName: [String: StatBlock] = {
+        Dictionary(bundled.map { ($0.name, $0) }, uniquingKeysWith: { first, _ in first })
+    }()
+
+    /// The stat block with this name, if there is one. A lookup rather than a scan:
+    /// every library row asks, on every redraw.
+    static func block(named name: String) -> StatBlock? {
+        byName[name]
+    }
 }

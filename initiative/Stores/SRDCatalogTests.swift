@@ -11,6 +11,13 @@ final class SRDCatalogTests: XCTestCase {
         return try SRDCatalog.load(from: url)
     }
 
+    func testLookupByNameFindsTheSameBlockAsAScan() {
+        for block in SRDCatalog.bundled {
+            XCTAssertEqual(SRDCatalog.block(named: block.name)?.challenge.cr, block.challenge.cr, block.name)
+        }
+        XCTAssertNil(SRDCatalog.block(named: "Not A Creature"))
+    }
+
     func testFileLoadsWithTheExpectedCreatures() throws {
         let names = try repoStatBlocks().map(\.name)
         XCTAssertEqual(names.count, 323)

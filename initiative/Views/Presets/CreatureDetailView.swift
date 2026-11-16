@@ -37,7 +37,7 @@ struct CreatureDetailView: View {
 
     /// The full stat block for a built-in SRD creature, when the app has one.
     private var block: StatBlock? {
-        SRDCatalog.bundled.first { $0.name == preset.name }
+        SRDCatalog.block(named: preset.name)
     }
 
     var body: some View {

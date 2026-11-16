@@ -46,8 +46,10 @@ struct PresetListView: View {
     }
 
     var body: some View {
-        Group {
-            if matching(mine).isEmpty && matching(allCreatures).isEmpty && !query.isEmpty {
+        let shownMine = matching(mine)
+        let shownCreatures = matching(allCreatures)
+        return Group {
+            if shownMine.isEmpty && shownCreatures.isEmpty && !query.isEmpty {
                 ContentUnavailableView.search(text: query)
             } else {
                 List {
@@ -64,13 +66,13 @@ struct PresetListView: View {
                             .listRowSeparator(.hidden)
                             .listRowBackground(Color.clear)
                     }
-                    rows(matching(mine))
+                    rows(shownMine)
 
                     Text("All creatures")
                         .sectionLabel()
                         .listRowSeparator(.hidden)
                         .listRowBackground(Color.clear)
-                    rows(matching(allCreatures))
+                    rows(shownCreatures)
                 }
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
