@@ -25,7 +25,7 @@ struct PresetRowLabel: View {
             HStack(spacing: Theme.Spacing.sm) {
                 readout("heart.fill", preset.maxHP.map(String.init), color: Theme.statusBad, column: .hp)
                 readout("shield.fill", preset.armorClass.map(String.init), color: Theme.statusInfo, column: .ac)
-                readout("die.face.5.fill", preset.initiativeBonus.map { $0 >= 0 ? "+\($0)" : "\($0)" }, color: Theme.textSecondary, column: .bonus)
+                readout("die.face.5.fill", preset.initiativeBonus.map(String.init), color: Theme.textSecondary, column: .bonus)
             }
         }
     }
