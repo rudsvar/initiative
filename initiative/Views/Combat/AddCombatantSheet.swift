@@ -21,6 +21,8 @@ struct AddCombatantSheet: View {
     /// What was picked from a Choose list, if the name still is that. Typing a different
     /// name clears it, so the Choose rows never claim a name that was typed over.
     @State private var chosen: CreaturePreset?
+    @State private var choosingCharacter = false
+    @State private var choosingCreature = false
     @FocusState private var nameFieldFocused: Bool
 
     var body: some View {
@@ -29,12 +31,19 @@ struct AddCombatantSheet: View {
                 Theme.backgroundGradient.ignoresSafeArea()
                 Form {
                     Section {
-                        // Two lists, one per kind, instead of a switch: the kind is
-                        // whichever one you chose from. Choosing from one clears the other.
-                        chooseRow(title: "Choose Character", characters: true)
-                        chooseRow(title: "Choose Creature", characters: false)
+                        // One row split in two, a list per kind instead of a switch: the
+                        // kind is whichever side you chose from. Choosing from one clears
+                        // the other.
+                        HStack(spacing: 0) {
+                            chooseHalf(characters: true)
+                            Rectangle()
+                                .fill(Theme.border.opacity(0.5))
+                                .frame(width: Theme.hairline)
+                            chooseHalf(characters: false)
+                        }
                     }
                     .listRowBackground(Theme.surfaceRaised)
+                    .listRowInsets(EdgeInsets())
 
                     Section("Name") {
                         TextField(text: $name) {
@@ -116,17 +125,32 @@ struct AddCombatantSheet: View {
         }
     }
 
-    /// The chosen entry is shown on its own kind's row; the other row says None.
-    private func chooseRow(title: String, characters: Bool) -> some View {
-        NavigationLink {
-            PresetListView(presetStore: presetStore, characters: characters) { selectPreset($0) }
+    /// One side of the split. The chosen entry's name shows on its own kind's side; the
+    /// other side says Choose.
+    private func chooseHalf(characters: Bool) -> some View {
+        let isChosen = chosen?.isPlayer == characters
+        return Button {
+            if characters { choosingCharacter = true } else { choosingCreature = true }
         } label: {
-            HStack {
-                Text(title)
-                Spacer()
-                Text(chosen?.isPlayer == characters ? (chosen?.name ?? "None") : "None")
+            VStack(spacing: Theme.Spacing.xxs) {
+                Image(systemName: characters ? "person.fill" : "pawprint.fill")
+                    .font(Theme.Typography.readoutIcon)
                     .foregroundColor(Theme.textTertiary)
+                Text(characters ? "Character" : "Creature")
+                    .font(Theme.Typography.caption)
+                    .foregroundColor(Theme.textSecondary)
+                Text(isChosen ? (chosen?.name ?? "Choose") : "Choose")
+                    .font(Theme.Typography.rowTitle)
+                    .foregroundColor(isChosen ? Theme.textPrimary : Theme.textTertiary)
+                    .lineLimit(1)
             }
+            .padding(Theme.Spacing.md)
+            .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.borderless)
+        .navigationDestination(isPresented: characters ? $choosingCharacter : $choosingCreature) {
+            PresetListView(presetStore: presetStore, characters: characters) { selectPreset($0) }
         }
     }
 
