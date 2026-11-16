@@ -64,6 +64,21 @@ extension View {
 
 }
 
+extension View {
+    /// The card's rounded corners and hairline border, shared by every card row.
+    func cardOutline(isHighlighted: Bool = false) -> some View {
+        self
+            .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous)
+                    .stroke(
+                        isHighlighted ? Theme.accent.opacity(0.55) : Theme.border.opacity(0.5),
+                        lineWidth: Theme.hairline
+                    )
+            )
+    }
+}
+
 /// The pressable counterpart to `cardRowStyle`. A plain `Button` with
 /// `.cardRowStyle()` chained on afterward has no visible feedback on tap
 /// inside a `List` — that chained modifier sits outside the button's own
@@ -91,14 +106,7 @@ struct CardRowButtonStyle: ButtonStyle {
                         .frame(width: 3)
                 }
             }
-            .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous))
-            .overlay(
-                RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous)
-                    .stroke(
-                        isHighlighted ? Theme.accent.opacity(0.55) : Theme.border.opacity(0.5),
-                        lineWidth: Theme.hairline
-                    )
-            )
+            .cardOutline(isHighlighted: isHighlighted)
             .scaleEffect(configuration.isPressed ? 0.98 : 1)
             .animation(.easeOut(duration: 0.12), value: configuration.isPressed)
     }
