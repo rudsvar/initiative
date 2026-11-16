@@ -18,6 +18,9 @@ struct AddCombatantSheet: View {
     /// is fighting. Picking or typing a known creature's name adopts that
     /// creature's setting instead (see prefillFromPreset).
     @State private var isPlayer = false
+    /// What was picked from a Choose list, if the name still is that. Typing a different
+    /// name clears it, so the Choose rows never claim a name that was typed over.
+    @State private var chosen: CreaturePreset?
     @FocusState private var nameFieldFocused: Bool
 
     var body: some View {
@@ -26,20 +29,10 @@ struct AddCombatantSheet: View {
                 Theme.backgroundGradient.ignoresSafeArea()
                 Form {
                     Section {
-                        // Kind first, then pick from that kind's list. The list is the
-                        // same searchable one the libraries use, and cloning from it
-                        // picks the copy.
-                        CharacterKindPicker(isCharacter: $isPlayer)
-                        NavigationLink {
-                            PresetListView(presetStore: presetStore, characters: isPlayer) { selectPreset($0) }
-                        } label: {
-                            HStack {
-                                Text(isPlayer ? "Choose Character" : "Choose Creature")
-                                Spacer()
-                                Text(name.isEmpty ? "None" : name)
-                                    .foregroundColor(Theme.textTertiary)
-                            }
-                        }
+                        // Two lists, one per kind, instead of a switch: the kind is
+                        // whichever one you chose from. Choosing from one clears the other.
+                        chooseRow(title: "Choose Character", characters: true)
+                        chooseRow(title: "Choose Creature", characters: false)
                     }
                     .listRowBackground(Theme.surfaceRaised)
 
@@ -49,6 +42,7 @@ struct AddCombatantSheet: View {
                         }
                             .focused($nameFieldFocused)
                             .onChange(of: name) { _, newValue in
+                                if chosen?.name != newValue { chosen = nil }
                                 prefillFromPreset(named: newValue)
                             }
                     }
@@ -122,7 +116,22 @@ struct AddCombatantSheet: View {
         }
     }
 
+    /// The chosen entry is shown on its own kind's row; the other row says None.
+    private func chooseRow(title: String, characters: Bool) -> some View {
+        NavigationLink {
+            PresetListView(presetStore: presetStore, characters: characters) { selectPreset($0) }
+        } label: {
+            HStack {
+                Text(title)
+                Spacer()
+                Text(chosen?.isPlayer == characters ? (chosen?.name ?? "None") : "None")
+                    .foregroundColor(Theme.textTertiary)
+            }
+        }
+    }
+
     private func selectPreset(_ preset: CreaturePreset) {
+        chosen = preset
         name = preset.name
         hpText = preset.maxHP.map(String.init) ?? ""
         acText = preset.armorClass.map(String.init) ?? ""
@@ -133,6 +142,8 @@ struct AddCombatantSheet: View {
     private func prefillFromPreset(named newName: String) {
         guard let preset = presetStore.preset(named: newName) else {
             matchedPresetBonus = nil
+            // A name that matches nothing is a new creature, not whatever was picked before.
+            isPlayer = false
             return
         }
         if hpText.isEmpty, let maxHP = preset.maxHP {

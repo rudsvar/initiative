@@ -434,7 +434,11 @@ struct CombatantRow: View {
                 // While dying, the tally takes the HP column's place.
                 Group {
                     if combatant.isDying, let saves = combatant.deathSaves {
-                        DeathSaveDots(saves: saves)
+                        // "skull.fill" is not an SF Symbol, so the dying mark is the
+                        // broken heart, above the tally like every other readout.
+                        StatReadout(systemImage: "heart.slash.fill", iconColor: Theme.statusBad, column: .hp) {
+                            DeathSaveDots(saves: saves)
+                        }
                     } else {
                         healthRow
                     }
