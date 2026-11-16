@@ -68,6 +68,7 @@
 		AF4A3470A3AE7A137BD46058 /* Combatant.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B266DEA642A436C6B0171B6 /* Combatant.swift */; };
 		B136FF45EE256B0523ED89A4 /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E8595FB2990C1DF76AD4C /* LogView.swift */; };
 		B16C32ECC2B3F0908F2E4EDA /* ThemeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7840FBA3A62622584D6A22 /* ThemeController.swift */; };
+		B638A8AFD795D56B3419F338 /* TemplatePickerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DB89E632B1149133018F3BB0 /* TemplatePickerView.swift */; };
 		B6B0A3D296F731263220A862 /* SearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC27CA470043E0B89A9580AA /* SearchBar.swift */; };
 		BA433734B987BA122D5BFAFD /* CombatSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F6ECF4848029671F86C86AA /* CombatSession.swift */; };
 		BD69EB924172237EA2FE7D06 /* initiativeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 173E70DAD215FA1517F8B1AF /* initiativeApp.swift */; };
@@ -188,6 +189,7 @@
 		D2DB99B4AEE2D59113761B9B /* SessionStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStoreTests.swift; sourceTree = "<group>"; };
 		D4F6E0061994D32447464ED0 /* EffectEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectEditorView.swift; sourceTree = "<group>"; };
 		D970AC13228D90BB0630DD34 /* AppearanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceView.swift; sourceTree = "<group>"; };
+		DB89E632B1149133018F3BB0 /* TemplatePickerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemplatePickerView.swift; sourceTree = "<group>"; };
 		DB8DD2DEFF231D1EBD80E195 /* LimitedUseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LimitedUseTests.swift; sourceTree = "<group>"; };
 		E39A23D6F350929CB9E41BC0 /* CharacterKindPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterKindPicker.swift; sourceTree = "<group>"; };
 		F2AB7AA7A046758596462089 /* TestCombats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestCombats.swift; sourceTree = "<group>"; };
@@ -421,6 +423,7 @@
 				3E3247CF776011E4685783F4 /* CreatureDetailView.swift */,
 				8F82F2EA03A7A61F03D982C7 /* PresetListView.swift */,
 				32C4237D94CE4556E30B5164 /* StatBlockSummary.swift */,
+				DB89E632B1149133018F3BB0 /* TemplatePickerView.swift */,
 			);
 			path = Presets;
 			sourceTree = "<group>";
@@ -567,6 +570,7 @@
 				69F3532C839D8C92C63A3C74 /* StatBlockSummary.swift in Sources */,
 				65C550C5514624576C649BEB /* StatFacts.swift in Sources */,
 				41724A9D8898DA716DFF4960 /* StatusBand.swift in Sources */,
+				B638A8AFD795D56B3419F338 /* TemplatePickerView.swift in Sources */,
 				C742A29052DE3290D694ACE6 /* TestCombats.swift in Sources */,
 				E85ABEBA0550A2E492543652 /* Theme.swift in Sources */,
 				B16C32ECC2B3F0908F2E4EDA /* ThemeController.swift in Sources */,

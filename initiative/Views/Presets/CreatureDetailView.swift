@@ -19,6 +19,7 @@ struct CreatureDetailView: View {
     /// Entries of this library, offered as an optional template on a new entry.
     @State private var templates: [CreaturePreset] = []
     @State private var templateName: String?
+    @State private var pickingTemplate = false
 
     init(presetStore: PresetStore, preset: CreaturePreset, onChange: @escaping () -> Void) {
         self.presetStore = presetStore
@@ -164,12 +165,7 @@ struct CreatureDetailView: View {
     /// fields; the name is still typed fresh. "None" is the default and changes nothing.
     private var templateSection: some View {
         Section {
-            Menu {
-                Button("None") { templateName = nil }
-                ForEach(templates) { template in
-                    Button(template.name) { applyTemplate(template) }
-                }
-            } label: {
+            Button(action: { pickingTemplate = true }) {
                 HStack {
                     Text("Template (optional)")
                         .foregroundColor(Theme.textPrimary)
@@ -188,6 +184,11 @@ struct CreatureDetailView: View {
             .foregroundColor(Theme.textTertiary)
         }
         .listRowBackground(Theme.surfaceRaised)
+        .sheet(isPresented: $pickingTemplate) {
+            TemplatePickerView(templates: templates) { picked in
+                if let picked { applyTemplate(picked) } else { templateName = nil }
+            }
+        }
     }
 
     private func applyTemplate(_ template: CreaturePreset) {
