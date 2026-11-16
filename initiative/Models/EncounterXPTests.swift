@@ -32,4 +32,15 @@ final class EncounterXPTests: XCTestCase {
         XCTAssertNil(estimate([("Bog Hulk", 2)]).estimatedRating)
         XCTAssertNil(estimate([]).estimatedRating)
     }
+
+    /// Every creature in a premade encounter is a built-in with a rating, so a
+    /// premade encounter never leaves anything out of its total.
+    func testEveryPremadeEncounterCreatureHasXP() throws {
+        let store = PresetStore(baseDirectory: FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString))
+        store.installDefaults()
+        for encounter in DefaultContent.encounters {
+            let result = EncounterXP.estimate(for: Encounter(name: encounter.name, entries: encounter.lineup.map { EncounterEntry(name: $0.creature, count: $0.count) })) { store.preset(named: $0)?.effectiveXP }
+            XCTAssertEqual(result.unratedCount, 0, encounter.name)
+        }
+    }
 }

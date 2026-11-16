@@ -369,13 +369,13 @@ private struct AddEncounterEntryView: View {
 }
 
 extension Encounter {
-    /// "CR 3 · 900 XP", with a note when some creatures have no rating. The same
-    /// wording the creature rows use. Nil when nothing in it has a rating.
+    /// "CR 3 · 900 XP", the same wording the creature rows use. Creatures with no
+    /// rating are left out of the sum without comment; open them to see theirs.
+    /// Nil when nothing in it has a rating.
     func worthText(presetStore: PresetStore) -> String? {
         let result = EncounterXP.estimate(for: self) { presetStore.preset(named: $0)?.effectiveXP }
         guard let rating = result.estimatedRating else { return nil }
-        let note = result.unratedCount > 0 ? " · \(result.unratedCount) unrated" : ""
-        return "CR \(rating) · \(result.totalXP) XP\(note)"
+        return "CR \(rating) · \(result.totalXP) XP"
     }
 }
 
