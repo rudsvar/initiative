@@ -36,20 +36,21 @@ final class PresetStoreTests: XCTestCase {
         XCTAssertEqual(store.listPresets(characters: false).map(\.name), ["Goblin"])
     }
 
-    /// A new entry made from a template takes its stats, but never its name (that
-    /// must be unique and is typed by the owner), and it takes the kind of the
-    /// library it is being added to, not the template's.
-    func testDraftFromTemplateKeepsStatsButNotNameOrKind() {
-        let template = CreaturePreset(name: "Goblin", maxHP: 7, armorClass: 15, initiativeBonus: 2, isPlayer: false)
+    /// "+" on Characters copies any saved entry, creature or character, into the
+    /// library being added to: stats come along, the name is the typed one.
+    func testCloneAcrossKindsKeepsStatsAndTakesTheLibrarysKind() {
+        let creature = CreaturePreset(name: "Bog Hulk", maxHP: 7, armorClass: 15, initiativeBonus: 2, isPlayer: false)
+        store.save(creature)
 
-        let draft = CreaturePreset.draft(from: template, isPlayer: true)
+        let copy = store.clone(creature, named: "Hulk Friend", isPlayer: true)
 
-        XCTAssertEqual(draft.name, "")
-        XCTAssertEqual(draft.maxHP, 7)
-        XCTAssertEqual(draft.armorClass, 15)
-        XCTAssertEqual(draft.initiativeBonus, 2)
-        XCTAssertTrue(draft.isPlayer)
-        XCTAssertNotEqual(draft.id, template.id)
+        XCTAssertEqual(copy.name, "Hulk Friend")
+        XCTAssertEqual(copy.maxHP, 7)
+        XCTAssertEqual(copy.armorClass, 15)
+        XCTAssertEqual(copy.initiativeBonus, 2)
+        XCTAssertTrue(copy.isPlayer)
+        XCTAssertEqual(store.listPresets(characters: true).map(\.name), ["Hulk Friend"])
+        XCTAssertEqual(store.listPresets(characters: false).map(\.name), ["Bog Hulk"])
     }
 
     func testUpsertCreatesNewPreset() {

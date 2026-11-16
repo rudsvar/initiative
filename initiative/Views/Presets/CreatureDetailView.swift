@@ -16,10 +16,6 @@ struct CreatureDetailView: View {
     @State private var acText: String
     @State private var bonusText: String
     @State private var isPlayer: Bool
-    /// Entries of this library, offered as an optional template on a new entry.
-    @State private var templates: [CreaturePreset] = []
-    @State private var templateName: String?
-    @State private var pickingTemplate = false
 
     init(presetStore: PresetStore, preset: CreaturePreset, onChange: @escaping () -> Void) {
         self.presetStore = presetStore
@@ -30,7 +26,6 @@ struct CreatureDetailView: View {
         _acText = State(initialValue: preset.armorClass.map(String.init) ?? "")
         _bonusText = State(initialValue: preset.initiativeBonus.map(String.init) ?? "")
         _isPlayer = State(initialValue: preset.isPlayer)
-        _templates = State(initialValue: presetStore.listPresets())
     }
 
     private var isBuiltIn: Bool { preset.isBuiltIn }
@@ -111,10 +106,6 @@ struct CreatureDetailView: View {
         ZStack {
             Theme.backgroundGradient.ignoresSafeArea()
             Form {
-                if preset.name.isEmpty {
-                    templateSection
-                }
-
                 Section("Name") {
                     TextField(text: $name) {
                         Text("Name").foregroundColor(Theme.placeholderText)
@@ -159,44 +150,6 @@ struct CreatureDetailView: View {
             // the Form it is silently ignored.
             .scrollContentBackground(.hidden)
         }
-    }
-
-    /// Optional, on a new entry only. Picking one copies its stats into the blank
-    /// fields; the name is still typed fresh. "None" is the default and changes nothing.
-    private var templateSection: some View {
-        Section {
-            Button(action: { pickingTemplate = true }) {
-                HStack {
-                    Text("Template (optional)")
-                        .foregroundColor(Theme.textPrimary)
-                    Spacer()
-                    Text(templateName ?? "None")
-                        .foregroundColor(Theme.textTertiary)
-                }
-            }
-            .disabled(templates.isEmpty)
-        } footer: {
-            Text(
-                templates.isEmpty
-                    ? "Nothing to copy yet. Name it and fill in the stats below."
-                    : "Optional. Copies the stats of any character or creature. You still give it its own name."
-            )
-            .foregroundColor(Theme.textTertiary)
-        }
-        .listRowBackground(Theme.surfaceRaised)
-        .sheet(isPresented: $pickingTemplate) {
-            TemplatePickerView(templates: templates) { picked in
-                if let picked { applyTemplate(picked) } else { templateName = nil }
-            }
-        }
-    }
-
-    private func applyTemplate(_ template: CreaturePreset) {
-        let draft = CreaturePreset.draft(from: template, isPlayer: isPlayer)
-        hpText = draft.maxHP.map(String.init) ?? ""
-        acText = draft.armorClass.map(String.init) ?? ""
-        bonusText = draft.initiativeBonus.map(String.init) ?? ""
-        templateName = template.name
     }
 
     private func save() {
