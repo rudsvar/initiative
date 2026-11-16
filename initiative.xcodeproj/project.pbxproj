@@ -57,6 +57,7 @@
 		7A4239216A30729CB063C1A5 /* RoundEffectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E1057A6C6E759DE9FB1DBA7 /* RoundEffectTests.swift */; };
 		7B78D0FA978026999015844A /* Effect.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5105E7AA6B2BA4A20F4CBC35 /* Effect.swift */; };
 		7D58FB15FBAFA3FAAEB93866 /* EffectEditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4F6E0061994D32447464ED0 /* EffectEditorView.swift */; };
+		7D9AFB490473C5B2CBBAC4D8 /* StatReadout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5284C3C6D4E00869821BFD79 /* StatReadout.swift */; };
 		7E5C7BB027F7BC0907ECA434 /* EffectOperationsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3613CF49D1C24697119764CE /* EffectOperationsTests.swift */; };
 		7FF9D67C9EF8BB156F673248 /* SelectAllTextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = F700581D6670C2CC2D6A5112 /* SelectAllTextField.swift */; };
 		85B333B893F29744D347B561 /* DeathSaveDots.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AD8C7E0ED4B9831B127F11C /* DeathSaveDots.swift */; };
@@ -152,6 +153,7 @@
 		4B3FB96497CF923A7DB11289 /* TurnPromptTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TurnPromptTests.swift; sourceTree = "<group>"; };
 		4E1057A6C6E759DE9FB1DBA7 /* RoundEffectTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RoundEffectTests.swift; sourceTree = "<group>"; };
 		5105E7AA6B2BA4A20F4CBC35 /* Effect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Effect.swift; sourceTree = "<group>"; };
+		5284C3C6D4E00869821BFD79 /* StatReadout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatReadout.swift; sourceTree = "<group>"; };
 		53836058E4AD08B15E3A2112 /* HealthControlRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthControlRow.swift; sourceTree = "<group>"; };
 		54DD0236F790EE085E97A432 /* TurnPromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TurnPromptView.swift; sourceTree = "<group>"; };
 		54F42B0AFD76C65718DAABAD /* CloneableRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloneableRow.swift; sourceTree = "<group>"; };
@@ -408,6 +410,7 @@
 				43F9C4DC2EAC8723C1CF43AF /* ListSectionsTests.swift */,
 				CC27CA470043E0B89A9580AA /* SearchBar.swift */,
 				F700581D6670C2CC2D6A5112 /* SelectAllTextField.swift */,
+				5284C3C6D4E00869821BFD79 /* StatReadout.swift */,
 				74CF92255CFA4102CC5F52CE /* StatusBand.swift */,
 				6636EDC413749080974CA625 /* StatusBandTests.swift */,
 				68CEAFB61475843F4368122B /* Theme.swift */,
@@ -605,6 +608,7 @@
 				5B555695D0B60C83505F615B /* StatBlock.swift in Sources */,
 				69F3532C839D8C92C63A3C74 /* StatBlockSummary.swift in Sources */,
 				65C550C5514624576C649BEB /* StatFacts.swift in Sources */,
+				7D9AFB490473C5B2CBBAC4D8 /* StatReadout.swift in Sources */,
 				41724A9D8898DA716DFF4960 /* StatusBand.swift in Sources */,
 				88D4AA082DAD952345128352 /* TestCharacters.swift in Sources */,
 				C742A29052DE3290D694ACE6 /* TestCombats.swift in Sources */,

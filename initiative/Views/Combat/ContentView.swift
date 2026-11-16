@@ -79,6 +79,7 @@ struct ContentView: View {
             }
             .listStyle(.plain)
             .scrollContentBackground(.hidden)
+            .sharedStatColumns()
             // `.safeAreaInset` rather than a plain VStack sibling: the roster
             // still reserves room for the bar at rest, but rows now scroll
             // *behind* it instead of stopping dead above a hard-edged bar —
@@ -332,30 +333,6 @@ struct CombatantRow: View {
         }
     }
 
-    @ViewBuilder
-    private func statRow(systemImage: String, iconColor: Color, text: String, textColor: Color) -> some View {
-        statRow(systemImage: systemImage, iconColor: iconColor, content: Text(text), textColor: textColor)
-    }
-
-    /// Icon trails the text rather than leading it, both pinned to a fixed
-    /// width — that's what makes the heart on one row and the shield on the
-    /// next line up at the same right edge regardless of how many digits the
-    /// text before them has. Icon color is fixed per stat (heart red, shield
-    /// blue) independent of the text color, which still carries the
-    /// health/AC-band color in player view.
-    @ViewBuilder
-    private func statRow(systemImage: String, iconColor: Color, content: Text, textColor: Color) -> some View {
-        HStack(spacing: Theme.Spacing.xs) {
-            content
-                .foregroundColor(textColor)
-            Image(systemName: systemImage)
-                .font(Theme.Typography.iconInline)
-                .foregroundColor(iconColor)
-                .frame(width: 14, alignment: .center)
-        }
-        .font(Theme.Typography.stat)
-    }
-
     /// Player view exists for turning the screen around, and the party already
     /// know their own hit points — it's the monsters' numbers that need hiding.
     /// Blanking everyone's was the behaviour before combatants knew which they
@@ -364,22 +341,28 @@ struct CombatantRow: View {
 
     @ViewBuilder
     private var healthRow: some View {
-        if let current = combatant.currentHP, let max = combatant.maxHP {
-            if hideNumbers {
-                let band = StatusBand.health(current: current, max: max)
-                statRow(systemImage: "heart.fill", iconColor: Theme.statusBad, text: band.label, textColor: band.color)
+        StatReadout(systemImage: "heart.fill", iconColor: Theme.statusBad, column: .hp) {
+            if let current = combatant.currentHP, let max = combatant.maxHP {
+                if hideNumbers {
+                    let band = StatusBand.health(current: current, max: max)
+                    Text(band.label).foregroundColor(band.color)
+                } else {
+                    VStack(spacing: Theme.Spacing.xxs) {
+                        (marked(current, change: combatant.temporaryHP != nil ? combatant.recentHPChange : nil, showsSign: combatant.temporaryHP != nil)
+                            + Text("/").foregroundColor(Theme.textTertiary)
+                            + marked(max, change: combatant.recentMaxHPChange, showsSign: combatant.recentMaxHPChange != nil))
+                        // Temporary HP, when there is some: its own small shield and number.
+                        if let temp = combatant.temporaryHP {
+                            Text("\(Image(systemName: "shield.fill")) \(temp)")
+                                .font(Theme.Typography.readoutIcon)
+                                .foregroundColor(Theme.statusInfo)
+                        }
+                    }
+                }
             } else {
-                statLine(
-                    "heart.fill", Theme.statusBad,
-                    value: marked(current, change: combatant.temporaryHP != nil ? combatant.recentHPChange : nil, showsSign: combatant.temporaryHP != nil)
-                        + Text("/").foregroundColor(Theme.textTertiary)
-                        + marked(max, change: combatant.recentMaxHPChange, showsSign: combatant.recentMaxHPChange != nil),
-                    temp: combatant.temporaryHP
-                )
+                // No HP tracked: the heart stays, with a dash for each number.
+                Text("−/−").foregroundColor(Theme.textTertiary)
             }
-        } else {
-            // No HP tracked: the heart stays, with a dash for each number.
-            statLine("heart.fill", Theme.statusBad, value: Text("−/−").foregroundColor(Theme.textTertiary), temp: nil)
         }
     }
 
@@ -406,42 +389,18 @@ struct CombatantRow: View {
         return text
     }
 
-    /// One stat line in fixed columns, so every roster row lines up: temp text, then
-    /// the value flush right, then its icon trailing it, as on the rest of the app.
-    private func statLine(_ systemImage: String, _ iconColor: Color, value: Text, temp: Int?) -> some View {
-        HStack(spacing: 0) {
-            // The icon comes first, as large as the initiative number beside it.
-            Image(systemName: systemImage)
-                .font(Theme.Typography.numeric(18))
-                .foregroundColor(iconColor)
-                .frame(width: 20, alignment: .center)
-            // Temporary value: shield and number, then the value and its arrow.
-            // Only takes room when there is a temporary value.
-            if let temp {
-                Text("\(Image(systemName: "shield.fill")) \(temp)")
-                    .foregroundColor(Theme.statusInfo)
-                    .padding(.leading, Theme.Spacing.xxs)
-            }
-            value
-                .padding(.leading, Theme.Spacing.xs)
-        }
-        .font(Theme.Typography.rowStat)
-    }
-
     @ViewBuilder
     private var armorClassRow: some View {
         if let ac = combatant.armorClass {
-            // In player view AC is a band for every combatant, so no row shows a
-            // raw number that another row hides. HP keeps its own rule (hideNumbers).
-            if playerViewEnabled {
-                let band = StatusBand.armorClass(ac)
-                statRow(systemImage: "shield.fill", iconColor: Theme.statusInfo, text: band.label, textColor: band.color)
-            } else {
-                statLine(
-                    "shield.fill", Theme.statusInfo,
-                    value: marked(ac, change: combatant.recentACChange, showsSign: combatant.recentACChange != nil),
-                    temp: nil
-                )
+            StatReadout(systemImage: "shield.fill", iconColor: Theme.statusInfo, column: .ac) {
+                // In player view AC is a band for every combatant, so no row shows a
+                // raw number that another row hides. HP keeps its own rule (hideNumbers).
+                if playerViewEnabled {
+                    let band = StatusBand.armorClass(ac)
+                    Text(band.label).foregroundColor(band.color)
+                } else {
+                    marked(ac, change: combatant.recentACChange, showsSign: combatant.recentACChange != nil)
+                }
             }
         }
     }
@@ -480,10 +439,8 @@ struct CombatantRow: View {
                         healthRow
                     }
                 }
-                .frame(width: 88, alignment: .leading)
 
                 armorClassRow
-                    .frame(width: 60, alignment: .trailing)
             }
 
             // Glance-at-a-glance list, not the detail screen — a short label
