@@ -3,19 +3,18 @@ import XCTest
 
 final class ChallengeRatingTests: XCTestCase {
     /// The table gives the XP of a creature the owner made. It should agree with the
-    /// built-in stat blocks, which carry their own printed XP. Known differences:
-    /// CR 0 creatures are printed as 0 or 10 XP, and the data's Archmage prints
-    /// 8000 where the table has 8400 (to be checked against the source).
-    func testTableAgreesWithBuiltInStatBlocksExceptKnownOnes() {
+    /// built-in stat blocks, which carry their own printed XP. The one known
+    /// difference: CR 0 creatures are printed as 0 or 10 XP.
+    func testTableAgreesWithBuiltInStatBlocks() {
         let differing = SRDCatalog.bundled
             .filter { $0.challenge.cr != "0" && ChallengeRating.xp(for: $0.challenge.cr) != $0.challenge.xp }
             .map(\.name)
-        XCTAssertEqual(differing, ["Archmage"])
+        XCTAssertEqual(differing, [])
     }
 
     /// A built-in is worth what its own stat block prints; one the owner made, what the table says.
     func testWorthPrefersTheStatBlockThenTheTable() {
-        XCTAssertEqual(CreaturePreset(name: "Archmage", isPlayer: false).effectiveXP, 8000)
+        XCTAssertEqual(CreaturePreset(name: "Archmage", isPlayer: false).effectiveXP, 8400)
         XCTAssertEqual(CreaturePreset(name: "Bog Hulk", challengeRating: "3").effectiveXP, 700)
         XCTAssertNil(CreaturePreset(name: "Bog Hulk").effectiveXP)
     }
