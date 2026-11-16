@@ -26,6 +26,9 @@ struct MainMenuView: View {
                         .foregroundColor(Theme.textPrimary)
                         .multilineTextAlignment(.center)
 
+                    // Two groups, set apart: the sessions you play, then what you
+                    // prepare them from.
+                    VStack(spacing: Theme.Spacing.xl) {
                     VStack(spacing: Theme.Spacing.sm) {
                         // Exactly one filled, accent-colored button on the screen:
                         // whichever action the user most likely came here to take.
@@ -50,6 +53,9 @@ struct MainMenuView: View {
                             path.append(Route.sessionList)
                         }
 
+                    }
+
+                    VStack(spacing: Theme.Spacing.sm) {
                         MenuButton(title: "Characters", systemImage: "person.fill") {
                             path.append(Route.characterList)
                         }
@@ -70,6 +76,7 @@ struct MainMenuView: View {
                             path.append(Route.scenarios)
                         }
                         #endif
+                    }
                     }
 
                     Spacer(minLength: 0)
