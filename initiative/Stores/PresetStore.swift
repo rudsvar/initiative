@@ -34,6 +34,18 @@ struct CreaturePreset: Identifiable, Codable, Equatable, Hashable {
         return challengeRating.flatMap(ChallengeRating.xp(for:))
     }
 
+    /// Rating and XP for display. The owner's rating, else the built-in's, else an
+    /// estimate from hit points and armor class (marked as one); nil when there is
+    /// nothing to go on.
+    var challenge: ChallengeInfo? {
+        if let rating = effectiveChallengeRating, let xp = effectiveXP {
+            return ChallengeInfo(rating: rating, xp: xp, isEstimate: false)
+        }
+        guard let rating = ChallengeEstimator.shared.estimate(maxHP: maxHP, armorClass: armorClass),
+              let xp = ChallengeRating.xp(for: rating) else { return nil }
+        return ChallengeInfo(rating: rating, xp: xp, isEstimate: true)
+    }
+
     init(
         id: UUID = UUID(),
         name: String,

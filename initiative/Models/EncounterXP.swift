@@ -10,13 +10,13 @@ struct EncounterXP: Equatable {
     /// Creatures with no rating, left out of the total rather than guessed at.
     var unratedCount: Int
 
-    /// `xp` answers a creature's name with the XP it is worth, if it has a rating.
-    static func estimate(for encounter: Encounter, xp: (String) -> Int?) -> EncounterXP {
+    /// `xp` answers an entry with the XP one of it is worth, if that is known.
+    static func estimate(for encounter: Encounter, xp: (EncounterEntry) -> Int?) -> EncounterXP {
         var total = 0
         var unrated = 0
         var anyRated = false
         for entry in encounter.entries {
-            if let worth = xp(entry.name) {
+            if let worth = xp(entry) {
                 total += worth * entry.count
                 anyRated = true
             } else {

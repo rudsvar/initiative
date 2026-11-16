@@ -6,7 +6,7 @@ final class EncounterXPTests: XCTestCase {
 
     private func estimate(_ entries: [(String, Int)]) -> EncounterXP {
         let encounter = Encounter(name: "T", entries: entries.map { EncounterEntry(name: $0.0, count: $0.1) })
-        return EncounterXP.estimate(for: encounter) { name in (ratings[name] ?? nil).flatMap(ChallengeRating.xp(for:)) }
+        return EncounterXP.estimate(for: encounter) { entry in (ratings[entry.name] ?? nil).flatMap(ChallengeRating.xp(for:)) }
     }
 
     func testTotalIsEachCreaturesXPTimesItsCount() {
@@ -39,7 +39,7 @@ final class EncounterXPTests: XCTestCase {
         let store = PresetStore(baseDirectory: FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString))
         store.installDefaults()
         for encounter in DefaultContent.encounters {
-            let result = EncounterXP.estimate(for: Encounter(name: encounter.name, entries: encounter.lineup.map { EncounterEntry(name: $0.creature, count: $0.count) })) { store.preset(named: $0)?.effectiveXP }
+            let result = EncounterXP.estimate(for: Encounter(name: encounter.name, entries: encounter.lineup.map { EncounterEntry(name: $0.creature, count: $0.count) })) { store.overview(of: $0).challenge?.xp }
             XCTAssertEqual(result.unratedCount, 0, encounter.name)
         }
     }

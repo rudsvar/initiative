@@ -19,8 +19,8 @@ struct PresetRowLabel: View {
                 Text(count > 1 ? "\(count)× \(preset.name)" : preset.name)
                     .font(Theme.Typography.rowTitle)
                     .foregroundColor(Theme.textPrimary)
-                if let rating = preset.effectiveChallengeRating {
-                    Text("CR \(rating) · \(preset.effectiveXP.map(String.init) ?? "–") XP")
+                if let challenge = preset.challenge {
+                    Text("CR \(challenge.rating)\(challenge.isEstimate ? " (est.)" : "") · \(challenge.xp) XP")
                         .font(Theme.Typography.caption)
                         .foregroundColor(Theme.textTertiary)
                 }
