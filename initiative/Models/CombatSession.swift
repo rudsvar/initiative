@@ -785,6 +785,7 @@ class CombatSession {
 
         var prompts = rollPrompts(for: ending, at: .endOfTurn)
         prompts += rollPrompts(for: starting, at: .startOfTurn)
+        prompts += damagePrompts(for: starting)
 
         // Round-anchored rolls come due when the round turns over, not on
         // anyone's turn — so they ride on the advance that wraps.
@@ -824,6 +825,25 @@ class CombatSession {
     /// phrased as "Roll: Recharging" instead.
     static func rechargeTitle(for name: String) -> String {
         name.lowercased().hasPrefix("recharg") ? "Roll: \(name)" : "Roll to recharge \(name)"
+    }
+
+    /// Effects that hurt at the start of their owner's turn, and what to roll for them.
+    /// The app asks and applies; the DM rolls.
+    private static let startOfTurnDamage: [String: String] = ["Burning": "1d4 fire"]
+
+    private func damagePrompts(for combatant: Combatant) -> [TurnPrompt] {
+        combatant.effects.compactMap { effect in
+            guard let hint = Self.startOfTurnDamage[effect.name], combatant.currentHP != nil else { return nil }
+            return TurnPrompt(
+                id: effect.id,
+                combatantID: combatant.id,
+                combatantName: combatant.name,
+                subject: .damage(effectID: effect.id),
+                title: "\(effect.name): damage this turn",
+                hint: hint,
+                deathSaves: nil
+            )
+        }
     }
 
     private func rollPrompts(for combatant: Combatant, at boundary: TurnBoundary) -> [TurnPrompt] {
@@ -896,6 +916,9 @@ class CombatSession {
         case .roundEffect:
             return // handled above, before the combatant lookup
 
+        case .damage:
+            return // the amount comes with the answer; `nextTurn` applies it
+
         case .deathSave:
             guard combatants[index].deathSaves != nil else { return }
             if outcome == .criticalSuccess {
@@ -930,8 +953,14 @@ class CombatSession {
     /// advance, deliberately: that puts them inside the same undo step, so
     /// Previous rewinds the save you just recorded along with the turn it
     /// belonged to, rather than leaving it stranded.
-    func nextTurn(resolving answers: [TurnPrompt: RollOutcome] = [:]) {
-        guard !combatants.isEmpty else { return }
+    ///
+    /// `damage` carries the amounts typed for damage prompts (Burning). They are applied
+    /// once the new turn has begun, so the change shows beside the HP of the combatant
+    /// whose turn it now is. Returns any prompt that damage raised (a concentration
+    /// check), for the caller to ask.
+    @discardableResult
+    func nextTurn(resolving answers: [TurnPrompt: RollOutcome] = [:], damage: [TurnPrompt: Int] = [:]) -> [TurnPrompt] {
+        guard !combatants.isEmpty else { return [] }
 
         history.append((combatants: combatants, roundEffects: roundEffects, currentTurnIndex: currentTurnIndex, roundNumber: roundNumber, logCount: log.count))
 
@@ -959,6 +988,14 @@ class CombatSession {
         )
 
         appendLog("\(combatants[currentTurnIndex].name)'s turn")
+
+        var followUps: [TurnPrompt] = []
+        for (prompt, amount) in damage.sorted(by: { $0.key.combatantName < $1.key.combatantName }) {
+            guard let combatantID = prompt.combatantID, amount > 0,
+                  let followUp = applyDamage(to: combatantID, amount: amount) else { continue }
+            followUps.append(followUp)
+        }
+        return followUps
     }
 
     /// Reverts combatants/turn index/round number to the pre-nextTurn() snapshot,

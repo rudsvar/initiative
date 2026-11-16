@@ -83,7 +83,7 @@ struct CombatantDetailView: View {
             }
         }
         .sheet(item: $concentrationCheck) { prompt in
-            TurnPromptView(prompts: [prompt]) { answers in
+            TurnPromptView(prompts: [prompt]) { answers, _ in
                 for (prompt, outcome) in answers {
                     session.resolvePrompt(prompt, outcome: outcome)
                 }

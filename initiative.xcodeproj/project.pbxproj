@@ -17,6 +17,7 @@
 		13CAD1BE39F1418784A5E30D /* ThemePaletteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99DA66AE6B5F5BF1053F2262 /* ThemePaletteTests.swift */; };
 		15F35E2EC4CECF8F9D19A2BA /* DeadCombatantTurnTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99016F78C287D6C3DE0A2F71 /* DeadCombatantTurnTests.swift */; };
 		1A85F56E1359778680CB6BE8 /* EncounterStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 650EB50016E0916FF6F37644 /* EncounterStoreTests.swift */; };
+		21F4F9052D6D4A31D7D16DDB /* BurningTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21A26435742E5B5BA833BFCF /* BurningTests.swift */; };
 		225EF46465E704F3743A8A2E /* ControlButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B5DF696273E28426AAFFB3 /* ControlButton.swift */; };
 		2723E9ECA0DA43828FF450D2 /* Format.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E6FA70EC4196E9C9DA719A /* Format.swift */; };
 		275519FF6B2AD8A3A6F96E55 /* ArmorClassControlRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9814693E614CE77E0E7F81A /* ArmorClassControlRow.swift */; };
@@ -132,6 +133,7 @@
 		1F0B889BD6EAB7BB37340858 /* TestCharactersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestCharactersTests.swift; sourceTree = "<group>"; };
 		20C4BD7EA18DC487773DC9EE /* KillReviveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KillReviveTests.swift; sourceTree = "<group>"; };
 		213E3C397F0B45EBEF8E5BBA /* ChallengeRatingPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeRatingPicker.swift; sourceTree = "<group>"; };
+		21A26435742E5B5BA833BFCF /* BurningTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BurningTests.swift; sourceTree = "<group>"; };
 		236012BD8426FA8D17541295 /* CodableCompatibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodableCompatibilityTests.swift; sourceTree = "<group>"; };
 		255483B3F433841EC3581AEB /* initiativeTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = initiativeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		267F7D9CB28FC2AB8F2427E2 /* ChallengeEstimatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeEstimatorTests.swift; sourceTree = "<group>"; };
@@ -295,6 +297,7 @@
 		981389EF3E7B4851F035F212 /* Models */ = {
 			isa = PBXGroup;
 			children = (
+				21A26435742E5B5BA833BFCF /* BurningTests.swift */,
 				D2FD5CFF1FB57A831740651F /* ChallengeEstimator.swift */,
 				267F7D9CB28FC2AB8F2427E2 /* ChallengeEstimatorTests.swift */,
 				612E1F0FAD7DF6DBEAB03D05 /* ChallengeRating.swift */,
@@ -626,6 +629,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				21F4F9052D6D4A31D7D16DDB /* BurningTests.swift in Sources */,
 				5EB12D7C20BF5DA497C3E2AD /* ChallengeEstimatorTests.swift in Sources */,
 				76DDE1AC9053CAA225D4A647 /* ChallengeRatingTests.swift in Sources */,
 				F0AB6B80550C14113EDFDEAF /* CloneNameTests.swift in Sources */,

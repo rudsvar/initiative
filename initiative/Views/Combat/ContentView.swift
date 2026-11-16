@@ -16,6 +16,11 @@ struct ContentView: View {
     /// from the sheet's own completion callback, once every prompt has an
     /// answer.
     @State private var pendingPrompts: [TurnPrompt] = []
+    /// A concentration check raised by damage taken as the turn began (Burning).
+    /// Held until the prompt sheet has finished dismissing, then asked on its own: it
+    /// resolves directly, since the turn has already moved.
+    @State private var raisedChecks: [TurnPrompt] = []
+    @State private var concentrationCheck: TurnPrompt?
 
     private var nameBinding: Binding<String> {
         Binding(get: { session.name }, set: { session.name = $0 })
@@ -161,10 +166,21 @@ struct ContentView: View {
         .sheet(isPresented: Binding(
             get: { !pendingPrompts.isEmpty },
             set: { if !$0 { pendingPrompts = [] } }
-        )) {
-            TurnPromptView(prompts: pendingPrompts) { answers in
+        ), onDismiss: {
+            concentrationCheck = raisedChecks.first
+            raisedChecks = []
+        }) {
+            TurnPromptView(prompts: pendingPrompts) { answers, damage in
+                raisedChecks = session.nextTurn(resolving: answers, damage: damage)
                 pendingPrompts = []
-                session.nextTurn(resolving: answers)
+            }
+        }
+        .sheet(item: $concentrationCheck) { prompt in
+            TurnPromptView(prompts: [prompt]) { answers, _ in
+                for (prompt, outcome) in answers {
+                    session.resolvePrompt(prompt, outcome: outcome)
+                }
+                concentrationCheck = nil
             }
         }
     }

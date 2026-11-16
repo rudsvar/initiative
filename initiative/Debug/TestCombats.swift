@@ -77,6 +77,18 @@ enum TestCombats {
         return session
     }
 
+    /// Wren is burning and holding concentration. Next from Alpha asks for her Burning
+    /// damage (type a number); after it, a concentration check is asked.
+    static func burningAtStartOfTurn() -> CombatSession {
+        let session = CombatSession()
+        session.addCombatant(name: "Alpha", initiative: 20, maxHP: 12)
+        session.addCombatant(name: "Wren", initiative: 10, maxHP: 20, armorClass: 14, isPlayer: true)
+        let wren = session.combatants.firstIndex { $0.name == "Wren" }!
+        session.combatants[wren].effects.append(Effect(name: "Burning", durationType: .untilRemoved))
+        session.combatants[wren].isConcentrating = true
+        return session
+    }
+
     /// Wren is dying with two successes and one failure, and AC 14: checks the tally beside her name and her AC.
     static func dyingWithTally() -> CombatSession {
         let session = CombatSession()
@@ -126,6 +138,7 @@ extension TestCombats {
         "hpAndACChangesShowUntilTurnStarts": hpAndACChangesShowUntilTurnStarts,
         "wolfWithChanges": wolfWithChanges,
         "dyingWithTally": dyingWithTally,
+        "burningAtStartOfTurn": burningAtStartOfTurn,
         "killAndReviveAreUndoable": killAndReviveAreUndoable,
         "startOfTurnPromptMovesTheMarker": startOfTurnPromptMovesTheMarker,
     ]

@@ -30,6 +30,9 @@ struct TurnPrompt: Identifiable, Hashable {
         /// A roll owed by something anchored to the round rather than to any
         /// combatant. Resolves like `effect`: succeeding removes it.
         case roundEffect(id: UUID)
+        /// Damage that comes due at the start of the combatant's turn (Burning). The
+        /// DM rolls it and types the number; the app only asks and applies it.
+        case damage(effectID: UUID)
     }
 
     let id: UUID

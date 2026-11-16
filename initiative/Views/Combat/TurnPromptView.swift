@@ -15,10 +15,13 @@ import SwiftUI
 /// A compact card rather than a full navigation screen — see `selfSizingSheet()`.
 struct TurnPromptView: View {
     let prompts: [TurnPrompt]
-    /// Called with every prompt's outcome once all of them have one.
-    let onComplete: ([TurnPrompt: RollOutcome]) -> Void
+    /// Called with every prompt's outcome once all of them have one, and the amount
+    /// typed for each damage prompt.
+    let onComplete: ([TurnPrompt: RollOutcome], [TurnPrompt: Int]) -> Void
 
     @State private var answers: [TurnPrompt: RollOutcome] = [:]
+    @State private var damage: [TurnPrompt: Int] = [:]
+    @State private var damageText = ""
 
     /// One at a time rather than every prompt stacked in the sheet at once —
     /// with several owed together (a few death saves plus a recharge, say)
@@ -57,7 +60,7 @@ struct TurnPromptView: View {
         .presentationBackground(.regularMaterial)
         .onChange(of: answers) { _, newValue in
             guard newValue.count == prompts.count else { return }
-            onComplete(newValue)
+            onComplete(newValue, damage)
         }
     }
 
@@ -80,7 +83,26 @@ struct TurnPromptView: View {
                 }
             }
 
-            if case .deathSave = prompt.subject {
+            if case .damage = prompt.subject {
+                // The DM rolls; the app takes the number.
+                TextField(text: $damageText) {
+                    Text("Damage rolled").foregroundColor(Theme.placeholderText)
+                }
+                .keyboardType(.numberPad)
+                .fieldStyle()
+                HStack(spacing: Theme.Spacing.sm) {
+                    answerButton("Apply damage", tint: Theme.statusBad) {
+                        if let amount = Int(damageText), amount > 0 { damage[prompt] = amount }
+                        damageText = ""
+                        answers[prompt] = .success
+                    }
+                    .disabled((Int(damageText) ?? 0) <= 0)
+                    answerButton("No damage", tint: Theme.textSecondary) {
+                        damageText = ""
+                        answers[prompt] = .failure
+                    }
+                }
+            } else if case .deathSave = prompt.subject {
                 // A death save can be a natural 20 or a natural 1, as well as a plain result.
                 HStack(spacing: Theme.Spacing.sm) {
                     answerButton("Success", tint: Theme.statusGood) { answers[prompt] = .success }
@@ -139,7 +161,7 @@ struct TurnPromptView: View {
                     hint: nil, deathSaves: DeathSaves(successes: 1, failures: 1)
                 ),
             ],
-            onComplete: { _ in }
+            onComplete: { _, _ in }
         )
     }
 }
