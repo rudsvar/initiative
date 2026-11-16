@@ -86,6 +86,9 @@ struct RootView: View {
             // own creatures are removed, so the new built-in set starts clean.
             presetStore.removeUserCreatures(once: "removedUserCreaturesV2")
             presetStore.installDefaults()
+            #if DEBUG
+            presetStore.installTestCharacters()
+            #endif
             encounterStore.installDefaults()
         }
         // Forcing the selected palette's appearance makes every system-provided

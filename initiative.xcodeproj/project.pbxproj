@@ -62,6 +62,7 @@
 		85B333B893F29744D347B561 /* DeathSaveDots.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AD8C7E0ED4B9831B127F11C /* DeathSaveDots.swift */; };
 		86364D15EF4A0D15D4A247B8 /* TurnMarkerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07CE13EA81450439CB74ECD2 /* TurnMarkerTests.swift */; };
 		87F1E56B91FF848A9C5E7C29 /* PresetStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F1E593E997D394D860933FA /* PresetStore.swift */; };
+		88D4AA082DAD952345128352 /* TestCharacters.swift in Sources */ = {isa = PBXBuildFile; fileRef = E385BF84D5CF11F834092397 /* TestCharacters.swift */; };
 		8D5002435663177D3D860CF4 /* FlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6427D74AA5360A780F88C8 /* FlowLayout.swift */; };
 		9D828DEFD356DF22B4C85C46 /* ChangeLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 198DAF52601518703A1CB383 /* ChangeLabel.swift */; };
 		9E619E17AE246450D08A306D /* DebugScenariosView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FC75838D4FF442192212A7E /* DebugScenariosView.swift */; };
@@ -102,6 +103,7 @@
 		F0B9253CC9AF6782988E90BD /* DyingScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 884F46386C6E22DA935C6A65 /* DyingScenarioTests.swift */; };
 		F4A4F206E2F91BFEB9E107E2 /* TurnPromptView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 54DD0236F790EE085E97A432 /* TurnPromptView.swift */; };
 		F4D82D9946032C775F4CA713 /* EncounterXP.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72FCF480130756D02B000115 /* EncounterXP.swift */; };
+		F7CA7165B58E0304505625DA /* TestCharactersTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1F0B889BD6EAB7BB37340858 /* TestCharactersTests.swift */; };
 		F8C4961FCB8EB1F87F440E63 /* AppearanceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D970AC13228D90BB0630DD34 /* AppearanceView.swift */; };
 /* End PBXBuildFile section */
 
@@ -126,6 +128,7 @@
 		18C53D0D096702F8E279A268 /* ViewExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewExtensions.swift; sourceTree = "<group>"; };
 		198DAF52601518703A1CB383 /* ChangeLabel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChangeLabel.swift; sourceTree = "<group>"; };
 		1A7840FBA3A62622584D6A22 /* ThemeController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeController.swift; sourceTree = "<group>"; };
+		1F0B889BD6EAB7BB37340858 /* TestCharactersTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestCharactersTests.swift; sourceTree = "<group>"; };
 		20C4BD7EA18DC487773DC9EE /* KillReviveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KillReviveTests.swift; sourceTree = "<group>"; };
 		213E3C397F0B45EBEF8E5BBA /* ChallengeRatingPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeRatingPicker.swift; sourceTree = "<group>"; };
 		236012BD8426FA8D17541295 /* CodableCompatibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodableCompatibilityTests.swift; sourceTree = "<group>"; };
@@ -206,6 +209,7 @@
 		D4F6E0061994D32447464ED0 /* EffectEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectEditorView.swift; sourceTree = "<group>"; };
 		D970AC13228D90BB0630DD34 /* AppearanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceView.swift; sourceTree = "<group>"; };
 		DB8DD2DEFF231D1EBD80E195 /* LimitedUseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LimitedUseTests.swift; sourceTree = "<group>"; };
+		E385BF84D5CF11F834092397 /* TestCharacters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestCharacters.swift; sourceTree = "<group>"; };
 		E39A23D6F350929CB9E41BC0 /* CharacterKindPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterKindPicker.swift; sourceTree = "<group>"; };
 		E408A1D2CF932E914A33B714 /* ChallengeRatingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeRatingTests.swift; sourceTree = "<group>"; };
 		F2AB7AA7A046758596462089 /* TestCombats.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestCombats.swift; sourceTree = "<group>"; };
@@ -232,6 +236,8 @@
 			children = (
 				8FC75838D4FF442192212A7E /* DebugScenariosView.swift */,
 				884F46386C6E22DA935C6A65 /* DyingScenarioTests.swift */,
+				E385BF84D5CF11F834092397 /* TestCharacters.swift */,
+				1F0B889BD6EAB7BB37340858 /* TestCharactersTests.swift */,
 				F2AB7AA7A046758596462089 /* TestCombats.swift */,
 			);
 			path = Debug;
@@ -600,6 +606,7 @@
 				69F3532C839D8C92C63A3C74 /* StatBlockSummary.swift in Sources */,
 				65C550C5514624576C649BEB /* StatFacts.swift in Sources */,
 				41724A9D8898DA716DFF4960 /* StatusBand.swift in Sources */,
+				88D4AA082DAD952345128352 /* TestCharacters.swift in Sources */,
 				C742A29052DE3290D694ACE6 /* TestCombats.swift in Sources */,
 				E85ABEBA0550A2E492543652 /* Theme.swift in Sources */,
 				B16C32ECC2B3F0908F2E4EDA /* ThemeController.swift in Sources */,
@@ -644,6 +651,7 @@
 				A487A5D42B5F78867A371A4C /* StatusBandTests.swift in Sources */,
 				DCE699CC3AB5593D78C71B70 /* TemporaryACTests.swift in Sources */,
 				0EEDCD5F856176554A09AFA8 /* TemporaryHPTests.swift in Sources */,
+				F7CA7165B58E0304505625DA /* TestCharactersTests.swift in Sources */,
 				D4ADBB872E79EAE1392E517B /* ThemeControllerTests.swift in Sources */,
 				13CAD1BE39F1418784A5E30D /* ThemePaletteTests.swift in Sources */,
 				86364D15EF4A0D15D4A247B8 /* TurnMarkerTests.swift in Sources */,

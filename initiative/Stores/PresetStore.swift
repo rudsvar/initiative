@@ -210,6 +210,16 @@ class PresetStore {
             save(creature.asPreset)
         }
     }
+
+    #if DEBUG
+    /// Debug builds only: adds the made-up characters that are missing.
+    func installTestCharacters() {
+        let existingNames = Set(listPresets().map { $0.name.lowercased() })
+        for character in TestCharacters.all where !existingNames.contains(character.name.lowercased()) {
+            save(character)
+        }
+    }
+    #endif
 }
 
 private extension DefaultContent.Creature {
