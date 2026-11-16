@@ -458,6 +458,12 @@ struct CombatantRow: View {
                     .frame(width: 34, alignment: .center)
 
                 HStack(spacing: Theme.Spacing.xs) {
+                    // Who is who at a glance: a person for the party, a paw for
+                    // what they are fighting. Quiet, and named for VoiceOver.
+                    Image(systemName: combatant.isPlayer ? "person.fill" : "pawprint.fill")
+                        .font(Theme.Typography.iconInline)
+                        .foregroundColor(Theme.textTertiary)
+                        .accessibilityLabel(combatant.isPlayer ? "Character" : "Creature")
                     Text(combatant.name)
                         .lineLimit(1)
                         .font(Theme.Typography.rowTitle)
