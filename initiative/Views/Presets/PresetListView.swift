@@ -9,7 +9,12 @@ struct PresetListView: View {
     let presetStore: PresetStore
     /// True for the Characters library, false for Creatures.
     let characters: Bool
+    /// Set when the list is used to choose an entry (the add-combatant sheet) rather
+    /// than to browse: tapping a row, or cloning one, hands it over and closes the
+    /// screen. Nothing is opened, created or deleted from here then.
+    var onPick: ((CreaturePreset) -> Void)?
 
+    @Environment(\.dismiss) private var dismiss
     // Seeded eagerly from the store rather than defaulting to `[]` and
     // filling in via `.onAppear` — an empty-then-populated flip mounts
     // `.searchable` on a *later* render instead of the first one.
@@ -22,9 +27,10 @@ struct PresetListView: View {
     @State private var cloning: CreaturePreset?
     @State private var query = ""
 
-    init(presetStore: PresetStore, characters: Bool) {
+    init(presetStore: PresetStore, characters: Bool, onPick: ((CreaturePreset) -> Void)? = nil) {
         self.presetStore = presetStore
         self.characters = characters
+        self.onPick = onPick
         _presets = State(initialValue: presetStore.listPresets())
     }
 
@@ -85,11 +91,13 @@ struct PresetListView: View {
         .navigationTitle(characters ? "Characters" : "Creatures")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .navigationBarTrailing) {
-                Button(action: { creatingNew = true }) {
-                    Image(systemName: "plus")
+            if onPick == nil {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(action: { creatingNew = true }) {
+                        Image(systemName: "plus")
+                    }
+                    .accessibilityLabel("New \(noun)")
                 }
-                .accessibilityLabel("New \(noun)")
             }
         }
         .onAppear { reload() }
@@ -101,8 +109,9 @@ struct PresetListView: View {
         }
         .sheet(item: $cloning) { source in
             CloneNameSheet(title: "Clone \(source.name)", existingNames: presets.map(\.name), stats: CloneStats(source)) { newName, stats in
-                presetStore.clone(source, named: newName, isPlayer: characters, stats: stats)
+                let copy = presetStore.clone(source, named: newName, isPlayer: characters, stats: stats)
                 reload()
+                if onPick != nil { pick(copy) }
             }
         }
         .alert(
@@ -120,6 +129,11 @@ struct PresetListView: View {
         }
     }
 
+    private func pick(_ preset: CreaturePreset) {
+        onPick?(preset)
+        dismiss()
+    }
+
     private func reload() {
         presets = presetStore.listPresets()
     }
@@ -127,13 +141,13 @@ struct PresetListView: View {
     @ViewBuilder
     private func rows(_ items: [CreaturePreset]) -> some View {
         ForEach(items) { preset in
-            CloneableRow(open: { openPreset = preset }, clone: { cloning = preset }) {
+            CloneableRow(open: { if onPick != nil { pick(preset) } else { openPreset = preset } }, clone: { cloning = preset }) {
                 PresetRowLabel(preset: preset)
             }
             // Built-in creatures are fixtures: they can't be deleted or edited, and
             // they can't be swiped at all.
             .swipeActions(edge: .trailing) {
-                if !preset.isBuiltIn {
+                if !preset.isBuiltIn && onPick == nil {
                     Button(role: .destructive) {
                         pendingDelete = preset
                     } label: {

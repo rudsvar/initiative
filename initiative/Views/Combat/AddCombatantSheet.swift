@@ -18,7 +18,6 @@ struct AddCombatantSheet: View {
     /// is fighting. Picking or typing a known creature's name adopts that
     /// creature's setting instead (see prefillFromPreset).
     @State private var isPlayer = false
-    @State private var presets: [CreaturePreset] = []
     @FocusState private var nameFieldFocused: Bool
 
     var body: some View {
@@ -26,23 +25,23 @@ struct AddCombatantSheet: View {
             ZStack {
                 Theme.backgroundGradient.ignoresSafeArea()
                 Form {
-                    if !presets.isEmpty {
-                        Section("Creature") {
-                            Menu {
-                                ForEach(presets) { preset in
-                                    Button(preset.name) { selectPreset(preset) }
-                                }
-                            } label: {
-                                HStack {
-                                    Text("Choose Creature")
-                                    Spacer()
-                                    Text(name.isEmpty ? "None" : name)
-                                        .foregroundColor(Theme.textTertiary)
-                                }
+                    Section {
+                        // Kind first, then pick from that kind's list. The list is the
+                        // same searchable one the libraries use, and cloning from it
+                        // picks the copy.
+                        CharacterKindPicker(isCharacter: $isPlayer)
+                        NavigationLink {
+                            PresetListView(presetStore: presetStore, characters: isPlayer) { selectPreset($0) }
+                        } label: {
+                            HStack {
+                                Text(isPlayer ? "Choose Character" : "Choose Creature")
+                                Spacer()
+                                Text(name.isEmpty ? "None" : name)
+                                    .foregroundColor(Theme.textTertiary)
                             }
                         }
-                        .listRowBackground(Theme.surfaceRaised)
                     }
+                    .listRowBackground(Theme.surfaceRaised)
 
                     Section("Name") {
                         TextField(text: $name) {
@@ -68,15 +67,6 @@ struct AddCombatantSheet: View {
                             Text("Optional").foregroundColor(Theme.placeholderText)
                         }
                             .keyboardType(.numberPad)
-                    }
-                    .listRowBackground(Theme.surfaceRaised)
-
-                    Section {
-                        // Visible at the moment of creation rather than inferred
-                        // later. The tempting heuristic — "count > 1 means
-                        // monsters" — would be right often enough to be trusted
-                        // and wrong often enough to hurt.
-                        CharacterKindPicker(isCharacter: $isPlayer)
                     }
                     .listRowBackground(Theme.surfaceRaised)
 
@@ -127,7 +117,6 @@ struct AddCombatantSheet: View {
                 }
             }
             .onAppear {
-                presets = presetStore.listPresets()
                 nameFieldFocused = true
             }
         }
