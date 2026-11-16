@@ -221,6 +221,21 @@ final class PresetStoreTests: XCTestCase {
         XCTAssertNotNil(store.preset(named: "Wolf"), "duplicating must not disturb the original")
     }
 
+    /// The clone sheet lets the owner change the numbers before saving; a blank
+    /// field means no value, not "keep the original".
+    func testCloneTakesTheEditedStats() {
+        store.installDefaults()
+        let wolf = store.preset(named: "Wolf")!
+
+        let copy = store.clone(wolf, named: "Ember Wolf", isPlayer: false, stats: CloneStats(maxHP: 60, armorClass: nil, initiativeBonus: 3))
+
+        XCTAssertEqual(copy.maxHP, 60)
+        XCTAssertNil(copy.armorClass)
+        XCTAssertEqual(copy.initiativeBonus, 3)
+        XCTAssertEqual(store.preset(named: "Ember Wolf")?.maxHP, 60, "the edited copy is what gets saved")
+        XCTAssertEqual(store.preset(named: "Wolf")?.maxHP, wolf.maxHP, "the original is untouched")
+    }
+
     func testCloneKeepsTheChosenCharacterKind() {
         store.installDefaults()
         let goblin = store.preset(named: "Wolf")!

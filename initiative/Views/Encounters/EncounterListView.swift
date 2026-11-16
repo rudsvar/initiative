@@ -63,7 +63,7 @@ struct EncounterListView: View {
         }
         .onAppear { encounters = encounterStore.listEncounters() }
         .sheet(item: $cloning) { source in
-            CloneNameSheet(title: "Clone \(source.name)", existingNames: encounters.map(\.name)) { newName in
+            CloneNameSheet(title: "Clone \(source.name)", existingNames: encounters.map(\.name)) { newName, _ in
                 encounterStore.clone(source, named: newName)
                 encounters = encounterStore.listEncounters()
             }

@@ -189,12 +189,6 @@ extension Theme {
         static let xxl: CGFloat = 32
     }
 
-    /// Fixed sizes for things that must line up down a list.
-    enum Layout {
-        /// One stat (icon and value) in a creature row. Wide enough for "+10".
-        static let statColumn: CGFloat = 52
-    }
-
     enum Radius {
         static let sm: CGFloat = 6
         static let md: CGFloat = 10

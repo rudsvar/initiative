@@ -134,12 +134,13 @@ class PresetStore {
     /// returns it. The caller checks the name with `CloneName.isValid` first.
     /// This is the only route from a built-in creature to a customised one.
     @discardableResult
-    func clone(_ preset: CreaturePreset, named name: String, isPlayer: Bool) -> CreaturePreset {
+    func clone(_ preset: CreaturePreset, named name: String, isPlayer: Bool, stats: CloneStats? = nil) -> CreaturePreset {
+        let stats = stats ?? CloneStats(preset)
         let copy = CreaturePreset(
             name: name.trimmingCharacters(in: .whitespaces),
-            maxHP: preset.maxHP,
-            armorClass: preset.armorClass,
-            initiativeBonus: preset.initiativeBonus,
+            maxHP: stats.maxHP,
+            armorClass: stats.armorClass,
+            initiativeBonus: stats.initiativeBonus,
             isPlayer: isPlayer
         )
         save(copy)

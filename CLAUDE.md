@@ -10,6 +10,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
   appears in more than one place (a list, a picker, a clone action), it is
   built once and reused, so the places cannot drift apart. Build the shared
   piece first, then point each screen at it.
+- **Let layout adapt; don't hardcode sizes.** Widths, heights and offsets that
+  must line up come from the content and the system, not from a number: stacks
+  and `Spacer`, `Grid`, alignment guides, `ViewThatFits`, `@ScaledMetric`, and
+  measured sizes shared through a preference key (see `PresetRowLabel`). A fixed
+  width breaks at larger text sizes and other languages. Spacing uses the
+  `Theme.Spacing` tokens.
 - **Test first when possible (TDD).** Write the failing test, watch it fail,
   then make it pass. This applies to all model and store logic.
 - **Show the app after significant changes.** After a change to layout,
@@ -36,6 +42,7 @@ changes, change it here and in the section it points to.
   (user-made) creature or encounter. Only the built-in ones are read-only, and
   the user can change a built-in only through Clone, which makes their own
   copy. See "Default content".
+- **Adaptive layout:** no hardcoded widths or offsets; see "Working guidelines".
 - **Test first:** new logic and every bug fix get a test; see "Testing".
 - **Show the app:** after significant UI, navigation, persistence or model
   changes, install and launch in the simulator and name the screen to check.

@@ -75,6 +75,7 @@ struct PresetListView: View {
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
                 .scrollDismissesKeyboard(.interactively)
+                .sharedStatColumns()
             }
         }
         .appSearchable(text: $query, prompt: "Search \(noun.lowercased())s", isVisible: !presets.isEmpty)
@@ -97,8 +98,8 @@ struct PresetListView: View {
             CreatureDetailView(presetStore: presetStore, preset: CreaturePreset(name: "", isPlayer: characters), onChange: reload)
         }
         .sheet(item: $cloning) { source in
-            CloneNameSheet(title: "Clone \(source.name)", existingNames: presets.map(\.name)) { newName in
-                presetStore.clone(source, named: newName, isPlayer: characters)
+            CloneNameSheet(title: "Clone \(source.name)", existingNames: presets.map(\.name), stats: CloneStats(source)) { newName, stats in
+                presetStore.clone(source, named: newName, isPlayer: characters, stats: stats)
                 reload()
             }
         }

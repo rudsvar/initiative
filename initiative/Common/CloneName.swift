@@ -12,3 +12,21 @@ enum CloneName {
         return !existing.contains { $0.localizedCaseInsensitiveCompare(trimmed) == .orderedSame }
     }
 }
+
+/// The numbers a creature clone starts with and the owner may change in the clone
+/// sheet. Blank means no value.
+struct CloneStats: Equatable {
+    var maxHP: Int?
+    var armorClass: Int?
+    var initiativeBonus: Int?
+
+    init(maxHP: Int?, armorClass: Int?, initiativeBonus: Int?) {
+        self.maxHP = maxHP
+        self.armorClass = armorClass
+        self.initiativeBonus = initiativeBonus
+    }
+
+    init(_ preset: CreaturePreset) {
+        self.init(maxHP: preset.maxHP, armorClass: preset.armorClass, initiativeBonus: preset.initiativeBonus)
+    }
+}
