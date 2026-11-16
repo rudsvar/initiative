@@ -29,7 +29,7 @@ struct CreatureDetailView: View {
         _acText = State(initialValue: preset.armorClass.map(String.init) ?? "")
         _bonusText = State(initialValue: preset.initiativeBonus.map(String.init) ?? "")
         _isPlayer = State(initialValue: preset.isPlayer)
-        _templates = State(initialValue: presetStore.listPresets(characters: preset.isPlayer))
+        _templates = State(initialValue: presetStore.listPresets())
     }
 
     private var isBuiltIn: Bool { preset.isBuiltIn }
@@ -145,10 +145,14 @@ struct CreatureDetailView: View {
                 }
                 .listRowBackground(Theme.surfaceRaised)
 
-                Section {
-                    CharacterKindPicker(isCharacter: $isPlayer)
+                // A new entry already has its kind: it was made from the Characters
+                // or Creatures list. Only an existing one can be moved to the other.
+                if !preset.name.isEmpty {
+                    Section {
+                        CharacterKindPicker(isCharacter: $isPlayer)
+                    }
+                    .listRowBackground(Theme.surfaceRaised)
                 }
-                .listRowBackground(Theme.surfaceRaised)
             }
             // Row background goes on each Section, never on the Form: attached to
             // the Form it is silently ignored.
@@ -179,7 +183,7 @@ struct CreatureDetailView: View {
             Text(
                 templates.isEmpty
                     ? "Nothing to copy yet. Name it and fill in the stats below."
-                    : "Optional. Copies the stats of an existing entry. You still give it its own name."
+                    : "Optional. Copies the stats of any character or creature. You still give it its own name."
             )
             .foregroundColor(Theme.textTertiary)
         }
