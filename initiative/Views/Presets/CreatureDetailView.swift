@@ -16,6 +16,7 @@ struct CreatureDetailView: View {
     @State private var acText: String
     @State private var bonusText: String
     @State private var isPlayer: Bool
+    @State private var challenge: String?
 
     init(presetStore: PresetStore, preset: CreaturePreset, onChange: @escaping () -> Void) {
         self.presetStore = presetStore
@@ -26,6 +27,7 @@ struct CreatureDetailView: View {
         _acText = State(initialValue: preset.armorClass.map(String.init) ?? "")
         _bonusText = State(initialValue: preset.initiativeBonus.map(String.init) ?? "")
         _isPlayer = State(initialValue: preset.isPlayer)
+        _challenge = State(initialValue: preset.effectiveChallengeRating)
     }
 
     private var isBuiltIn: Bool { preset.isBuiltIn }
@@ -120,6 +122,11 @@ struct CreatureDetailView: View {
                 }
                 .listRowBackground(Theme.surfaceRaised)
 
+                Section {
+                    ChallengeRatingPicker(selection: $challenge)
+                }
+                .listRowBackground(Theme.surfaceRaised)
+
                 // A new entry already has its kind: it was made from the Characters
                 // or Creatures list. Only an existing one can be moved to the other.
                 if !preset.name.isEmpty {
@@ -142,6 +149,7 @@ struct CreatureDetailView: View {
         updated.armorClass = Int(acText)
         updated.initiativeBonus = Int(bonusText)
         updated.isPlayer = isPlayer
+        updated.challengeRating = challenge
         guard !updated.name.isEmpty else { return }
         presetStore.save(updated)
         onChange()

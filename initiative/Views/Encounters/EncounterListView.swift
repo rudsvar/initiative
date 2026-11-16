@@ -96,6 +96,11 @@ struct EncounterListView: View {
                             Text(encounter.name)
                                 .font(Theme.Typography.rowTitle)
                                 .foregroundColor(Theme.textPrimary)
+                            if let worth = worth(of: encounter) {
+                                Text(worth)
+                                    .font(Theme.Typography.caption)
+                                    .foregroundColor(Theme.textSecondary)
+                            }
                             Text(summary(for: encounter))
                                 .font(Theme.Typography.caption)
                                 .foregroundColor(Theme.textTertiary)
@@ -119,6 +124,14 @@ struct EncounterListView: View {
                 }
             }
         }
+    }
+
+    /// "≈ CR 3 · 900 XP", with a note when some creatures have no rating.
+    private func worth(of encounter: Encounter) -> String? {
+        let result = EncounterXP.estimate(for: encounter) { presetStore.preset(named: $0)?.effectiveXP }
+        guard let rating = result.estimatedRating else { return nil }
+        let note = result.unratedCount > 0 ? " · \(result.unratedCount) unrated" : ""
+        return "≈ CR \(rating) · \(result.totalXP) XP\(note)"
     }
 
     private func summary(for encounter: Encounter) -> String {

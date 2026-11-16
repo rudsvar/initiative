@@ -19,14 +19,16 @@ struct CloneStats: Equatable {
     var maxHP: Int?
     var armorClass: Int?
     var initiativeBonus: Int?
+    var challengeRating: String?
 
-    init(maxHP: Int?, armorClass: Int?, initiativeBonus: Int?) {
+    init(maxHP: Int?, armorClass: Int?, initiativeBonus: Int?, challengeRating: String?) {
         self.maxHP = maxHP
         self.armorClass = armorClass
         self.initiativeBonus = initiativeBonus
+        self.challengeRating = challengeRating
     }
 
     init(_ preset: CreaturePreset) {
-        self.init(maxHP: preset.maxHP, armorClass: preset.armorClass, initiativeBonus: preset.initiativeBonus)
+        self.init(maxHP: preset.maxHP, armorClass: preset.armorClass, initiativeBonus: preset.initiativeBonus, challengeRating: preset.effectiveChallengeRating)
     }
 }

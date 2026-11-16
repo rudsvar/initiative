@@ -13,9 +13,16 @@ struct PresetRowLabel: View {
 
     var body: some View {
         HStack(spacing: Theme.Spacing.md) {
-            Text(preset.name)
-                .font(Theme.Typography.rowTitle)
-                .foregroundColor(Theme.textPrimary)
+            VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                Text(preset.name)
+                    .font(Theme.Typography.rowTitle)
+                    .foregroundColor(Theme.textPrimary)
+                if let rating = preset.effectiveChallengeRating {
+                    Text("CR \(rating) · \(preset.effectiveXP.map(String.init) ?? "–") XP")
+                        .font(Theme.Typography.caption)
+                        .foregroundColor(Theme.textTertiary)
+                }
+            }
             Spacer(minLength: Theme.Spacing.sm)
             HStack(spacing: Theme.Spacing.sm) {
                 column("heart.fill", preset.maxHP.map(String.init), color: Theme.statusBad, width: widths.hp) { $0.hp = $1 }

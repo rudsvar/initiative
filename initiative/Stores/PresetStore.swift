@@ -15,6 +15,24 @@ struct CreaturePreset: Identifiable, Codable, Equatable, Hashable {
     /// creature typed in from scratch is most often a player. Every built-in is
     /// explicitly `false`.
     var isPlayer: Bool = true
+    /// Challenge rating as printed ("1/4", "3"), one of `ChallengeRating.all`. Set on
+    /// entries the owner made or cloned; built-ins take theirs from the stat block
+    /// (see `effectiveChallengeRating`).
+    var challengeRating: String?
+
+    /// What the screens show: the owner's own value, else the built-in's.
+    var effectiveChallengeRating: String? {
+        challengeRating ?? SRDCatalog.bundled.first { $0.name == name }?.challenge.cr
+    }
+
+    /// The XP it is worth: a built-in's own stat block prints it, anything else
+    /// comes from its rating.
+    var effectiveXP: Int? {
+        if let printed = SRDCatalog.bundled.first(where: { $0.name == name })?.challenge.xp, challengeRating == nil {
+            return printed
+        }
+        return challengeRating.flatMap(ChallengeRating.xp(for:))
+    }
 
     init(
         id: UUID = UUID(),
@@ -22,7 +40,8 @@ struct CreaturePreset: Identifiable, Codable, Equatable, Hashable {
         maxHP: Int? = nil,
         armorClass: Int? = nil,
         initiativeBonus: Int? = nil,
-        isPlayer: Bool = true
+        isPlayer: Bool = true,
+        challengeRating: String? = nil
     ) {
         self.id = id
         self.name = name
@@ -30,10 +49,11 @@ struct CreaturePreset: Identifiable, Codable, Equatable, Hashable {
         self.armorClass = armorClass
         self.initiativeBonus = initiativeBonus
         self.isPlayer = isPlayer
+        self.challengeRating = challengeRating
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, maxHP, armorClass, initiativeBonus, isPlayer
+        case id, name, maxHP, armorClass, initiativeBonus, isPlayer, challengeRating
     }
 
     /// Hand-written so presets saved before this field existed still decode. They
@@ -48,6 +68,7 @@ struct CreaturePreset: Identifiable, Codable, Equatable, Hashable {
         armorClass = try container.decodeIfPresent(Int.self, forKey: .armorClass)
         initiativeBonus = try container.decodeIfPresent(Int.self, forKey: .initiativeBonus)
         isPlayer = try container.decodeIfPresent(Bool.self, forKey: .isPlayer) ?? false
+        challengeRating = try container.decodeIfPresent(String.self, forKey: .challengeRating)
     }
 }
 
@@ -141,7 +162,8 @@ class PresetStore {
             maxHP: stats.maxHP,
             armorClass: stats.armorClass,
             initiativeBonus: stats.initiativeBonus,
-            isPlayer: isPlayer
+            isPlayer: isPlayer,
+            challengeRating: stats.challengeRating
         )
         save(copy)
         return copy

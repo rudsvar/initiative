@@ -227,13 +227,24 @@ final class PresetStoreTests: XCTestCase {
         store.installDefaults()
         let wolf = store.preset(named: "Wolf")!
 
-        let copy = store.clone(wolf, named: "Ember Wolf", isPlayer: false, stats: CloneStats(maxHP: 60, armorClass: nil, initiativeBonus: 3))
+        let copy = store.clone(wolf, named: "Ember Wolf", isPlayer: false, stats: CloneStats(maxHP: 60, armorClass: nil, initiativeBonus: 3, challengeRating: nil))
 
         XCTAssertEqual(copy.maxHP, 60)
         XCTAssertNil(copy.armorClass)
         XCTAssertEqual(copy.initiativeBonus, 3)
         XCTAssertEqual(store.preset(named: "Ember Wolf")?.maxHP, 60, "the edited copy is what gets saved")
         XCTAssertEqual(store.preset(named: "Wolf")?.maxHP, wolf.maxHP, "the original is untouched")
+    }
+
+    func testCloneOfABuiltInKeepsItsChallengeRating() {
+        store.installDefaults()
+        let wolf = store.preset(named: "Wolf")!
+
+        XCTAssertEqual(store.clone(wolf, named: "Ember Wolf", isPlayer: false).challengeRating, "1/4")
+        XCTAssertEqual(
+            store.clone(wolf, named: "Ember Hound", isPlayer: false, stats: CloneStats(maxHP: 5, armorClass: 9, initiativeBonus: 0, challengeRating: "2")).challengeRating,
+            "2"
+        )
     }
 
     func testCloneKeepsTheChosenCharacterKind() {
