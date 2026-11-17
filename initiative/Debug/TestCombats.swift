@@ -50,7 +50,20 @@ enum TestCombats {
         return session
     }
 
-    /// A character with temporary armor class granted, to check the green "+N" beside AC.
+    /// Wren has temporary HP and AC, the goblin has neither: the hearts, shields and
+    /// numbers of both rows sit at the same height as the names, with Wren's
+    /// temporary amounts hanging underneath.
+    static func temporaryAmountsDoNotShiftTheRow() -> CombatSession {
+        let session = CombatSession()
+        session.addCombatant(name: "Wren", initiative: 15, maxHP: 22, armorClass: 14, isPlayer: true)
+        session.addCombatant(name: "Goblin", initiative: 10, maxHP: 7, armorClass: 15)
+        let wren = session.combatants.first { $0.name == "Wren" }!.id
+        session.grantTemporaryHP(to: wren, amount: 5)
+        session.grantTemporaryAC(to: wren, amount: 2)
+        return session
+    }
+
+    /// A character with temporary armor class granted, to check the "+N" under AC.
     static func wrenWithTemporaryAC() -> CombatSession {
         let session = wrenWithArmorClass()
         session.grantTemporaryAC(to: session.combatants[0].id, amount: 2)
@@ -135,6 +148,7 @@ extension TestCombats {
         "lastStandingKeepsTheTurn": lastStandingKeepsTheTurn,
         "wrenWithArmorClass": wrenWithArmorClass,
         "wrenWithTemporaryAC": wrenWithTemporaryAC,
+        "temporaryAmountsDoNotShiftTheRow": temporaryAmountsDoNotShiftTheRow,
         "hpAndACChangesShowUntilTurnStarts": hpAndACChangesShowUntilTurnStarts,
         "wolfWithChanges": wolfWithChanges,
         "dyingWithTally": dyingWithTally,

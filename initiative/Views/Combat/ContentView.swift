@@ -332,21 +332,19 @@ struct CombatantRow: View {
                     let band = StatusBand.health(current: current, max: max)
                     Text(band.label).foregroundColor(band.color)
                 } else {
-                    VStack(spacing: Theme.Spacing.xxs) {
-                        (marked(current, change: combatant.temporaryHP != nil ? combatant.recentHPChange : nil, showsSign: combatant.temporaryHP != nil)
-                            + Text("/").foregroundColor(Theme.textTertiary)
-                            + marked(max, change: combatant.recentMaxHPChange, showsSign: combatant.recentMaxHPChange != nil))
-                        // Temporary HP, when there is some: its own small shield and number.
-                        if let temp = combatant.temporaryHP {
-                            Text("\(Image(systemName: "shield.fill")) \(temp)")
-                                .font(Theme.Typography.readoutIcon)
-                                .foregroundColor(Theme.statusInfo)
-                        }
-                    }
+                    marked(current, change: combatant.temporaryHP != nil ? combatant.recentHPChange : nil, showsSign: combatant.temporaryHP != nil)
+                        + Text("/").foregroundColor(Theme.textTertiary)
+                        + marked(max, change: combatant.recentMaxHPChange, showsSign: combatant.recentMaxHPChange != nil)
                 }
             } else {
                 // No HP tracked: the heart stays, with a dash for each number.
                 Text("−/−").foregroundColor(Theme.textTertiary)
+            }
+        } footnote: {
+            // Temporary HP, when there is some: its own small shield and number.
+            if !playerViewEnabled, combatant.currentHP != nil, let temp = combatant.temporaryHP {
+                Text("\(Image(systemName: "shield.fill")) \(temp)")
+                    .foregroundColor(Theme.statusInfo)
             }
         }
     }
@@ -383,15 +381,12 @@ struct CombatantRow: View {
                 if playerViewEnabled {
                     Text(StatusBand.armorClass(ac)).foregroundColor(Theme.textSecondary)
                 } else {
-                    VStack(spacing: Theme.Spacing.xxs) {
-                        marked(ac, change: combatant.recentACChange, showsSign: combatant.recentACChange != nil)
-                        // How much of it is temporary, as temporary HP shows under HP.
-                        if let temp = combatant.temporaryAC {
-                            Text("+\(temp)")
-                                .font(Theme.Typography.readoutIcon)
-                                .foregroundColor(Theme.statusInfo)
-                        }
-                    }
+                    marked(ac, change: combatant.recentACChange, showsSign: combatant.recentACChange != nil)
+                }
+            } footnote: {
+                // How much of it is temporary, as temporary HP shows under HP.
+                if !playerViewEnabled, let temp = combatant.temporaryAC {
+                    Text("+\(temp)").foregroundColor(Theme.statusInfo)
                 }
             }
         }
@@ -401,8 +396,10 @@ struct CombatantRow: View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
             // Five sections, each with its own column, so the same section lines up
             // down the list: initiative, name, death-save tally, HP, AC. The tally's
-            // column is reserved even when the combatant is not dying.
-            HStack(spacing: Theme.Spacing.sm) {
+            // column is reserved even when the combatant is not dying. Aligned on
+            // the readouts' symbol and value, so a temporary-HP or AC footnote
+            // under one hangs below instead of pushing it up.
+            HStack(alignment: .readoutCenter, spacing: Theme.Spacing.sm) {
                 Text("\(combatant.initiative)")
                     .font(Theme.Typography.numeric(21))
                     .foregroundColor(isCurrent ? Theme.accent : Theme.textSecondary)
