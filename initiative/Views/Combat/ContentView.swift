@@ -97,12 +97,7 @@ struct ContentView: View {
                 TurnControlBar(
                     canGoBack: session.canGoToPreviousTurn,
                     canAdvance: !session.combatants.isEmpty,
-                    playerViewEnabled: Binding(
-                        get: { session.playerViewEnabled },
-                        set: { session.playerViewEnabled = $0 }
-                    ),
                     onPrevious: { session.previousTurn() },
-                    onShowLog: { showLog = true },
                     onNext: { advanceTurn() }
                 )
                 .padding(.horizontal, Theme.Spacing.lg)
@@ -115,13 +110,18 @@ struct ContentView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .toolbar {
-            // Icon-only (no "Menu" text): the same width as the + on the other
-            // side, which is what lets the title sit on the screen's centre line.
-            ToolbarItem(placement: .navigationBarLeading) {
+            // Two icons on each side, so both sides are the same width and the
+            // title sits on the screen's centre line without being measured.
+            ToolbarItemGroup(placement: .navigationBarLeading) {
                 Button(action: backToMenu) {
                     Image(systemName: "chevron.left")
                 }
                 .accessibilityLabel(backReturnsToPreviousScreen ? "Back" : "Back to Menu")
+
+                Button { showLog = true } label: {
+                    Image(systemName: "list.bullet.rectangle")
+                }
+                .accessibilityLabel("Log")
             }
 
             ToolbarItem(placement: .principal) {
@@ -136,14 +136,19 @@ struct ContentView: View {
                         .sectionLabel(color: Theme.accent)
                         .allowsHitTesting(false)
                 }
-                // Fills the space between the two buttons; with one icon on each
+                // Fills the space between the buttons; with two icons on each
                 // side that space is centred on the screen.
                 .frame(maxWidth: .infinity)
             }
 
             // "+" adds a combatant, exactly as it does on Creatures and
             // Encounters, in the same corner as on every other screen.
-            ToolbarItem(placement: .navigationBarTrailing) {
+            ToolbarItemGroup(placement: .navigationBarTrailing) {
+                Button { session.playerViewEnabled.toggle() } label: {
+                    Image(systemName: session.playerViewEnabled ? "eye.slash.fill" : "eye.fill")
+                }
+                .accessibilityLabel(session.playerViewEnabled ? "Show DM View" : "Show Player View")
+
                 Button(action: { showAddCombatant = true }) {
                     Image(systemName: "plus")
                 }
@@ -162,6 +167,7 @@ struct ContentView: View {
         .sheet(isPresented: $showLog) {
             LogView(session: session)
         }
+
         .sheet(isPresented: $showRoundEffects) {
             RoundEffectsView(session: session, isPresented: $showRoundEffects)
         }
@@ -204,22 +210,17 @@ struct ContentView: View {
     }
 }
 
-/// Previous, ⋯ and Next, pinned below the initiative list: the turn controls at
-/// the ends where the thumbs are, and a menu between them for player view and the
-/// log. Written once with the iOS 26 glass treatment applied conditionally, rather
-/// than as two near-identical copies of the whole bar. Separate buttons, not one
-/// fused bar (tried and it read as a single odd blob rather than distinct
-/// controls). Previous is the undo arrow, since it reverts to before the last
-/// Next; Next is a plain arrow on to the next combatant. The media-style ⏪/⏩
-/// they replaced read as "skip". The ⋯ was in the toolbar beside + for a while,
-/// but one button on the left and two on the right pushed the title off-centre,
-/// and measuring it back into place left an invisible title over the back button.
+/// Previous and Next, pinned below the initiative list at the ends where the
+/// thumbs are. Written once with the iOS 26 glass applied conditionally.
+/// Previous is the undo arrow, since it reverts to before the last Next; Next is
+/// a plain arrow on to the next combatant, filled with the accent as the screen's
+/// main action. The log and player view are in the toolbar, one each side.
+/// Tried before this: a ⋯ menu (in the toolbar, then in this bar), a small sheet,
+/// the log behind the round counter, and the four buttons down here in pairs.
 private struct TurnControlBar: View {
     let canGoBack: Bool
     let canAdvance: Bool
-    @Binding var playerViewEnabled: Bool
     let onPrevious: () -> Void
-    let onShowLog: () -> Void
     let onNext: () -> Void
 
     var body: some View {
@@ -234,68 +235,43 @@ private struct TurnControlBar: View {
 
     private func content(glass: Bool) -> some View {
         HStack(spacing: 0) {
-            barStyle(
-                Button(action: onPrevious) { barIcon("arrow.uturn.backward") }
-                    .accessibilityLabel("Previous Turn"),
-                tint: canGoBack ? Theme.accent : Theme.textTertiary,
-                glass: glass
-            )
-            .disabled(!canGoBack)
-
+            barButton("arrow.uturn.backward", label: "Previous Turn",
+                      tint: canGoBack ? Theme.accent : Theme.textTertiary, glass: glass, action: onPrevious)
+                .disabled(!canGoBack)
             Spacer()
-
-            // Player view has no button of its own, so the menu's symbol shows
-            // when it is on: a filled eye instead of the ⋯.
-            barStyle(
-                Menu {
-                    Toggle(isOn: $playerViewEnabled) {
-                        Label("Player View", systemImage: "eye")
-                    }
-                    Button(action: onShowLog) {
-                        Label("Log", systemImage: "list.bullet.clipboard")
-                    }
-                } label: {
-                    barIcon(playerViewEnabled ? "eye.fill" : "ellipsis")
-                }
-                .accessibilityLabel(playerViewEnabled ? "More, player view on" : "More"),
-                tint: Theme.textSecondary,
-                glass: glass
-            )
-
-            Spacer()
-
-            barStyle(
-                Button(action: onNext) { barIcon("arrow.right") }
-                    .accessibilityLabel("Next Turn"),
-                tint: Theme.accent,
-                glass: glass,
-                prominent: true
-            )
-            .disabled(!canAdvance)
+            barButton("arrow.right", label: "Next Turn", tint: Theme.accent, glass: glass, prominent: true, action: onNext)
+                .disabled(!canAdvance)
         }
     }
 
-    /// The symbol, in a frame with `.contentShape(Rectangle())` so the whole
-    /// circle is tappable, not only the symbol's own pixels.
-    private func barIcon(_ systemImage: String) -> some View {
-        Image(systemName: systemImage)
-            .font(Theme.Typography.iconPrimaryAction)
-            .frame(width: 52, height: 52)
-            .contentShape(Rectangle())
-    }
-
-    /// The glass circle on iOS 26 and later, a plain bordered circle before it.
-    /// Works for a `Menu` as well as a `Button`: both take the button style.
+    /// One circular symbol button: glass from iOS 26, a plain bordered circle
+    /// before it. The frame and `.contentShape` make the whole circle tappable,
+    /// not only the symbol's own pixels.
     @ViewBuilder
-    private func barStyle(_ control: some View, tint: Color, glass: Bool, prominent: Bool = false) -> some View {
+    private func barButton(
+        _ systemImage: String,
+        label: String,
+        tint: Color,
+        glass: Bool,
+        prominent: Bool = false,
+        action: @escaping () -> Void
+    ) -> some View {
+        let button = Button(action: action) {
+            Image(systemName: systemImage)
+                .font(Theme.Typography.iconPrimaryAction)
+                .frame(width: 52, height: 52)
+                .contentShape(Rectangle())
+        }
+        .accessibilityLabel(label)
+
         if glass, #available(iOS 26.0, *) {
             if prominent {
-                control.buttonStyle(.glassProminent).tint(Theme.accent)
+                button.buttonStyle(.glassProminent).tint(Theme.accent)
             } else {
-                control.buttonStyle(.glass).tint(tint)
+                button.buttonStyle(.glass).tint(tint)
             }
         } else {
-            control
+            button
                 .buttonStyle(.plain)
                 .foregroundColor(tint)
                 .background(Theme.background)

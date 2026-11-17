@@ -285,7 +285,7 @@ out-of-scope in an earlier draft of this section, was added — see the
 **Main Screen (Combat View)**
 ```
 ┌─────────────────────────────────┐
-│  ←   [Session Name / Round N]   +│  (toolbar, title on the centre line)
+│ ← ▤  [Session Name / Round N] 👁 +│  (toolbar, title on the centre line)
 ├─────────────────────────────────┤
 │                                 │
 │  20  [P1: Alice]                │
@@ -293,28 +293,34 @@ out-of-scope in an earlier draft of this section, was added — see the
 │  15  [P3: Carol]                │   big initiative number, far left)
 │                                 │
 ├─────────────────────────────────┤
-│  [↩ Previous]   [⋯]   [Next →]  │  (bottom bar)
+│  [↩ Previous]          [Next →] │  (bottom bar)
 └─────────────────────────────────┘
 ```
 
-**Toolbar**
-- **Back** (leading): icon-only (`chevron.left`, no "Menu" text): returns to
-  the main menu, autosaves first. Icon-only so it is the same width as the
-  trailing +, which is what keeps the title on the screen's centre line
+**Toolbar**: two icons on each side, grouped into one capsule per side, so
+both sides are about the same width and the title sits on the screen's centre
+line without being measured.
+- **Back** (leading, `chevron.left`, no "Menu" text): returns to the main menu,
+  autosaves first
+- **Log** (leading, `list.bullet.rectangle`): opens the session log (§9). Chosen
+  over `list.bullet.clipboard` because it is about as wide as the eye opposite;
+  the narrower clipboard pulled the title about 10 points off-centre
 - **Session name + Round N** (`.principal`): a two-line stack, editable name
-  field above, plain round counter below, neither a button. It fills the
-  space between the two buttons, which is centred because each side holds one
-  icon. A tap anywhere else on the screen ends editing. Two trailing buttons
-  (⋯ and +) were tried: the title went off-centre, and measuring it back into
-  place left an invisible title over the back button that swallowed taps
-- **Add Combatant** (trailing, `+`): opens the add-combatant modal
-  (`AddCombatantSheet`), the same top-right corner this action sits in on
+  field above, plain round counter below, neither a button. It fills the space
+  between the two sides. A tap anywhere else on the screen ends editing
+- **Player View** (trailing, `eye.fill`, `eye.slash.fill` while on): the
+  DM/player-view toggle (§12), one tap
+- **Add Combatant** (trailing, `+`, in the corner): opens the add-combatant
+  modal (`AddCombatantSheet`), the same top-right corner this action sits in on
   every other screen (Creatures, Encounters)
+- Tried and dropped: a ⋯ menu beside + (the title went off-centre, and
+  measuring it back into place left an invisible title over the back button
+  that swallowed taps), a ⋯ menu in the bottom bar (its menu grew oddly out of
+  the glass), a small options sheet, the log behind the round counter, and the
+  four buttons in the bottom bar in pairs
 
-**Bottom bar** (`TurnControlBar`): three separate circular buttons, Previous
-and Next at the ends where the thumbs are, ⋯ between them. A single fused pill
-sharing one background shape was tried first and reverted: it read as one odd
-blob rather than distinct controls.
+**Bottom bar** (`TurnControlBar`): Previous and Next, two separate circular
+buttons at the ends where the thumbs are.
 - **Previous** (`arrow.uturn.backward`, the undo arrow, since it reverts;
   the media-style `backward.fill` it replaced read as "skip back"):
   reverts to the previous turn's full state (turn index, reactions, effects,
@@ -322,11 +328,8 @@ blob rather than distinct controls.
 - **Next** (`arrow.right`, not `forward.fill`, which read as "skip";
   accent-tinted/prominent to read as the primary
   action): advance to next combatant, reset current's reaction to available
-- **More** (`ellipsis`, plain): a menu with **Player View** (a toggle with a
-  checkmark, §12) and **Log** (§9). While player view is on, the symbol is a
-  filled eye (`eye.fill`), since nothing else on screen says so
 - On iOS 26+ each button gets its own `.glassProminent`/`.glass` style inside
-  a shared `GlassEffectContainer` (Next prominent, the other two not) —
+  a shared `GlassEffectContainer` (Next prominent, Previous not) —
   it's the one floating control surface in the app, the natural fit per
   Apple's glass guidance (see the `ios-hig` skill). Falls
   back to plain circular buttons below iOS 26. No other button in the app
@@ -498,7 +501,7 @@ concrete need for more.
 ### 9. Combat Log
 
 Feed of what's happened during the current session — opened from the **Log**
-item in the bottom bar's ⋯ menu (§6). Grouped into
+button in the toolbar, top left (§6). Grouped into
 sections by round number, oldest round first; entries within a round are
 chronological too — reads top-to-bottom like a chat log. Opens scrolled to
 the bottom (most recent entry) via `ScrollViewReader`, since that's almost
@@ -584,7 +587,7 @@ per-combatant notes — all considered and declined on direct instruction.
 A single toggle (`CombatSession.playerViewEnabled`, not persisted — always
 starts in DM view on load/resume) controls whether HP/AC show exact numbers
 or an approximate read, for when the DM's screen is visible to players.
-There is exactly one control for it, the Player View toggle in the bottom bar's ⋯ menu (§6) —
+There is exactly one control for it, the eye button in the toolbar, top right (§6) —
 not duplicated per-screen — so it's unambiguous which state you're in no
 matter which screen you're looking at.
 
