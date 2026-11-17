@@ -9,11 +9,13 @@
 /* Begin PBXBuildFile section */
 		0531C55B50718D39601BD1AD /* HPReplayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2582A5BD6876D6C40BA8E388 /* HPReplayTests.swift */; };
 		0543723AC0B30CD5C7C48168 /* CloneNameSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8173780D06E58806AD3ECB9 /* CloneNameSheet.swift */; };
+		09485F7EA6C521719231C499 /* ConcentrationSuggestionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0D52CA866E7E810FB4987F9F /* ConcentrationSuggestionTests.swift */; };
 		09EC53CC26EE7304C61FC102 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611558F2EA5435F55E881973 /* SessionStore.swift */; };
 		0AA9FF4319791B99D1C8E708 /* ChallengeEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2FD5CFF1FB57A831740651F /* ChallengeEstimator.swift */; };
 		0B02BE41EBA8297838514FED /* KillReviveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20C4BD7EA18DC487773DC9EE /* KillReviveTests.swift */; };
 		0C9D76407CA487542C5CB0B4 /* EffectAppearanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29A0DC051B72937D75E4D13A /* EffectAppearanceTests.swift */; };
 		0EEDCD5F856176554A09AFA8 /* TemporaryHPTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FC2E8E196F28000B570FBDA /* TemporaryHPTests.swift */; };
+		12203A22D5F9C352D3EF52C2 /* ConcentrationSuggestion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2845F62E806660C37CFF4041 /* ConcentrationSuggestion.swift */; };
 		135F810397EE6974720E3937 /* AddCombatantSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66946360373B910B6577F839 /* AddCombatantSheet.swift */; };
 		13A8DA4DB83B14C9EB1F0D0E /* ConcentrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7265419AD964CF0CC71037D4 /* ConcentrationTests.swift */; };
 		13CAD1BE39F1418784A5E30D /* ThemePaletteTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99DA66AE6B5F5BF1053F2262 /* ThemePaletteTests.swift */; };
@@ -145,6 +147,7 @@
 		0A982CB39CF049A97EEAA74D /* EffectTiming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectTiming.swift; sourceTree = "<group>"; };
 		0B11A437D714C86669EA9B73 /* CooldownLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CooldownLibrary.swift; sourceTree = "<group>"; };
 		0B266DEA642A436C6B0171B6 /* Combatant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Combatant.swift; sourceTree = "<group>"; };
+		0D52CA866E7E810FB4987F9F /* ConcentrationSuggestionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConcentrationSuggestionTests.swift; sourceTree = "<group>"; };
 		0DB17045A5515409AF2FD680 /* TurnPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TurnPrompt.swift; sourceTree = "<group>"; };
 		0DF77870AF71085DEDC5C48B /* TemporaryACTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TemporaryACTests.swift; sourceTree = "<group>"; };
 		15E6FA70EC4196E9C9DA719A /* Format.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Format.swift; sourceTree = "<group>"; };
@@ -161,6 +164,7 @@
 		255483B3F433841EC3581AEB /* initiativeTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = initiativeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2582A5BD6876D6C40BA8E388 /* HPReplayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HPReplayTests.swift; sourceTree = "<group>"; };
 		267F7D9CB28FC2AB8F2427E2 /* ChallengeEstimatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeEstimatorTests.swift; sourceTree = "<group>"; };
+		2845F62E806660C37CFF4041 /* ConcentrationSuggestion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConcentrationSuggestion.swift; sourceTree = "<group>"; };
 		29A0DC051B72937D75E4D13A /* EffectAppearanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectAppearanceTests.swift; sourceTree = "<group>"; };
 		2A3EC616C676736F8FBC87E6 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
 		2B8E15FBD1B4F61AE31A398B /* PremadeBalanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremadeBalanceTests.swift; sourceTree = "<group>"; };
@@ -346,6 +350,8 @@
 				236012BD8426FA8D17541295 /* CodableCompatibilityTests.swift */,
 				0B266DEA642A436C6B0171B6 /* Combatant.swift */,
 				7F6ECF4848029671F86C86AA /* CombatSession.swift */,
+				2845F62E806660C37CFF4041 /* ConcentrationSuggestion.swift */,
+				0D52CA866E7E810FB4987F9F /* ConcentrationSuggestionTests.swift */,
 				7265419AD964CF0CC71037D4 /* ConcentrationTests.swift */,
 				99016F78C287D6C3DE0A2F71 /* DeadCombatantTurnTests.swift */,
 				7DF8601F37841A579037DFC0 /* DeathSaves.swift */,
@@ -637,6 +643,7 @@
 				69DD4C74860BC32E5BC9699C /* CombatantDraft.swift in Sources */,
 				D84C648D63F047719ED81D59 /* CombatantDraftFields.swift in Sources */,
 				1EF8B1914FF69AF45FB5AE0C /* ConcentrationCheckSheet.swift in Sources */,
+				12203A22D5F9C352D3EF52C2 /* ConcentrationSuggestion.swift in Sources */,
 				DDE914D718EDD7290930CEBC /* Conditions.swift in Sources */,
 				E2AC405FFEE29743B570354D /* ContentView.swift in Sources */,
 				225EF46465E704F3743A8A2E /* ControlButton.swift in Sources */,
@@ -704,6 +711,7 @@
 				F0AB6B80550C14113EDFDEAF /* CloneNameTests.swift in Sources */,
 				69ADF2074766356C68EFDEEB /* CodableCompatibilityTests.swift in Sources */,
 				36E8165557984F3D2CF84536 /* CombatantDraftTests.swift in Sources */,
+				09485F7EA6C521719231C499 /* ConcentrationSuggestionTests.swift in Sources */,
 				13A8DA4DB83B14C9EB1F0D0E /* ConcentrationTests.swift in Sources */,
 				76A17EE0A69324524CE36DCD /* ConditionsTests.swift in Sources */,
 				15F35E2EC4CECF8F9D19A2BA /* DeadCombatantTurnTests.swift in Sources */,

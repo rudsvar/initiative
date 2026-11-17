@@ -1012,6 +1012,13 @@ else uses, with the same inverted sense as before (failure ends it, success
 keeps it), and being dropped to 0 HP ends it without asking, since there's
 nothing left to roll for.
 
+**Offered, never assumed.** When a condition is put on someone during another
+combatant's turn (a chip tap or a new custom effect), the app asks "Is Alpha
+concentrating on Frightened?" with Concentrating / No, since it was most likely
+Alpha's spell. Not asked when the effect goes on the current combatant itself,
+when they already concentrate, or for a cooldown. Yes sets the flag and logs
+"Alpha started concentrating on Frightened"; the name isn't kept, as above.
+
 Reaction tracking (§3) sits in the same card for the same reason: neither it
 nor concentration is "wrong with you" or "can't do yet" like a condition or
 cooldown, but both are a plain on/off a DM checks constantly, so treating them

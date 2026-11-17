@@ -304,6 +304,23 @@ class CombatSession {
         )
     }
 
+    /// An offer to mark the combatant whose turn it is as concentrating, made
+    /// when a condition is put on someone else during that turn: it was most
+    /// likely their spell. Nil when there's nothing to offer: the effect is on
+    /// them, they already concentrate, or it's a cooldown (their own ability).
+    func concentrationSuggestion(forAdding effect: Effect, to targetID: UUID) -> ConcentrationSuggestion? {
+        guard effect.kind == .condition, let caster = currentCombatant,
+              caster.id != targetID, !caster.isConcentrating else { return nil }
+        return ConcentrationSuggestion(casterID: caster.id, casterName: caster.name, effectName: effect.name)
+    }
+
+    func accept(_ suggestion: ConcentrationSuggestion) {
+        guard let index = combatants.firstIndex(where: { $0.id == suggestion.casterID }),
+              !combatants[index].isConcentrating else { return }
+        combatants[index].isConcentrating = true
+        appendLog("\(suggestion.casterName) started concentrating on \(suggestion.effectName)", combatantId: suggestion.casterID)
+    }
+
     func applyHealing(to id: UUID, amount: Int) {
         guard amount > 0, let index = combatants.firstIndex(where: { $0.id == id }),
               let current = combatants[index].currentHP,

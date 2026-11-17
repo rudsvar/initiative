@@ -13,6 +13,11 @@ struct CombatantDetailView: View {
     /// Which effect the gear icon opened, or nil when adding a custom one.
     @State private var editingEffect: Effect?
     @State private var creatingCustom = false
+    /// "Is Alpha concentrating on Frightened?", asked after a condition goes on
+    /// this combatant during someone else's turn.
+    @State private var concentrationSuggestion: ConcentrationSuggestion?
+    /// Held while the custom-effect sheet closes, then asked.
+    @State private var queuedSuggestion: ConcentrationSuggestion?
     /// Which limited-use resource the cog opened, or nil when adding a new one.
     @State private var editingLimitedUse: LimitedUse?
     @State private var creatingLimitedUse = false
@@ -90,11 +95,26 @@ struct CombatantDetailView: View {
             }
         }
         .concentrationCheckSheet($concentrationCheck, session: session)
+        .alert(
+            concentrationSuggestion?.question ?? "",
+            isPresented: Binding(get: { concentrationSuggestion != nil }, set: { if !$0 { concentrationSuggestion = nil } }),
+            presenting: concentrationSuggestion
+        ) { suggestion in
+            Button("Concentrating") { session.accept(suggestion) }
+            Button("No", role: .cancel) {}
+        } message: { suggestion in
+            Text("It was put on during \(suggestion.casterName)'s turn.")
+        }
         .sheet(item: $editingEffect) { effect in
             EffectEditorView(session: session, combatantID: combatantId, existing: effect)
         }
-        .sheet(isPresented: $creatingCustom) {
-            EffectEditorView(session: session, combatantID: combatantId, existing: nil)
+        .sheet(isPresented: $creatingCustom, onDismiss: {
+            concentrationSuggestion = queuedSuggestion
+            queuedSuggestion = nil
+        }) {
+            EffectEditorView(session: session, combatantID: combatantId, existing: nil) { effect in
+                queuedSuggestion = session.concentrationSuggestion(forAdding: effect, to: combatantId)
+            }
         }
         .sheet(item: $editingLimitedUse) { use in
             LimitedUseEditorView(session: session, combatantID: combatantId, existing: use)
@@ -264,10 +284,9 @@ struct CombatantDetailView: View {
                             if let active {
                                 session.removeEffect(active.id, from: combatant.id)
                             } else {
-                                session.addEffect(
-                                    Effect(name: condition.name, durationType: condition.defaultDuration),
-                                    to: combatant.id
-                                )
+                                let effect = Effect(name: condition.name, durationType: condition.defaultDuration)
+                                session.addEffect(effect, to: combatant.id)
+                                concentrationSuggestion = session.concentrationSuggestion(forAdding: effect, to: combatant.id)
                             }
                         },
                         onConfigure: active.map { effect in { editingEffect = effect } }

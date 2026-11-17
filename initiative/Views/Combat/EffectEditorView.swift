@@ -14,13 +14,16 @@ struct EffectEditorView: View {
     /// nil when creating a custom effect from scratch.
     let existing: Effect?
     let kind: EffectKind
+    /// Called with a newly created effect (not an edit), once it is on the combatant.
+    let onCreated: (Effect) -> Void
 
     @Environment(\.dismiss) private var dismiss
 
     @State private var effectName: String
     @State private var timing: EffectTiming
 
-    init(session: CombatSession, combatantID: UUID, existing: Effect?) {
+    init(session: CombatSession, combatantID: UUID, existing: Effect?, onCreated: @escaping (Effect) -> Void = { _ in }) {
+        self.onCreated = onCreated
         self.session = session
         self.combatantID = combatantID
         self.existing = existing
@@ -111,10 +114,9 @@ struct EffectEditorView: View {
             updated.durationType = timing.durationType
             session.updateEffect(updated, on: combatantID)
         } else {
-            session.addEffect(
-                Effect(name: trimmedName, durationType: timing.durationType, kind: kind),
-                to: combatantID
-            )
+            let effect = Effect(name: trimmedName, durationType: timing.durationType, kind: kind)
+            session.addEffect(effect, to: combatantID)
+            onCreated(effect)
         }
         dismiss()
     }

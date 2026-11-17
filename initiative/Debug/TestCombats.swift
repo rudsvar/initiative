@@ -79,6 +79,16 @@ enum TestCombats {
         return session
     }
 
+    /// It's Alpha's turn. Open the goblin and tap Frightened: the app asks "Is Alpha
+    /// concentrating on Frightened?". Concentrating puts Alpha's concentration
+    /// chip on; tapping a condition on Alpha itself asks nothing.
+    static func concentrationIsOffered() -> CombatSession {
+        let session = CombatSession()
+        session.addCombatant(name: "Alpha", initiative: 20, maxHP: 22, armorClass: 14, isPlayer: true)
+        session.addCombatant(name: "Goblin", initiative: 10, maxHP: 7, armorClass: 15)
+        return session
+    }
+
     /// Alpha and Omega, both at 20 HP and AC 14. Changes to them show beside their
     /// numbers until their own turn starts.
     static func hpAndACChangesShowUntilTurnStarts() -> CombatSession {
@@ -158,6 +168,7 @@ extension TestCombats {
         "wrenWithArmorClass": wrenWithArmorClass,
         "buffsAreMarkedOnTheRoster": buffsAreMarkedOnTheRoster,
         "invisibleAsksAtTurnEnd": invisibleAsksAtTurnEnd,
+        "concentrationIsOffered": concentrationIsOffered,
         "hpAndACChangesShowUntilTurnStarts": hpAndACChangesShowUntilTurnStarts,
         "wolfWithChanges": wolfWithChanges,
         "dyingWithTally": dyingWithTally,
