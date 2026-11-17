@@ -328,9 +328,9 @@ struct CombatantRow: View {
 
     /// A number that is raised or lowered: bold, red when down, green when up. No
     /// amount on the roster: the detail screen shows how much.
-    private func marked(_ value: Int, change: Int?) -> Text {
+    private func marked(_ value: Int, change: Int?, raisedColor: Color = Theme.statusGood) -> Text {
         if let change {
-            let color = change < 0 ? Theme.statusBad : Theme.statusGood
+            let color = change < 0 ? Theme.statusBad : raisedColor
             return Text("\(value)").fontWeight(.bold).foregroundColor(color)
         }
         // Regular, not the readout's semibold, so a bold buff stands out from it.
@@ -348,7 +348,8 @@ struct CombatantRow: View {
                 } else {
                     // Marked for as long as temporary AC lasts, as current HP is
                     // for temporary HP; otherwise for a change since the turn began.
-                    marked(ac, change: combatant.temporaryAC != nil ? 1 : combatant.recentACChange)
+                    // Raised AC is blue, the shield's colour, rather than green.
+                    marked(ac, change: combatant.temporaryAC != nil ? 1 : combatant.recentACChange, raisedColor: Theme.statusInfo)
                 }
             }
         }
