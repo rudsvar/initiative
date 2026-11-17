@@ -881,7 +881,9 @@ class CombatSession {
 
     private func damagePrompts(for combatant: Combatant) -> [TurnPrompt] {
         combatant.effects.compactMap { effect in
-            guard let hint = Self.startOfTurnDamage[effect.name], combatant.currentHP != nil else { return nil }
+            // Case-insensitive, like every other effect-name match: the name can be typed.
+            guard let hint = Self.startOfTurnDamage.first(where: { $0.key.localizedCaseInsensitiveCompare(effect.name) == .orderedSame })?.value,
+                  combatant.currentHP != nil else { return nil }
             return TurnPrompt(
                 id: effect.id,
                 combatantID: combatant.id,

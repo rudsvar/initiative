@@ -65,4 +65,15 @@ final class BurningTests: XCTestCase {
         let followUp = session.nextTurn(resolving: [prompt: .success], damage: [prompt: 2])
         XCTAssertEqual(followUp.map(\.subject), [.concentration])
     }
+
+    /// Effect names are matched without regard to case everywhere else, and a
+    /// hand-typed "burning" is the same condition.
+    func testATypedBurningInAnyCaseAsksForDamage() {
+        let session = CombatSession()
+        session.addCombatant(name: "Dragon", initiative: 20)
+        session.addCombatant(name: "Wren", initiative: 10, maxHP: 20, isPlayer: true)
+        let wren = session.combatants.firstIndex { $0.name == "Wren" }!
+        session.combatants[wren].effects.append(Effect(name: "burning", durationType: .untilRemoved))
+        XCTAssertNotNil(damagePrompt(session))
+    }
 }
