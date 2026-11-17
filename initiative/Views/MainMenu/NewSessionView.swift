@@ -48,8 +48,16 @@ struct NewSessionView: View {
             // user's own prepared encounters are what they'll reach for most
             // starting a session, not the built-ins mixed in among them.
             let groups = ListSections.split(matches, isBuiltIn: \.isBuiltIn)
-            encounterSection("Yours", encounters: groups.mine)
-            encounterSection("Included", encounters: groups.builtIn)
+            let hasOwn = encounters.contains { !$0.isBuiltIn }
+            LibrarySectionLabel(
+                title: "Your encounters",
+                emptyHint: hasOwn ? nil : "No encounters of your own yet. Make one under Encounters."
+            )
+            encounterRows(groups.mine)
+            if !groups.builtIn.isEmpty {
+                LibrarySectionLabel(title: "All encounters")
+                encounterRows(groups.builtIn)
+            }
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
@@ -60,43 +68,17 @@ struct NewSessionView: View {
         .onAppear { encounters = encounterStore.listEncounters() }
     }
 
-    /// Hidden entirely when empty rather than shown as a bare header — same
-    /// rule the Encounters/Creatures screens use for their own Yours/Included
-    /// split.
-    ///
-    /// The title is a plain row inside the section, not `Section`'s own
-    /// `header:` — a `List` in `.plain` style pins that header slot so it
-    /// floats and follows the scroll instead of moving with its rows, which
-    /// reads as a stray label stuck to the top of the screen. A row placed
-    /// directly in the section's content scrolls normally like everything
-    /// else, which is what a page-local grouping label should do.
-    @ViewBuilder
-    private func encounterSection(_ title: String, encounters sectionEncounters: [Encounter]) -> some View {
-        if !sectionEncounters.isEmpty {
-            Section {
-                Text(title)
-                    .sectionLabel()
-                    .listRowInsets(EdgeInsets(
-                        top: Theme.Spacing.lg,
-                        leading: Theme.Spacing.md,
-                        bottom: Theme.Spacing.xs,
-                        trailing: Theme.Spacing.md
-                    ))
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-
-                ForEach(sectionEncounters) { encounter in
-                    Button(action: { startSession(from: encounter) }) {
-                        row(
-                            icon: "shield.lefthalf.filled",
-                            title: encounter.name,
-                            subtitle: entryDescription(for: encounter)
-                        )
-                    }
-                    .buttonStyle(CardRowButtonStyle())
-                    .cardRowLayout()
-                }
+    private func encounterRows(_ sectionEncounters: [Encounter]) -> some View {
+        ForEach(sectionEncounters) { encounter in
+            Button(action: { startSession(from: encounter) }) {
+                row(
+                    icon: "shield.lefthalf.filled",
+                    title: encounter.name,
+                    subtitle: entryDescription(for: encounter)
+                )
             }
+            .buttonStyle(CardRowButtonStyle())
+            .cardRowLayout()
         }
     }
 

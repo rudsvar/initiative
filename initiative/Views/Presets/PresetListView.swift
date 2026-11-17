@@ -59,25 +59,15 @@ struct PresetListView: View {
                 ContentUnavailableView.search(text: query)
             } else {
                 List {
-                    Text("Your \(noun.lowercased())s")
-                        .sectionLabel()
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
-                    if mine.isEmpty {
-                        Text(characters
+                    LibrarySectionLabel(
+                        title: "Your \(noun.lowercased())s",
+                        emptyHint: !mine.isEmpty ? nil : characters
                             ? "No characters yet. Clone a creature from the list below."
-                            : "No creatures of your own yet. Clone one from the list below, or add a new one.")
-                            .font(Theme.Typography.caption)
-                            .foregroundColor(Theme.textTertiary)
-                            .listRowSeparator(.hidden)
-                            .listRowBackground(Color.clear)
-                    }
+                            : "No creatures of your own yet. Clone one from the list below, or add a new one."
+                    )
                     rows(shownMine)
 
-                    Text("All creatures")
-                        .sectionLabel()
-                        .listRowSeparator(.hidden)
-                        .listRowBackground(Color.clear)
+                    LibrarySectionLabel(title: "All creatures")
                     rows(shownCreatures)
                 }
                 .listStyle(.plain)

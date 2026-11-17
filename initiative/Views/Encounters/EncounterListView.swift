@@ -41,9 +41,17 @@ struct EncounterListView: View {
                 ContentUnavailableView.search(text: query)
             } else {
                 let groups = ListSections.split(matches, isBuiltIn: \.isBuiltIn)
+                let hasOwn = encounters.contains { !$0.isBuiltIn }
                 List {
-                    section("Your encounters", encounters: groups.mine)
-                    section("All encounters", encounters: groups.builtIn)
+                    LibrarySectionLabel(
+                        title: "Your encounters",
+                        emptyHint: hasOwn ? nil : "No encounters of your own yet. Clone one from the list below, or add a new one."
+                    )
+                    rows(groups.mine)
+                    if !groups.builtIn.isEmpty {
+                        LibrarySectionLabel(title: "All encounters")
+                        rows(groups.builtIn)
+                    }
                 }
                 .listStyle(.plain)
                 .scrollContentBackground(.hidden)
@@ -80,51 +88,36 @@ struct EncounterListView: View {
         }
     }
 
-    /// Hidden entirely when empty rather than shown as a bare header — see the
-    /// matching helper on the Creatures screen, which both lists mirror.
-    ///
-    /// The title is a plain row inside the section, not `Section`'s own
-    /// `header:` — a `List` in `.plain` style pins that header slot so it
-    /// floats and follows the scroll instead of moving with its rows.
     @ViewBuilder
-    private func section(_ title: String, encounters sectionEncounters: [Encounter]) -> some View {
-        if !sectionEncounters.isEmpty {
-            Section {
-                Text(title)
-                    .sectionLabel()
-                    .listRowSeparator(.hidden)
-                    .listRowBackground(Color.clear)
-
-                ForEach(sectionEncounters) { encounter in
-                    CloneableRow(open: { editingEncounter = encounter }, clone: { cloning = encounter }) {
-                        VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
-                            Text(encounter.name)
-                                .font(Theme.Typography.rowTitle)
-                                .foregroundColor(Theme.textPrimary)
-                            if let worth = worth(of: encounter) {
-                                Text(worth)
-                                    .font(Theme.Typography.caption)
-                                    .foregroundColor(Theme.textTertiary)
-                            }
-                            Text(summary(for: encounter))
-                                .font(Theme.Typography.caption)
-                                .foregroundColor(Theme.textTertiary)
-                                .lineLimit(2)
-                                .multilineTextAlignment(.leading)
-                        }
+    private func rows(_ sectionEncounters: [Encounter]) -> some View {
+        ForEach(sectionEncounters) { encounter in
+            CloneableRow(open: { editingEncounter = encounter }, clone: { cloning = encounter }) {
+                VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
+                    Text(encounter.name)
+                        .font(Theme.Typography.rowTitle)
+                        .foregroundColor(Theme.textPrimary)
+                    if let worth = worth(of: encounter) {
+                        Text(worth)
+                            .font(Theme.Typography.caption)
+                            .foregroundColor(Theme.textTertiary)
                     }
-                    // Built-in encounters are fixtures: they can't be deleted, and
-                    // they can't be swiped at all. Same rule as the Creatures screen.
-                    .swipeActions(edge: .trailing) {
-                        if !encounter.isBuiltIn {
-                            Button(role: .destructive) {
-                                pendingDelete = encounter
-                            } label: {
-                                Label("Delete", systemImage: "trash")
-                            }
-                            .tint(Theme.deleteAction)
-                        }
+                    Text(summary(for: encounter))
+                        .font(Theme.Typography.caption)
+                        .foregroundColor(Theme.textTertiary)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                }
+            }
+            // Built-in encounters are fixtures: they can't be deleted, and
+            // they can't be swiped at all. Same rule as the Creatures screen.
+            .swipeActions(edge: .trailing) {
+                if !encounter.isBuiltIn {
+                    Button(role: .destructive) {
+                        pendingDelete = encounter
+                    } label: {
+                        Label("Delete", systemImage: "trash")
                     }
+                    .tint(Theme.deleteAction)
                 }
             }
         }

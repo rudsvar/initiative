@@ -228,15 +228,16 @@ project.yml            # XcodeGen configuration (regenerates .xcodeproj)
   drifted apart.
 - **The Creatures and Encounters screens are deliberately the same screen twice**
   — both are a saved library mixing built-in and user-made entries, so both get
-  search (`appSearchable`) and a Yours-above-Included split from the shared
+  search (`appSearchable`) and a "Your …" above "All …" split from the shared
   `ListSections`. Change one and change the other; the matching and splitting
   live outside the views precisely so they can be tested. New Session (a third,
   simpler picker) reuses both the same way.
 - **A `Section`'s title goes in its content, never its `header:` slot** — a
   `List` in `.plain` style pins whatever's in that slot so it floats and
-  trails the scroll instead of moving with its own rows. Every "Yours"/
-  "Included"-style label in the app (Creatures, Encounters, New Session,
-  Appearance) is a plain `Text` row placed first inside the section instead.
+  trails the scroll instead of moving with its own rows. The library headings
+  ("Your creatures", "All encounters"; Creatures, Characters, Encounters, New
+  Session) are `LibrarySectionLabel` rows: "Your …" always shows, with a hint
+  when it is empty. Appearance uses a plain `Text` row the same way.
 - **The palette's rules, not just its values** — `Theme`'s doc comment is the
   authority, but in short: surfaces come from the elevation ladder
   (`background` → `surface` → `surfaceRaised`) rather than from borders, borders

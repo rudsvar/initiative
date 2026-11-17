@@ -110,6 +110,7 @@
 		E2AC405FFEE29743B570354D /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6B3D18CAD7D9BF42DBDB61 /* ContentView.swift */; };
 		E34D5503DBD8A4402F2825AA /* PresetStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C155049E0F660B15183A193A /* PresetStoreTests.swift */; };
 		E424CC8B35F19372FF389522 /* CharacterKindPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = E39A23D6F350929CB9E41BC0 /* CharacterKindPicker.swift */; };
+		E490DEF6B706852D8D59289D /* LibrarySection.swift in Sources */ = {isa = PBXBuildFile; fileRef = DDCD42A1CA175A3725101A91 /* LibrarySection.swift */; };
 		E6FA4267FD3E97214D764D71 /* SessionStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2DB99B4AEE2D59113761B9B /* SessionStoreTests.swift */; };
 		E73C6119453B23253A219602 /* JSONFileDirectory.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1DE4628100DBB31580208DC /* JSONFileDirectory.swift */; };
 		E85ABEBA0550A2E492543652 /* Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = 68CEAFB61475843F4368122B /* Theme.swift */; };
@@ -242,6 +243,7 @@
 		D4F6E0061994D32447464ED0 /* EffectEditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectEditorView.swift; sourceTree = "<group>"; };
 		D970AC13228D90BB0630DD34 /* AppearanceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppearanceView.swift; sourceTree = "<group>"; };
 		DB8DD2DEFF231D1EBD80E195 /* LimitedUseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LimitedUseTests.swift; sourceTree = "<group>"; };
+		DDCD42A1CA175A3725101A91 /* LibrarySection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LibrarySection.swift; sourceTree = "<group>"; };
 		E385BF84D5CF11F834092397 /* TestCharacters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TestCharacters.swift; sourceTree = "<group>"; };
 		E39383CFD3BB9F2BD85E7792 /* StoreLocationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StoreLocationTests.swift; sourceTree = "<group>"; };
 		E39A23D6F350929CB9E41BC0 /* CharacterKindPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CharacterKindPicker.swift; sourceTree = "<group>"; };
@@ -452,6 +454,7 @@
 				29A0DC051B72937D75E4D13A /* EffectAppearanceTests.swift */,
 				6D6427D74AA5360A780F88C8 /* FlowLayout.swift */,
 				15E6FA70EC4196E9C9DA719A /* Format.swift */,
+				DDCD42A1CA175A3725101A91 /* LibrarySection.swift */,
 				4AF22B663D7FA19C198D9258 /* ListSections.swift */,
 				43F9C4DC2EAC8723C1CF43AF /* ListSectionsTests.swift */,
 				CC27CA470043E0B89A9580AA /* SearchBar.swift */,
@@ -642,6 +645,7 @@
 				2723E9ECA0DA43828FF450D2 /* Format.swift in Sources */,
 				27FA5AC8318737D254E3AE64 /* HealthControlRow.swift in Sources */,
 				E73C6119453B23253A219602 /* JSONFileDirectory.swift in Sources */,
+				E490DEF6B706852D8D59289D /* LibrarySection.swift in Sources */,
 				453BB0488A8740205F8EEB32 /* LimitedUse.swift in Sources */,
 				E0B050CE61AD8A4D0D279D0D /* LimitedUseEditorView.swift in Sources */,
 				EBBA0AC3F663F701FA9BBF31 /* ListSections.swift in Sources */,
