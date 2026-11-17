@@ -270,6 +270,13 @@ class CombatSession {
         appendLog("\(combatants[index].name) gained \(amount) temporary AC", combatantId: id)
     }
 
+    func removeTemporaryAC(from id: UUID) {
+        guard let index = combatants.firstIndex(where: { $0.id == id }),
+              combatants[index].temporaryAC != nil else { return }
+        combatants[index].temporaryAC = nil
+        appendLog("\(combatants[index].name) lost temporary AC", combatantId: id)
+    }
+
     static func concentrationDC(damage: Int) -> Int {
         Swift.max(10, damage / 2)
     }

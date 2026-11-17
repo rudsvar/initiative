@@ -404,13 +404,22 @@ struct CombatantRow: View {
 
     @ViewBuilder
     private var armorClassRow: some View {
-        if let ac = combatant.armorClass {
+        // The armor class in play, temporary AC included.
+        if let ac = combatant.effectiveArmorClass {
             StatReadout(systemImage: "shield.fill", iconColor: Theme.statusInfo, column: .ac) {
                 // In player view HP and AC are bands for every combatant.
                 if playerViewEnabled {
                     Text(StatusBand.armorClass(ac)).foregroundColor(Theme.textSecondary)
                 } else {
-                    marked(ac, change: combatant.recentACChange, showsSign: combatant.recentACChange != nil)
+                    VStack(spacing: Theme.Spacing.xxs) {
+                        marked(ac, change: combatant.recentACChange, showsSign: combatant.recentACChange != nil)
+                        // How much of it is temporary, as temporary HP shows under HP.
+                        if let temp = combatant.temporaryAC {
+                            Text("+\(temp)")
+                                .font(Theme.Typography.readoutIcon)
+                                .foregroundColor(Theme.statusInfo)
+                        }
+                    }
                 }
             }
         }

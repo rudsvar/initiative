@@ -70,7 +70,15 @@ struct ArmorClassControlRow: View {
                     }
                     grantText = ""
                 }
+                if combatant.temporaryAC != nil {
+                    Button("Remove temporary AC", role: .destructive) {
+                        session.removeTemporaryAC(from: combatantId)
+                        grantText = ""
+                    }
+                }
                 Button("Cancel", role: .cancel) { grantText = "" }
+            } message: {
+                Text("Added to armor class for this fight. A new grant replaces the old one.")
             }
         }
     }

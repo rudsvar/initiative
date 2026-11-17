@@ -11,9 +11,15 @@ struct Combatant: Identifiable, Codable {
     /// A buffer taken off before real hit points. Not healing: it doesn't refill,
     /// isn't capped by `maxHP`, and once spent it's gone.
     var temporaryHP: Int?
-    /// A buffer on armor class for this fight, like temporary HP: replaced by a
-    /// new grant, not stacked, and gone once the fight ends.
+    /// A bonus on armor class for this fight, like temporary HP: replaced by a new
+    /// grant, not stacked, removed by hand, and never copied back to the library.
+    /// Counted in `effectiveArmorClass`.
     var temporaryAC: Int?
+    /// The armor class in play: base plus any temporary AC. Nil when AC isn't tracked.
+    var effectiveArmorClass: Int? {
+        armorClass.map { $0 + (temporaryAC ?? 0) }
+    }
+
     /// Net change to current HP since this combatant's turn last started (damage is
     /// negative, healing positive). Shown beside current HP, cleared at turn start.
     var recentHPChange: Int?

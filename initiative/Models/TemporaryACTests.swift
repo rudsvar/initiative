@@ -36,4 +36,30 @@ final class TemporaryACTests: XCTestCase {
         let decoded = try JSONDecoder().decode(Combatant.self, from: JSONEncoder().encode(combatant))
         XCTAssertEqual(decoded.temporaryAC, 3)
     }
+
+    /// Temporary AC counts: the armor class the table uses is base plus temporary.
+    func testArmorClassInPlayIncludesTemporaryAC() {
+        let session = TestCombats.wrenWithArmorClass()
+        let wren = session.combatants[0].id
+        let base = session.combatants[0].armorClass!
+        XCTAssertEqual(session.combatants[0].effectiveArmorClass, base)
+        session.grantTemporaryAC(to: wren, amount: 2)
+        XCTAssertEqual(session.combatants[0].effectiveArmorClass, base + 2)
+        XCTAssertEqual(session.combatants[0].armorClass, base)
+    }
+
+    func testNoArmorClassMeansNoneInPlay() {
+        var combatant = Combatant(name: "Wren", initiative: 12)
+        combatant.temporaryAC = 2
+        XCTAssertNil(combatant.effectiveArmorClass)
+    }
+
+    func testTemporaryACCanBeRemoved() {
+        let session = TestCombats.wrenWithArmorClass()
+        let wren = session.combatants[0].id
+        session.grantTemporaryAC(to: wren, amount: 2)
+        session.removeTemporaryAC(from: wren)
+        XCTAssertNil(session.combatants[0].temporaryAC)
+        XCTAssertEqual(session.log.last?.text, "Wren lost temporary AC")
+    }
 }
