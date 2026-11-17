@@ -62,6 +62,15 @@ extension View {
         modifier(SelfSizingSheetModifier())
     }
 
+    /// A small popup sheet: sized to its content, on the system's own sheet
+    /// material so it reads as a normal iOS sheet (a `Theme` fill looked out of
+    /// place against the system-drawn sheet chrome around it). Every small popup
+    /// uses this, so they all look alike.
+    func compactSheet() -> some View {
+        selfSizingSheet()
+            .presentationBackground(.regularMaterial)
+    }
+
 }
 
 extension View {

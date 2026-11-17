@@ -79,8 +79,7 @@ struct LimitedUseEditorView: View {
         }
         .padding(Theme.Spacing.lg)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Theme.background)
-        .selfSizingSheet()
+        .compactSheet()
     }
 
     private func save() {

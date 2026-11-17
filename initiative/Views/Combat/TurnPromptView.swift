@@ -12,7 +12,7 @@ import SwiftUI
 /// wrong side of that bet. Tapping an answer resolves it immediately; the
 /// sheet dismisses itself the instant the last one is answered.
 ///
-/// A compact card rather than a full navigation screen — see `selfSizingSheet()`.
+/// A compact card rather than a full navigation screen — see `compactSheet()`.
 struct TurnPromptView: View {
     let prompts: [TurnPrompt]
     /// Called with every prompt's outcome once all of them have one, and the amount
@@ -46,18 +46,9 @@ struct TurnPromptView: View {
                 promptCard(current)
             }
         }
-        // The system's own sheet material, not a custom `Theme` fill — a
-        // solid `Theme.surface` background here (tried right before this)
-        // still looked out of place against the native sheet chrome around
-        // it (drag indicator, corner radius, the dimmed backdrop behind it),
-        // since those are rendered by the system and don't know about this
-        // app's palette. `.regularMaterial` is what native sheets actually
-        // use, adapts to light/dark automatically, and reads as "a normal
-        // iOS sheet" instead of a custom card wearing sheet chrome.
         .padding(Theme.Spacing.lg)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .selfSizingSheet()
-        .presentationBackground(.regularMaterial)
+        .compactSheet()
         .onChange(of: answers) { _, newValue in
             guard newValue.count == prompts.count else { return }
             onComplete(newValue, damage)

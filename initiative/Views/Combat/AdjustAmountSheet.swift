@@ -52,8 +52,7 @@ struct AdjustAmountSheet: View {
         }
         .padding(Theme.Spacing.lg)
         .frame(maxWidth: .infinity)
-        .presentationDetents([.height(260)])
-        .presentationBackground(.regularMaterial)
+        .compactSheet()
     }
 
     private func stepButton(_ systemImage: String, label: String, action: @escaping () -> Void) -> some View {
