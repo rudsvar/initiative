@@ -9,6 +9,7 @@ struct SelectAllTextField: UIViewRepresentable {
     var placeholder: String = ""
     var font: UIFont = .preferredFont(forTextStyle: .headline)
     var textAlignment: NSTextAlignment = .center
+    var keyboardType: UIKeyboardType = .default
     // UIKit views don't participate in SwiftUI's Theme (a plain UITextField
     // defaults to black text), so the theme color has to be passed in and
     // reapplied in updateUIView explicitly on every re-render — otherwise this
@@ -21,6 +22,7 @@ struct SelectAllTextField: UIViewRepresentable {
         field.delegate = context.coordinator
         field.font = font
         field.textAlignment = textAlignment
+        field.keyboardType = keyboardType
         field.returnKeyType = .done
         field.addTarget(context.coordinator, action: #selector(Coordinator.textChanged), for: .editingChanged)
         return field
@@ -80,6 +82,12 @@ extension UIFont {
     /// back to the original font if the serif design isn't available.
     var serif: UIFont {
         guard let descriptor = fontDescriptor.withDesign(.serif) else { return self }
+        return UIFont(descriptor: descriptor, size: pointSize)
+    }
+
+    /// The same text style at semibold, matching `Theme.Typography.bodyEmphasis`.
+    var semibold: UIFont {
+        let descriptor = fontDescriptor.addingAttributes([.traits: [UIFontDescriptor.TraitKey.weight: UIFont.Weight.semibold]])
         return UIFont(descriptor: descriptor, size: pointSize)
     }
 }

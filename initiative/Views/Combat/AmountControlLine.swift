@@ -49,11 +49,13 @@ struct AmountControlLine: View {
             ControlButton(systemImage: "minus", tint: Theme.statusBad, label: decreaseLabel) {
                 decrease(Self.amount(from: amount))
             }
-            TextField("1", text: $amount)
-                .keyboardType(.numberPad)
-                .multilineTextAlignment(.center)
-                .font(Theme.Typography.bodyEmphasis)
-                .foregroundColor(Theme.textPrimary)
+            // Selects its number when tapped, so a new amount types straight over it.
+            SelectAllTextField(
+                text: $amount,
+                placeholder: "1",
+                font: .preferredFont(forTextStyle: .subheadline).semibold,
+                keyboardType: .numberPad
+            )
                 .frame(width: 48, height: 38)
                 .background(Theme.surfaceRaised)
                 .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous))
