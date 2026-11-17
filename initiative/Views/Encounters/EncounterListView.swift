@@ -250,76 +250,21 @@ private struct EditEncounterView: View {
     }
 }
 
+/// An encounter's Add Creature: the same fields and picker as Add Combatant
+/// (`CombatantDraftFields`), creatures only.
 private struct AddEncounterEntryView: View {
     let presetStore: PresetStore
     let onAdd: (EncounterEntry) -> Void
 
     @Environment(\.dismiss) private var dismiss
-    @State private var name = ""
-    @State private var hpText = ""
-    @State private var acText = ""
-    @State private var countText = ""
-    @State private var matchedPresetBonus: Int?
-    @State private var presets: [CreaturePreset] = []
+    @State private var draft = CombatantDraft()
 
     var body: some View {
         NavigationStack {
-            ZStack {
-                Form {
-                    if !presets.isEmpty {
-                        Section("Creature") {
-                            Menu {
-                                ForEach(presets) { preset in
-                                    Button(preset.name) { selectPreset(preset) }
-                                }
-                            } label: {
-                                HStack {
-                                    Text("Choose Creature")
-                                    Spacer()
-                                    Text(name.isEmpty ? "None" : name)
-                                        .foregroundColor(Theme.textTertiary)
-                                }
-                            }
-                        }
-                        .listRowBackground(Theme.surfaceRaised)
-                    }
-
-                    Section("Name") {
-                        TextField(text: $name) {
-                            Text("Combatant name").foregroundColor(Theme.placeholderText)
-                        }
-                            .onChange(of: name) { _, newValue in
-                                prefillFromPreset(named: newValue)
-                            }
-                    }
-                    .listRowBackground(Theme.surfaceRaised)
-                    Section("Max HP") {
-                        TextField(text: $hpText) {
-                            Text("Optional").foregroundColor(Theme.placeholderText)
-                        }
-                            .keyboardType(.numberPad)
-                    }
-                    .listRowBackground(Theme.surfaceRaised)
-                    Section("Armor Class") {
-                        TextField(text: $acText) {
-                            Text("Optional").foregroundColor(Theme.placeholderText)
-                        }
-                            .keyboardType(.numberPad)
-                    }
-                    .listRowBackground(Theme.surfaceRaised)
-                    Section("Count") {
-                        TextField(text: $countText) {
-                            Text("1").foregroundColor(Theme.placeholderText)
-                        }
-                            .keyboardType(.numberPad)
-                    }
-                    .listRowBackground(Theme.surfaceRaised)
-                }
-                // Row background goes on each Section, never on the Form:
-                // attached to the Form it is silently ignored, which is why
-                // every one of these was rendering system grey in all nine themes.
-                .scrollContentBackground(.hidden)
+            Form {
+                CombatantDraftFields(draft: $draft, presetStore: presetStore, offersCharacters: false)
             }
+            .scrollContentBackground(.hidden)
             .themedScreen()
             .navigationTitle("Add Creature")
             .navigationBarTitleDisplayMode(.inline)
@@ -330,42 +275,21 @@ private struct AddEncounterEntryView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Add") { addEntry() }
                         .fontWeight(.semibold)
-                        .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+                        .disabled(!draft.isValid)
                 }
             }
-            .onAppear { presets = presetStore.listPresets() }
         }
-    }
-
-    private func selectPreset(_ preset: CreaturePreset) {
-        name = preset.name
-        hpText = preset.maxHP.map(String.init) ?? ""
-        acText = preset.armorClass.map(String.init) ?? ""
-        matchedPresetBonus = preset.initiativeBonus
-    }
-
-    private func prefillFromPreset(named newName: String) {
-        guard let preset = presetStore.preset(named: newName) else {
-            matchedPresetBonus = nil
-            return
-        }
-        if hpText.isEmpty, let maxHP = preset.maxHP { hpText = String(maxHP) }
-        if acText.isEmpty, let armorClass = preset.armorClass { acText = String(armorClass) }
-        matchedPresetBonus = preset.initiativeBonus
     }
 
     private func addEntry() {
-        let trimmedName = name.trimmingCharacters(in: .whitespaces)
-        guard !trimmedName.isEmpty else { return }
-
-        let entry = EncounterEntry(
-            name: trimmedName,
-            maxHP: Int(hpText),
-            armorClass: Int(acText),
-            initiativeBonus: matchedPresetBonus,
-            count: max(1, Int(countText) ?? 1)
-        )
-        onAdd(entry)
+        guard draft.isValid else { return }
+        onAdd(EncounterEntry(
+            name: draft.trimmedName,
+            maxHP: draft.maxHP,
+            armorClass: draft.armorClass,
+            initiativeBonus: draft.initiativeBonus,
+            count: draft.count
+        ))
         dismiss()
     }
 }
