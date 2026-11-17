@@ -548,7 +548,8 @@ systems — not trademarked, confirmed before adding this.
 On the detail screen the Armor Class card has two lines in the Health card's
 layout (`AmountControlLine`, shared by both cards): **Armor Class** and **Temp
 AC**, each with − / amount / +. Temporary AC is added to armor class for the
-fight and taken off by hand, never touching the base. The roster shows the total
+fight and taken off by hand, never touching the base. Tapping any number on either card asks for an exact value
+(0 removes a temporary amount); see "Setting values directly". The roster shows the total
 in play, bold blue while temporary AC lasts.
 
 ### 11. Standard Conditions
