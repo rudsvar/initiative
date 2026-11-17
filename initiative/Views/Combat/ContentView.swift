@@ -21,6 +21,10 @@ struct ContentView: View {
     /// resolves directly, since the turn has already moved.
     @State private var raisedChecks: [TurnPrompt] = []
     @State private var concentrationCheck: TurnPrompt?
+    /// The title's width, measured so it stays on the screen's centre line: the
+    /// left has one button and the right two, and a title wider than the room
+    /// either side of the centre would be pushed off it.
+    @State private var titleWidth: CGFloat?
 
     private var nameBinding: Binding<String> {
         Binding(get: { session.name }, set: { session.name = $0 })
@@ -94,10 +98,7 @@ struct ContentView: View {
                 TurnControlBar(
                     canGoBack: session.canGoToPreviousTurn,
                     canAdvance: !session.combatants.isEmpty,
-                    playerViewEnabled: session.playerViewEnabled,
                     onPrevious: { session.previousTurn() },
-                    onTogglePlayerView: { session.playerViewEnabled.toggle() },
-                    onShowLog: { showLog = true },
                     onNext: { advanceTurn() }
                 )
                 .padding(.horizontal, Theme.Spacing.lg)
@@ -108,9 +109,7 @@ struct ContentView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .toolbar {
-            // Icon-only (no "Menu" text): keeps this item the same width as the
-            // trailing hamburger button below, which is what lets .principal
-            // center the session name/round on the true screen center.
+            // Icon-only (no "Menu" text), so the title has room.
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: backToMenu) {
                     Image(systemName: "chevron.left")
@@ -130,15 +129,38 @@ struct ContentView: View {
                         .sectionLabel(color: Theme.accent)
                         .allowsHitTesting(false)
                 }
-                .frame(width: 200)
+                .frame(width: titleWidth)
             }
 
             // "+" adds a combatant, exactly as it does on Creatures and
-            // Encounters. The options menu it replaced moved to the bottom bar,
-            // where the turn controls already are — the two things you reach for
-            // mid-combat now sit in the same place, and the one thing that's the
-            // same on every screen is in the same corner on every screen.
-            ToolbarItem(placement: .navigationBarTrailing) {
+            // Encounters, so it keeps the corner to itself. The ⋯ menu beside it
+            // holds what is reached for less often: player view and the log.
+            ToolbarItemGroup(placement: .navigationBarTrailing) {
+                Menu {
+                    Toggle(isOn: Binding(
+                        get: { session.playerViewEnabled },
+                        set: { session.playerViewEnabled = $0 }
+                    )) {
+                        Label("Player View", systemImage: "eye")
+                    }
+                    Button { showLog = true } label: {
+                        Label("Log", systemImage: "list.bullet.clipboard")
+                    }
+                } label: {
+                    // Player view has no button of its own, so the menu's symbol
+                    // shows when it is on: a filled eye instead of the ⋯.
+                    Image(systemName: session.playerViewEnabled ? "eye.circle.fill" : "ellipsis.circle")
+                        .background(
+                            GeometryReader { proxy in
+                                let minX = proxy.frame(in: .global).minX
+                                Color.clear
+                                    .onAppear { fitTitle(besideMenuAt: minX) }
+                                    .onChange(of: minX) { _, new in fitTitle(besideMenuAt: new) }
+                            }
+                        )
+                }
+                .accessibilityLabel(session.playerViewEnabled ? "More, player view on" : "More")
+
                 Button(action: { showAddCombatant = true }) {
                     Image(systemName: "plus")
                 }
@@ -187,6 +209,13 @@ struct ContentView: View {
         }
     }
 
+    /// Room for the title: twice the distance from the screen's centre to the ⋯
+    /// symbol, less the glass capsule around it and a gap.
+    private func fitTitle(besideMenuAt menuMinX: CGFloat) {
+        let half = menuMinX - UIScreen.main.bounds.midX - Theme.Spacing.xl
+        titleWidth = max(0, 2 * half)
+    }
+
     private func backToMenu() {
         autosave()
         path.removeLast(path.count)
@@ -199,30 +228,18 @@ struct ContentView: View {
     }
 }
 
-/// Previous / options / Next, pinned below the initiative list. Written once with
-/// the iOS 26 glass treatment applied conditionally, rather than as two
-/// near-identical copies of the whole bar — the layout is the same either way,
-/// only the button material differs.
-///
-/// The centre slot holds the session's own controls (player view, log) rather
-/// than Add: adding a combatant is the same action it is on every other screen
-/// and belongs in the same top-right corner, while these two exist only here.
-/// Four separate buttons, not one fused bar (tried and it read as a single
-/// odd blob rather than distinct controls) — Log paired next to Previous,
-/// View paired next to Next, evenly spaced across the width. Previous is the
-/// undo arrow, since it reverts to before the last Next; Next is a plain
-/// arrow on to the next combatant. The media-style ⏪/⏩ they replaced read as
-/// "skip". View and Log used
-/// to live behind a hamburger `Menu` — direct, always-visible buttons are one
-/// tap instead of two for the pair of things reached for almost as often as
-/// Next itself.
+/// Previous and Next, pinned below the initiative list, one at each end where
+/// the thumbs are. Written once with the iOS 26 glass treatment applied
+/// conditionally, rather than as two near-identical copies of the whole bar.
+/// Separate buttons, not one fused bar (tried and it read as a single odd blob
+/// rather than distinct controls). Previous is the undo arrow, since it reverts
+/// to before the last Next; Next is a plain arrow on to the next combatant. The
+/// media-style ⏪/⏩ they replaced read as "skip". Player view and the log live
+/// in the ⋯ menu at the top right.
 private struct TurnControlBar: View {
     let canGoBack: Bool
     let canAdvance: Bool
-    let playerViewEnabled: Bool
     let onPrevious: () -> Void
-    let onTogglePlayerView: () -> Void
-    let onShowLog: () -> Void
     let onNext: () -> Void
 
     var body: some View {
@@ -237,8 +254,6 @@ private struct TurnControlBar: View {
 
     private func content(glass: Bool) -> some View {
         HStack(spacing: 0) {
-            // Arrows on the ends, View/Log in the middle two slots — Log
-            // still sits next to Previous and View next to Next.
             barButton(
                 "arrow.uturn.backward",
                 label: "Previous Turn",
@@ -247,23 +262,11 @@ private struct TurnControlBar: View {
                 action: onPrevious
             )
             .disabled(!canGoBack)
-            .frame(maxWidth: .infinity)
 
-            barButton("list.bullet.clipboard", label: "Log", tint: Theme.textSecondary, glass: glass, action: onShowLog)
-                .frame(maxWidth: .infinity)
-
-            barButton(
-                playerViewEnabled ? "eye.slash.fill" : "eye.fill",
-                label: playerViewEnabled ? "Show DM View" : "Show Player View",
-                tint: Theme.textSecondary,
-                glass: glass,
-                action: onTogglePlayerView
-            )
-            .frame(maxWidth: .infinity)
+            Spacer()
 
             barButton("arrow.right", label: "Next Turn", tint: Theme.accent, glass: glass, prominent: true, action: onNext)
                 .disabled(!canAdvance)
-                .frame(maxWidth: .infinity)
         }
     }
 
