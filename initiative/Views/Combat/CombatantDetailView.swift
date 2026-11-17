@@ -62,6 +62,8 @@ struct CombatantDetailView: View {
                     actionsCard(for: combatant)
                     effectsCard(for: combatant)
                 }
+                // The Health and Armor Class rows' labels share one column.
+                .sharedLabelColumn()
                 .padding(Theme.Spacing.lg)
             }
         }

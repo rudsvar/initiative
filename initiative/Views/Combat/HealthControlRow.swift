@@ -162,10 +162,7 @@ struct ValueAmountLine: View {
 
     var body: some View {
         HStack(spacing: Theme.Spacing.sm) {
-            Text(label)
-                .font(Theme.Typography.caption)
-                .foregroundColor(Theme.textTertiary)
-                .frame(width: 84, alignment: .leading)
+            ColumnLabel(label)
             Button(action: onTapValue) {
                 Text(value)
                     .font(Theme.Typography.statLarge)
@@ -210,10 +207,7 @@ struct TempValueLine: View {
 
     var body: some View {
         HStack(spacing: Theme.Spacing.sm) {
-            Text(label)
-                .font(Theme.Typography.caption)
-                .foregroundColor(Theme.textTertiary)
-                .frame(width: 84, alignment: .leading)
+            ColumnLabel(label)
             Button(action: onTapValue) {
                 Text(value ?? "none")
                     .font(Theme.Typography.statLarge)
