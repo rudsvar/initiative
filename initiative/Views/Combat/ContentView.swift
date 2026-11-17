@@ -332,44 +332,63 @@ struct CombatantRow: View {
                     let band = StatusBand.health(current: current, max: max)
                     Text(band.label).foregroundColor(band.color)
                 } else {
-                    marked(current, change: combatant.temporaryHP != nil ? combatant.recentHPChange : nil, showsSign: combatant.temporaryHP != nil)
-                        + Text("/").foregroundColor(Theme.textTertiary)
-                        + marked(max, change: combatant.recentMaxHPChange, showsSign: combatant.recentMaxHPChange != nil)
+                    currentText(current) + slash + maxText(max)
                 }
             } else {
                 // No HP tracked: the heart stays, with a dash for each number.
                 Text("−/−").foregroundColor(Theme.textTertiary)
             }
         } footnote: {
-            // Temporary HP, when there is some: its own small shield and number.
-            if !playerViewEnabled, combatant.currentHP != nil, let temp = combatant.temporaryHP {
-                Text("\(Image(systemName: "shield.fill")) \(temp)")
-                    .foregroundColor(Theme.statusInfo)
+            if !playerViewEnabled, let current = combatant.currentHP, let max = combatant.maxHP {
+                healthFootnote(current: current, max: max)
+            }
+        }
+    }
+
+    private func currentText(_ current: Int) -> Text {
+        marked(current, change: combatant.temporaryHP != nil ? combatant.recentHPChange : nil)
+    }
+    private func maxText(_ max: Int) -> Text { marked(max, change: combatant.recentMaxHPChange) }
+    private var slash: Text { Text("/").foregroundColor(Theme.textTertiary) }
+
+    /// Temporary HP as "+N" under current HP, and a change to max HP as "+N" or
+    /// "−N" under max, as temporary AC shows under AC. The first row is the value
+    /// again, invisible and zero-height, so the grid's columns take its measured
+    /// widths and each amount centres under its own number.
+    @ViewBuilder
+    private func healthFootnote(current: Int, max: Int) -> some View {
+        let temp = combatant.temporaryHP
+        let maxChange = combatant.recentMaxHPChange
+        if temp != nil || maxChange != nil {
+            Grid(horizontalSpacing: 0, verticalSpacing: 0) {
+                GridRow {
+                    currentText(current)
+                    slash
+                    maxText(max)
+                }
+                .font(Theme.Typography.readout)
+                .frame(height: 0)
+                .hidden()
+                GridRow {
+                    Text(temp.map { "+\($0)" } ?? "")
+                        .foregroundColor(Theme.statusInfo)
+                    Color.clear.frame(width: 0, height: 0)
+                    Text(maxChange.map { $0 < 0 ? "−\(-$0)" : "+\($0)" } ?? "")
+                        .foregroundColor((maxChange ?? 0) < 0 ? Theme.statusBad : Theme.statusGood)
+                }
+                .fixedSize()
             }
         }
     }
 
     /// A number that changed since its turn started: bold, red when down, green when up.
-    /// When `showsSign` is set, a small + or − sits at its top right, so a changed max
-    /// or armor class reads as such. Current HP sets it only while temp HP is active.
-    /// No amount here: the detail screen shows that.
-    private func marked(_ value: Int, change: Int?, showsSign: Bool = false) -> Text {
-        let color = (change ?? 0) < 0 ? Theme.statusBad : Theme.statusGood
-        var text: Text
+    /// No amount here: the footnote under it or the detail screen shows that.
+    private func marked(_ value: Int, change: Int?) -> Text {
         if let change {
-            text = Text("\(value)").fontWeight(.bold).foregroundColor(color)
-        } else {
-            text = Text("\(value)").foregroundColor(Theme.textSecondary)
+            let color = change < 0 ? Theme.statusBad : Theme.statusGood
+            return Text("\(value)").fontWeight(.bold).foregroundColor(color)
         }
-        if showsSign {
-            let sign = (change ?? 1) < 0 ? "−" : "+"
-            text = text + Text(sign)
-                .font(Theme.Typography.micro)
-                .fontWeight(.bold)
-                .foregroundColor(color)
-                .baselineOffset(6)
-        }
-        return text
+        return Text("\(value)").foregroundColor(Theme.textSecondary)
     }
 
     @ViewBuilder
@@ -381,7 +400,7 @@ struct CombatantRow: View {
                 if playerViewEnabled {
                     Text(StatusBand.armorClass(ac)).foregroundColor(Theme.textSecondary)
                 } else {
-                    marked(ac, change: combatant.recentACChange, showsSign: combatant.recentACChange != nil)
+                    marked(ac, change: combatant.recentACChange)
                 }
             } footnote: {
                 // How much of it is temporary, as temporary HP shows under HP.

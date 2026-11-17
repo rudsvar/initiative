@@ -63,6 +63,21 @@ enum TestCombats {
         return session
     }
 
+    /// Wren has 5 temporary HP, the ogre's max HP went up by 4 and the goblin's
+    /// down by 2: each amount sits under the number it belongs to, "+5" under
+    /// Wren's current HP, "+4" and "−2" under the max.
+    static func hpAmountsSitUnderTheirNumbers() -> CombatSession {
+        let session = CombatSession()
+        session.addCombatant(name: "Wren", initiative: 15, maxHP: 22, armorClass: 14, isPlayer: true)
+        session.addCombatant(name: "Ogre", initiative: 12, maxHP: 59, armorClass: 11)
+        session.addCombatant(name: "Goblin", initiative: 10, maxHP: 7, armorClass: 15)
+        let id = { name in session.combatants.first { $0.name == name }!.id }
+        session.grantTemporaryHP(to: id("Wren"), amount: 5)
+        session.increaseMaxHP(for: id("Ogre"), amount: 4)
+        session.decreaseMaxHP(for: id("Goblin"), amount: 2)
+        return session
+    }
+
     /// A character with temporary armor class granted, to check the "+N" under AC.
     static func wrenWithTemporaryAC() -> CombatSession {
         let session = wrenWithArmorClass()
@@ -149,6 +164,7 @@ extension TestCombats {
         "wrenWithArmorClass": wrenWithArmorClass,
         "wrenWithTemporaryAC": wrenWithTemporaryAC,
         "temporaryAmountsDoNotShiftTheRow": temporaryAmountsDoNotShiftTheRow,
+        "hpAmountsSitUnderTheirNumbers": hpAmountsSitUnderTheirNumbers,
         "hpAndACChangesShowUntilTurnStarts": hpAndACChangesShowUntilTurnStarts,
         "wolfWithChanges": wolfWithChanges,
         "dyingWithTally": dyingWithTally,
