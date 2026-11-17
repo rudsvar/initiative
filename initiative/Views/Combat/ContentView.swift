@@ -406,7 +406,7 @@ struct CombatantRow: View {
                 Text("\(combatant.initiative)")
                     .font(Theme.Typography.numeric(21))
                     .foregroundColor(isCurrent ? Theme.accent : Theme.textSecondary)
-                    .frame(width: 34, alignment: .center)
+                    .statColumn(.initiative)
 
                 HStack(spacing: Theme.Spacing.xs) {
                     // Who is who at a glance: a person for the party, a paw for
