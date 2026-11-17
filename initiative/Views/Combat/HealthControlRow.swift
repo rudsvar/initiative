@@ -15,7 +15,6 @@ struct HealthControlRow: View {
     @State private var currentAmount = "1"
     @State private var maxAmount = "1"
     @State private var grantingTemp = false
-    @State private var tempText = ""
     /// Which value is being typed over, and what has been typed so far.
     private enum Field: String { case current = "Current HP", max = "Max HP", temp = "Temporary HP" }
     @State private var editing: Field?
@@ -98,17 +97,13 @@ struct HealthControlRow: View {
             } message: {
                 Text(editing == .temp ? "0 clears it." : "Corrects the value directly, with no damage or healing rules applied.")
             }
-            .alert("Grant Temporary HP", isPresented: $grantingTemp) {
-                TextField("Amount", text: $tempText)
-                    .keyboardType(.numberPad)
-                Button("Apply") {
-                    if let amount = Int(tempText) {
-                        session.grantTemporaryHP(to: combatantId, amount: amount)
-                    }
-                    tempText = ""
-                }
-                Button("Cancel", role: .cancel) { tempText = "" }
-            }
+            .temporaryGrantAlert(
+                "Grant Temporary HP",
+                isPresented: $grantingTemp,
+                message: "Taken off before hit points. Two grants keep the larger.",
+                hasGrant: combatant.temporaryHP != nil,
+                onGrant: { session.grantTemporaryHP(to: combatantId, amount: $0) }
+            )
         }
     }
 

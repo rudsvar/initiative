@@ -9,7 +9,6 @@ struct ArmorClassControlRow: View {
 
     @State private var amount = "1"
     @State private var granting = false
-    @State private var grantText = ""
     @State private var setting = false
     @State private var settingTemp = false
     @State private var setText = ""
@@ -61,25 +60,14 @@ struct ArmorClassControlRow: View {
             } message: {
                 Text("0 clears it.")
             }
-            .alert("Grant Temporary AC", isPresented: $granting) {
-                TextField("Amount", text: $grantText)
-                    .keyboardType(.numberPad)
-                Button("Apply") {
-                    if let amount = Int(grantText) {
-                        session.grantTemporaryAC(to: combatantId, amount: amount)
-                    }
-                    grantText = ""
-                }
-                if combatant.temporaryAC != nil {
-                    Button("Remove temporary AC", role: .destructive) {
-                        session.removeTemporaryAC(from: combatantId)
-                        grantText = ""
-                    }
-                }
-                Button("Cancel", role: .cancel) { grantText = "" }
-            } message: {
-                Text("Added to armor class for this fight. A new grant replaces the old one.")
-            }
+            .temporaryGrantAlert(
+                "Grant Temporary AC",
+                isPresented: $granting,
+                message: "Added to armor class for this fight. A new grant replaces the old one.",
+                hasGrant: combatant.temporaryAC != nil,
+                onGrant: { session.grantTemporaryAC(to: combatantId, amount: $0) },
+                onRemove: { session.removeTemporaryAC(from: combatantId) }
+            )
         }
     }
 }
