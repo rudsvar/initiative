@@ -85,14 +85,7 @@ struct CombatantDetailView: View {
                 .frame(width: 200, height: 24)
             }
         }
-        .sheet(item: $concentrationCheck) { prompt in
-            TurnPromptView(prompts: [prompt]) { answers, _ in
-                for (prompt, outcome) in answers {
-                    session.resolvePrompt(prompt, outcome: outcome)
-                }
-                concentrationCheck = nil
-            }
-        }
+        .concentrationCheckSheet($concentrationCheck, session: session)
         .sheet(item: $editingEffect) { effect in
             EffectEditorView(session: session, combatantID: combatantId, existing: effect)
         }

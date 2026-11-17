@@ -20,6 +20,7 @@
 		15F35E2EC4CECF8F9D19A2BA /* DeadCombatantTurnTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99016F78C287D6C3DE0A2F71 /* DeadCombatantTurnTests.swift */; };
 		161B482023B04F1531F8B922 /* RenameCombatantTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 33C5D5AF549044DBB6247844 /* RenameCombatantTests.swift */; };
 		1A85F56E1359778680CB6BE8 /* EncounterStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 650EB50016E0916FF6F37644 /* EncounterStoreTests.swift */; };
+		1EF8B1914FF69AF45FB5AE0C /* ConcentrationCheckSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 629D89F106ACC02FC654FB52 /* ConcentrationCheckSheet.swift */; };
 		21F4F9052D6D4A31D7D16DDB /* BurningTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21A26435742E5B5BA833BFCF /* BurningTests.swift */; };
 		225EF46465E704F3743A8A2E /* ControlButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 65B5DF696273E28426AAFFB3 /* ControlButton.swift */; };
 		2723E9ECA0DA43828FF450D2 /* Format.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15E6FA70EC4196E9C9DA719A /* Format.swift */; };
@@ -175,6 +176,7 @@
 		5AB92BFBD1A901C57446D6A5 /* CombatantDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CombatantDetailView.swift; sourceTree = "<group>"; };
 		611558F2EA5435F55E881973 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
 		612E1F0FAD7DF6DBEAB03D05 /* ChallengeRating.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeRating.swift; sourceTree = "<group>"; };
+		629D89F106ACC02FC654FB52 /* ConcentrationCheckSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConcentrationCheckSheet.swift; sourceTree = "<group>"; };
 		650EB50016E0916FF6F37644 /* EncounterStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncounterStoreTests.swift; sourceTree = "<group>"; };
 		65B5DF696273E28426AAFFB3 /* ControlButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ControlButton.swift; sourceTree = "<group>"; };
 		6636EDC413749080974CA625 /* StatusBandTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBandTests.swift; sourceTree = "<group>"; };
@@ -381,6 +383,7 @@
 				2E00EFEB700CF8637F2312A0 /* AdjustAmountSheet.swift */,
 				A9814693E614CE77E0E7F81A /* ArmorClassControlRow.swift */,
 				5AB92BFBD1A901C57446D6A5 /* CombatantDetailView.swift */,
+				629D89F106ACC02FC654FB52 /* ConcentrationCheckSheet.swift */,
 				6D6B3D18CAD7D9BF42DBDB61 /* ContentView.swift */,
 				65B5DF696273E28426AAFFB3 /* ControlButton.swift */,
 				9AD8C7E0ED4B9831B127F11C /* DeathSaveDots.swift */,
@@ -595,6 +598,7 @@
 				BA433734B987BA122D5BFAFD /* CombatSession.swift in Sources */,
 				AF4A3470A3AE7A137BD46058 /* Combatant.swift in Sources */,
 				52F968B9382EEE7057F6E34D /* CombatantDetailView.swift in Sources */,
+				1EF8B1914FF69AF45FB5AE0C /* ConcentrationCheckSheet.swift in Sources */,
 				DDE914D718EDD7290930CEBC /* Conditions.swift in Sources */,
 				E2AC405FFEE29743B570354D /* ContentView.swift in Sources */,
 				225EF46465E704F3743A8A2E /* ControlButton.swift in Sources */,

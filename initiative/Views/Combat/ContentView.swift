@@ -175,14 +175,7 @@ struct ContentView: View {
                 pendingPrompts = []
             }
         }
-        .sheet(item: $concentrationCheck) { prompt in
-            TurnPromptView(prompts: [prompt]) { answers, _ in
-                for (prompt, outcome) in answers {
-                    session.resolvePrompt(prompt, outcome: outcome)
-                }
-                concentrationCheck = nil
-            }
-        }
+        .concentrationCheckSheet($concentrationCheck, session: session)
     }
 
     /// Rolls owed at this boundary are asked before the turn moves, and the
