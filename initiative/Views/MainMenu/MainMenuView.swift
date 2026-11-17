@@ -56,12 +56,12 @@ struct MainMenuView: View {
                     }
 
                     VStack(spacing: Theme.Spacing.sm) {
-                        MenuButton(title: "Characters", systemImage: "person.fill") {
-                            path.append(Route.characterList)
-                        }
-
                         MenuButton(title: "Creatures", systemImage: "pawprint") {
                             path.append(Route.creatureList)
+                        }
+
+                        MenuButton(title: "Characters", systemImage: "person.fill") {
+                            path.append(Route.characterList)
                         }
 
                         MenuButton(title: "Encounters", systemImage: "person.3.fill") {
