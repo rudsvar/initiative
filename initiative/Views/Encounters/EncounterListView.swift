@@ -155,6 +155,8 @@ private struct EditEncounterView: View {
     /// read-only mid-edit.
     private let isReadOnly: Bool
 
+    private var nameIsAvailable: Bool { encounterStore.isNameAvailable(encounter.name, excluding: encounter.id) }
+
     init(encounterStore: EncounterStore, presetStore: PresetStore, encounter: Encounter, onSave: @escaping () -> Void) {
         self.encounterStore = encounterStore
         self.presetStore = presetStore
@@ -168,9 +170,15 @@ private struct EditEncounterView: View {
             ZStack {
                 Theme.backgroundGradient.ignoresSafeArea()
                 Form {
-                    Section("Name") {
+                    Section {
                         TextField(text: $encounter.name) {
                             Text("Encounter name").foregroundColor(Theme.placeholderText)
+                        }
+                    } header: {
+                        Text("Name")
+                    } footer: {
+                        if !isReadOnly {
+                            NameTakenFooter(name: encounter.name, isAvailable: nameIsAvailable)
                         }
                     }
                     .listRowBackground(Theme.surfaceRaised)
@@ -222,14 +230,14 @@ private struct EditEncounterView: View {
                     if !isReadOnly {
                     Button("Save") {
                         let trimmed = encounter.name.trimmingCharacters(in: .whitespaces)
-                        guard !trimmed.isEmpty else { return }
+                        guard nameIsAvailable else { return }
                         encounter.name = trimmed
                         encounterStore.save(encounter)
                         onSave()
                         dismiss()
                     }
                     .fontWeight(.semibold)
-                    .disabled(encounter.name.trimmingCharacters(in: .whitespaces).isEmpty)
+                    .disabled(!nameIsAvailable)
                     }
                 }
             }

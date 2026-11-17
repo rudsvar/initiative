@@ -45,10 +45,7 @@ struct CloneNameSheet: View {
                         }
                         .focused($nameFocused)
                     } footer: {
-                        if !trimmed.isEmpty && !isValid {
-                            Text("Another entry already has that name.")
-                                .foregroundColor(Theme.textTertiary)
-                        }
+                        NameTakenFooter(name: name, isAvailable: isValid)
                     }
                     .listRowBackground(Theme.surfaceRaised)
 
@@ -86,6 +83,20 @@ struct CloneNameSheet: View {
                     .disabled(!isValid)
                 }
             }
+        }
+    }
+}
+
+/// Says why Save or Clone is off when the typed name is already in use. Shows
+/// nothing for a blank name, where the reason is plain.
+struct NameTakenFooter: View {
+    let name: String
+    let isAvailable: Bool
+
+    var body: some View {
+        if !name.trimmingCharacters(in: .whitespaces).isEmpty && !isAvailable {
+            Text("Another entry already has that name.")
+                .foregroundColor(Theme.textTertiary)
         }
     }
 }

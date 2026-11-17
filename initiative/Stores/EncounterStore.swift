@@ -103,6 +103,12 @@ class EncounterStore {
         return copy
     }
 
+    /// Same rule as `PresetStore.isNameAvailable`.
+    func isNameAvailable(_ name: String, excluding id: UUID? = nil) -> Bool {
+        let taken = listEncounters().filter { $0.id != id }.map(\.name) + DefaultContent.encounters.map(\.name)
+        return CloneName.isValid(name, avoiding: taken)
+    }
+
     /// Ensures every built-in encounter is present, alongside whatever the user
     /// has built themselves. Same rule as `PresetStore.installDefaults()`:
     /// built-ins can't be deleted, so anything missing is new or renamed and

@@ -211,6 +211,15 @@ class PresetStore {
         }
     }
 
+    /// Whether an entry may be saved under `name`: not blank, and not the name of
+    /// another entry or of a built-in (built-in status goes by name, so a copy
+    /// under a built-in's name would turn read-only). `id` is the entry being
+    /// renamed, which may keep its own name.
+    func isNameAvailable(_ name: String, excluding id: UUID? = nil) -> Bool {
+        let taken = listPresets().filter { $0.id != id }.map(\.name) + DefaultContent.creatures.map(\.name)
+        return CloneName.isValid(name, avoiding: taken)
+    }
+
     #if DEBUG
     /// Debug builds only: adds the made-up characters that are missing.
     func installTestCharacters() {

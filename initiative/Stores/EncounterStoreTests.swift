@@ -137,4 +137,17 @@ final class EncounterStoreTests: XCTestCase {
 
         XCTAssertTrue(Set(copy.entries.map(\.id)).isDisjoint(with: Set(ambush.entries.map(\.id))))
     }
+
+    // MARK: - Names
+
+    func testABuiltInEncounterNameIsNotAvailable() {
+        XCTAssertFalse(store.isNameAvailable("bridge troll"))
+    }
+
+    func testAnEncounterKeepsItsOwnName() {
+        let mine = Encounter(name: "Swamp Ambush")
+        store.save(mine)
+        XCTAssertFalse(store.isNameAvailable("swamp ambush"))
+        XCTAssertTrue(store.isNameAvailable("Swamp Ambush", excluding: mine.id))
+    }
 }

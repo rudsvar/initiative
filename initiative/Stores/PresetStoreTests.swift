@@ -296,4 +296,26 @@ final class PresetStoreTests: XCTestCase {
 
         XCTAssertNotNil(store.preset(named: "Later Ogre"))
     }
+
+    // MARK: - Names
+
+    /// Built-in status goes by name, so an entry of the owner's under a built-in's
+    /// name would turn read-only and could not be deleted.
+    func testABuiltInNameIsNotAvailable() {
+        XCTAssertFalse(store.isNameAvailable("goblin boss"))
+        XCTAssertFalse(store.isNameAvailable(" Goblin Boss "))
+    }
+
+    func testAnotherEntrysNameIsNotAvailable() {
+        store.upsert(name: "Bog Hulk", maxHP: 7)
+        XCTAssertFalse(store.isNameAvailable("bog hulk"))
+    }
+
+    func testAnEntryKeepsItsOwnName() {
+        store.upsert(name: "Bog Hulk", maxHP: 7)
+        let own = store.preset(named: "Bog Hulk")!
+        XCTAssertTrue(store.isNameAvailable("Bog Hulk", excluding: own.id))
+        XCTAssertTrue(store.isNameAvailable("Marsh Hag"))
+        XCTAssertFalse(store.isNameAvailable("  "))
+    }
 }

@@ -32,6 +32,8 @@ struct CreatureDetailView: View {
 
     private var isBuiltIn: Bool { preset.isBuiltIn }
 
+    private var nameIsAvailable: Bool { presetStore.isNameAvailable(name, excluding: preset.id) }
+
     /// Which library this entry belongs to, for the titles. Built-ins are never characters.
     private var kindNoun: String { preset.isPlayer ? "Character" : "Creature" }
 
@@ -55,7 +57,7 @@ struct CreatureDetailView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save", action: save)
                         .fontWeight(.semibold)
-                        .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+                        .disabled(!nameIsAvailable)
                 }
             }
         }
@@ -91,10 +93,14 @@ struct CreatureDetailView: View {
         ZStack {
             Theme.backgroundGradient.ignoresSafeArea()
             Form {
-                Section("Name") {
+                Section {
                     TextField(text: $name) {
                         Text("Name").foregroundColor(Theme.placeholderText)
                     }
+                } header: {
+                    Text("Name")
+                } footer: {
+                    NameTakenFooter(name: name, isAvailable: nameIsAvailable)
                 }
                 .listRowBackground(Theme.surfaceRaised)
 
@@ -156,7 +162,7 @@ struct CreatureDetailView: View {
         updated.initiativeBonus = Int(bonusText)
         updated.isPlayer = isPlayer
         updated.challengeRating = challenge
-        guard !updated.name.isEmpty else { return }
+        guard nameIsAvailable else { return }
         presetStore.save(updated)
         onChange()
         dismiss()
