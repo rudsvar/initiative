@@ -46,7 +46,6 @@ struct TurnPromptView: View {
                 promptCard(current)
             }
         }
-        .padding(Theme.Spacing.lg)
         .frame(maxWidth: .infinity, alignment: .leading)
         .compactSheet()
         .onChange(of: answers) { _, newValue in

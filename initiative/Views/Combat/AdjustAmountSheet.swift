@@ -50,7 +50,6 @@ struct AdjustAmountSheet: View {
                 .tint(Theme.statusGood)
             }
         }
-        .padding(Theme.Spacing.lg)
         .frame(maxWidth: .infinity)
         .compactSheet()
     }

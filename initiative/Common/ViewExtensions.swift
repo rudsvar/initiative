@@ -66,8 +66,17 @@ extension View {
     /// material so it reads as a normal iOS sheet (a `Theme` fill looked out of
     /// place against the system-drawn sheet chrome around it). Every small popup
     /// uses this, so they all look alike.
+    ///
+    /// It pads the content itself, wider at the sides and bottom than a card:
+    /// from iOS 26 a short sheet floats with large rounded corners, and a
+    /// full-width button only `lg` from the edge has its corners cut off.
     func compactSheet() -> some View {
-        selfSizingSheet()
+        self
+            .padding(.horizontal, Theme.Spacing.xl)
+            // Room for the drag indicator above.
+            .padding(.top, Theme.Spacing.xl)
+            .padding(.bottom, Theme.Spacing.xl)
+            .selfSizingSheet()
             .presentationBackground(.regularMaterial)
     }
 
@@ -130,6 +139,9 @@ private struct HeightPreferenceKey: PreferenceKey {
 
 private struct SelfSizingSheetModifier: ViewModifier {
     @State private var height: CGFloat = 200
+    /// What the sheet reserves below its content (home indicator; from iOS 26
+    /// also the floating sheet's margin). Read from the sheet, never assumed.
+    @State private var bottomInset: CGFloat = 0
 
     func body(content: Content) -> some View {
         content
@@ -150,7 +162,19 @@ private struct SelfSizingSheetModifier: ViewModifier {
                 }
             )
             .onPreferenceChange(HeightPreferenceKey.self) { height = $0 }
-            .presentationDetents([.height(height)])
+            // Pinned to the top: the sheet's own padding then sits where it is
+            // meant to, instead of the content being centred in a sheet whose
+            // usable height differs from the detent by the bottom inset.
+            .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+            .background(
+                GeometryReader { proxy in
+                    Color.clear
+                        .onAppear { bottomInset = proxy.safeAreaInsets.bottom }
+                        .onChange(of: proxy.safeAreaInsets.bottom) { _, inset in bottomInset = inset }
+                }
+            )
+            .ignoresSafeArea(.keyboard)
+            .presentationDetents([.height(height + bottomInset)])
             .presentationDragIndicator(.visible)
     }
 }

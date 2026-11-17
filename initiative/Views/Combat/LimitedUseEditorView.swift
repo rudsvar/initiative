@@ -77,7 +77,6 @@ struct LimitedUseEditorView: View {
             }
             .sectionCard()
         }
-        .padding(Theme.Spacing.lg)
         .frame(maxWidth: .infinity, alignment: .leading)
         .compactSheet()
     }
