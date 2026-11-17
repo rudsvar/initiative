@@ -100,6 +100,22 @@ final class CodableCompatibilityTests: XCTestCase {
         }
     }
 
+    /// Log entries on disk hold these exactly as written below (Swift's synthesized
+    /// enum encoding). Saves from before 2026-11-17 use only the first five.
+    func testDecodesEveryHPOperationFromLiteralJSON() throws {
+        let json = """
+        [{"enableTracking":{"amount":30}},{"damage":{"amount":7}},{"healing":{"amount":4}},
+         {"maxHPIncrease":{"amount":10}},{"grantTemporaryHP":{"amount":5}},
+         {"healAboveMax":{"amount":6}},{"maxHPDecrease":{"amount":2}},{"kill":{}},{"revive":{}}]
+        """
+        let decoded = try JSONDecoder().decode([HPOperation].self, from: Data(json.utf8))
+        XCTAssertEqual(decoded, [
+            .enableTracking(amount: 30), .damage(amount: 7), .healing(amount: 4),
+            .maxHPIncrease(amount: 10), .grantTemporaryHP(amount: 5),
+            .healAboveMax(amount: 6), .maxHPDecrease(amount: 2), .kill, .revive,
+        ])
+    }
+
     // MARK: - SessionRecord
 
     /// The oldest shape on disk: no round number, no log. Both are optional and

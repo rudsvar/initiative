@@ -68,10 +68,4 @@ final class HPReplayTests: XCTestCase {
         XCTAssertEqual(alpha(session).currentHP, 1)
         XCTAssertFalse(alpha(session).isDead)
     }
-
-    func testNewOperationsRoundTripThroughJSON() throws {
-        let operations: [HPOperation] = [.healAboveMax(amount: 4), .maxHPDecrease(amount: 2), .kill, .revive]
-        let decoded = try JSONDecoder().decode([HPOperation].self, from: JSONEncoder().encode(operations))
-        XCTAssertEqual(decoded, operations)
-    }
 }
