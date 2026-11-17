@@ -253,6 +253,38 @@ class CombatSession {
         )
     }
 
+    /// Adds to temporary HP by hand, starting from none. Logged as a grant of the
+    /// new total, which is what replaying the log needs.
+    func raiseTemporaryHP(of id: UUID, by amount: Int) {
+        guard amount > 0, let index = combatants.firstIndex(where: { $0.id == id }) else { return }
+        let total = (combatants[index].temporaryHP ?? 0) + amount
+        combatants[index].temporaryHP = total
+        appendLog(
+            "\(combatants[index].name) gained \(amount) temporary HP (\(total) total)",
+            combatantId: id,
+            hpOperation: .grantTemporaryHP(amount: total)
+        )
+    }
+
+    /// Takes temporary HP off by hand, never real hit points; past zero it is
+    /// gone. Logged as damage the buffer absorbs in full, which replays to the
+    /// same result without a new log operation. Not damage to the combatant, so
+    /// it doesn't threaten concentration.
+    func lowerTemporaryHP(of id: UUID, by amount: Int) {
+        guard amount > 0, let index = combatants.firstIndex(where: { $0.id == id }),
+              let current = combatants[index].temporaryHP else { return }
+        let taken = min(amount, current)
+        let left = current - taken
+        combatants[index].temporaryHP = left > 0 ? left : nil
+        appendLog(
+            left > 0
+                ? "\(combatants[index].name) lost \(taken) temporary HP (\(left) left)"
+                : "\(combatants[index].name) lost all temporary HP",
+            combatantId: id,
+            hpOperation: .damage(amount: taken)
+        )
+    }
+
     /// Grants temporary armor class, replacing any earlier grant, as temporary HP does.
     func grantTemporaryAC(to id: UUID, amount: Int) {
         guard amount > 0, let index = combatants.firstIndex(where: { $0.id == id }) else { return }

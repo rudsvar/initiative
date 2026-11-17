@@ -136,6 +136,54 @@ final class TemporaryHPTests: XCTestCase {
         XCTAssertNil(result.temporaryHP)
         XCTAssertEqual(result.currentHP, 0)
     }
+
+    // MARK: - Raising and lowering by hand
+
+    func testRaisingAddsToTemporaryHP() {
+        let (session, id) = session()
+        session.raiseTemporaryHP(of: id, by: 3)
+        XCTAssertEqual(session.combatants[0].temporaryHP, 3)
+        session.raiseTemporaryHP(of: id, by: 2)
+        XCTAssertEqual(session.combatants[0].temporaryHP, 5)
+        XCTAssertTrue(session.log.contains { $0.text == "Wren gained 2 temporary HP (5 total)" })
+    }
+
+    func testLoweringTakesOffTemporaryHPOnly() {
+        let (session, id) = session()
+        session.grantTemporaryHP(to: id, amount: 5)
+        session.lowerTemporaryHP(of: id, by: 2)
+        XCTAssertEqual(session.combatants[0].temporaryHP, 3)
+        XCTAssertEqual(session.combatants[0].currentHP, 30)
+        XCTAssertTrue(session.log.contains { $0.text == "Wren lost 2 temporary HP (3 left)" })
+    }
+
+    func testLoweringPastZeroRemovesItWithoutTouchingHitPoints() {
+        let (session, id) = session()
+        session.grantTemporaryHP(to: id, amount: 5)
+        session.lowerTemporaryHP(of: id, by: 9)
+        XCTAssertNil(session.combatants[0].temporaryHP)
+        XCTAssertEqual(session.combatants[0].currentHP, 30)
+    }
+
+    func testLoweringDoesNotThreatenConcentration() {
+        let (session, id) = session()
+        session.toggleConcentration(for: id)
+        session.grantTemporaryHP(to: id, amount: 5)
+        session.lowerTemporaryHP(of: id, by: 2)
+        XCTAssertTrue(session.combatants[0].isConcentrating)
+    }
+
+    func testRaisedAndLoweredAmountsSurviveARecompute() {
+        let (session, id) = session()
+        _ = session.applyDamage(to: id, amount: 4)
+        let damage = session.log.last!.id
+        session.raiseTemporaryHP(of: id, by: 5)
+        session.lowerTemporaryHP(of: id, by: 2)
+        // Deleting the damage replays every HP change left in the log.
+        session.deleteLogEntry(damage)
+        XCTAssertEqual(session.combatants[0].temporaryHP, 3)
+        XCTAssertEqual(session.combatants[0].currentHP, 30)
+    }
 }
 
 /// Hit point rules as written: temporary HP, massive damage, damage at 0 HP,

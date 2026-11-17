@@ -1,11 +1,11 @@
 import SwiftUI
 
-/// Current HP and max HP, each on one line in the same layout: label, the value, a
-/// decrease button, a number box for the amount, and an increase button. Current HP
-/// decreases by damage and increases by healing. Healing past max asks first: go above
-/// max as temporary HP, or cap at max. Max HP is lowered or raised directly. "Grant temp"
-/// adds temporary HP; a new grant never stacks, the larger one stays. Tapping any of the
-/// three values sets it directly, as a correction.
+/// Current HP, temporary HP and max HP, each on one line in the same layout: label,
+/// the value, a decrease button, a number box for the amount, and an increase
+/// button. Current HP decreases by damage and increases by healing. Healing past max
+/// asks first: go above max as temporary HP, or cap at max. Temporary HP and max HP
+/// are lowered or raised directly. Tapping any of the three values sets it directly,
+/// as a correction.
 struct HealthControlRow: View {
     let session: CombatSession
     let combatantId: UUID
@@ -14,7 +14,7 @@ struct HealthControlRow: View {
 
     @State private var currentAmount = "1"
     @State private var maxAmount = "1"
-    @State private var grantingTemp = false
+    @State private var tempAmount = "1"
     /// Which value is being typed over, and what has been typed so far.
     private enum Field: String { case current = "Current HP", max = "Max HP", temp = "Temporary HP" }
     @State private var editing: Field?
@@ -46,7 +46,15 @@ struct HealthControlRow: View {
                     decreaseLabel: "Damage",
                     increaseLabel: "Heal"
                 )
-                tempLine(combatant)
+                line(
+                    "Temp HP", "\(combatant.temporaryHP ?? 0)", change: nil,
+                    onTapValue: { beginEditing(.temp, value: combatant.temporaryHP ?? 0) },
+                    amount: $tempAmount,
+                    decrease: { amount in session.lowerTemporaryHP(of: combatantId, by: amount) },
+                    increase: { amount in session.raiseTemporaryHP(of: combatantId, by: amount) },
+                    decreaseLabel: "Lower temporary HP",
+                    increaseLabel: "Raise temporary HP"
+                )
                 line(
                     "Max HP", "\(max)", change: combatant.recentMaxHPChange,
                     onTapValue: { beginEditing(.max, value: max) },
@@ -97,13 +105,6 @@ struct HealthControlRow: View {
             } message: {
                 Text(editing == .temp ? "0 clears it." : "Corrects the value directly, with no damage or healing rules applied.")
             }
-            .temporaryGrantAlert(
-                "Grant Temporary HP",
-                isPresented: $grantingTemp,
-                message: "Taken off before hit points. Two grants keep the larger.",
-                hasGrant: combatant.temporaryHP != nil,
-                onGrant: { session.grantTemporaryHP(to: combatantId, amount: $0) }
-            )
         }
     }
 
@@ -122,16 +123,6 @@ struct HealthControlRow: View {
             label: label, value: value, change: change, onTapValue: onTapValue,
             amount: amount, decrease: decrease, increase: increase,
             decreaseLabel: decreaseLabel, increaseLabel: increaseLabel
-        )
-    }
-
-    private func tempLine(_ combatant: Combatant) -> some View {
-        TempValueLine(
-            label: "Temp HP",
-            value: combatant.temporaryHP.map { "\($0)" },
-            buttonTitle: "Grant temp",
-            onTapValue: { beginEditing(.temp, value: combatant.temporaryHP ?? 0) },
-            onButton: { grantingTemp = true }
         )
     }
 

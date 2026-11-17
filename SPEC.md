@@ -225,21 +225,20 @@ combatant" flow are unaffected by default.
 **Enabling & editing** (`HealthControlRow` — the roster's expanded current
 combatant and the detail screen's Health card both use the same component)
 - "Track HP" action prompts for a max HP value, sets `currentHP = maxHP`
-- Once tracked: a single line shows the **current/max** readout plus four
-  small buttons — **Damage**, **Heal**, **Grant Temporary HP**, and
-  **Increase Max HP** — replacing an earlier three-row layout that gave each
-  action its own persistent Amount field. There's no room for three fields
-  on a roster row, and the amount differs every time anyway, so each button
-  instead prompts for its amount inline via a one-shot alert
-- Damage/Heal clamp `currentHP` to `0...maxHP`. Increase Max HP raises *both*
-  max and current by the amount (a buff/level-up, not just a higher ceiling
-  with no immediate benefit) and is the deliberate exception to that clamp,
-  since it moves the ceiling itself. Temporary HP never stacks: a new grant keeps the
-  larger (see below)
+- Once tracked: three lines in one layout, **Current HP**, **Temp HP** and
+  **Max HP**, each with its value, a − button, a number box for the amount and
+  a + button. Current HP: − is damage, + is healing (healing past max asks
+  whether to go above max as temporary HP or cap at max). Temp HP: + adds to
+  it, − takes it off and never touches real hit points; it is logged as a
+  grant of the new total, or as damage the buffer absorbs in full, so the log
+  replays to the same result with no new operation. Max HP: lowered or raised
+  directly; raising also raises current HP (a buff or level-up). Temporary HP
+  never stacks: a new grant keeps the larger (see below)
 - **On the roster, a buffed number is bold and coloured, with no amount.**
   Current HP shows the total in play (temporary HP included, as AC includes
-  temporary AC) and is bold green while temporary HP lasts; AC likewise while
-  temporary AC lasts. A max HP or AC change is bold green or red until that
+  temporary AC) and is bold green while temporary HP lasts; AC is bold blue
+  (the shield's colour) while temporary AC lasts. A max HP or AC change is bold
+  green (blue for AC) or red until that
   combatant's turn starts. How much of it is temporary or changed is only on
   the detail screen: a "+N" under each number was tried and dropped as
   clutter
