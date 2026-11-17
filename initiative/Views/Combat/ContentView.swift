@@ -352,7 +352,7 @@ struct CombatantRow: View {
         marked(current, change: combatant.temporaryHP != nil ? 1 : nil)
     }
     private func maxText(_ max: Int) -> Text { marked(max, change: combatant.recentMaxHPChange) }
-    private var slash: Text { Text("/").foregroundColor(Theme.textTertiary) }
+    private var slash: Text { Text("/").fontWeight(.regular).foregroundColor(Theme.textTertiary) }
 
     /// A number that is raised or lowered: bold, red when down, green when up. No
     /// amount on the roster: the detail screen shows how much.
@@ -361,7 +361,8 @@ struct CombatantRow: View {
             let color = change < 0 ? Theme.statusBad : Theme.statusGood
             return Text("\(value)").fontWeight(.bold).foregroundColor(color)
         }
-        return Text("\(value)").foregroundColor(Theme.textSecondary)
+        // Regular, not the readout's semibold, so a bold buff stands out from it.
+        return Text("\(value)").fontWeight(.regular).foregroundColor(Theme.textSecondary)
     }
 
     @ViewBuilder
