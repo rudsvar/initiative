@@ -93,3 +93,13 @@ enum ConditionLibrary {
         all.first { $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame }
     }
 }
+
+extension Combatant {
+    /// Effects that are not standard conditions: cooldowns and ones the DM named.
+    /// The detail screen lists these with a remove button and an editor. Dying is
+    /// left out: its tally belongs to the death-save flow, and removing or
+    /// re-timing it there would drop the tally or add a second roll.
+    var customEffects: [Effect] {
+        visibleEffects.filter { $0.deathSaves == nil && ConditionLibrary.matching(name: $0.name) == nil }
+    }
+}

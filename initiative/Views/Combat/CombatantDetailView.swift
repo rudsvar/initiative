@@ -307,9 +307,15 @@ struct CombatantDetailView: View {
             // Cooldowns and custom effects are named per-use, so they can't be
             // shown as a fixed toggle grid the way conditions are — the row
             // itself carries the name, and tapping it opens the same editor.
-            let otherEffects = combatant.visibleEffects.filter { ConditionLibrary.matching(name: $0.name) == nil }
-            if !otherEffects.isEmpty {
+            let otherEffects = combatant.customEffects
+            let dying = combatant.isDying ? combatant.effects.first { $0.deathSaves != nil } : nil
+            if !otherEffects.isEmpty || dying != nil {
                 VStack(spacing: Theme.Spacing.sm) {
+                    // Shown, never removed or edited here: healing, Kill, or the
+                    // death saves themselves end it.
+                    if let dying {
+                        EffectRowView(effect: dying, onRemove: nil)
+                    }
                     ForEach(otherEffects) { effect in
                         // `onTapGesture` rather than wrapping in a `Button`: the
                         // row already contains its own Remove button, and a
@@ -478,17 +484,23 @@ struct LimitedUseChip: View {
 
 struct EffectRowView: View {
     let effect: Effect
-    let onRemove: () -> Void
+    /// Nil for a row that can't be removed by hand (Dying).
+    let onRemove: (() -> Void)?
 
     private var condition: StandardCondition? {
         ConditionLibrary.matching(name: effect.name)
     }
 
-    private var tint: Color { condition?.color ?? Theme.accent }
+    private var tint: Color { effect.deathSaves != nil ? Theme.statusBad : (condition?.color ?? Theme.accent) }
+
+    private var subtitle: String {
+        guard let saves = effect.deathSaves else { return effect.durationType.description }
+        return "\(saves.successes) made · \(saves.failures) failed"
+    }
 
     var body: some View {
         HStack(spacing: Theme.Spacing.md) {
-            Image(systemName: condition?.symbolName ?? "sparkles")
+            Image(systemName: effect.deathSaves != nil ? "heart.slash.fill" : (condition?.symbolName ?? "sparkles"))
                 .font(Theme.Typography.iconRow)
                 .foregroundColor(tint)
                 .frame(width: 30, height: 30)
@@ -500,20 +512,22 @@ struct EffectRowView: View {
                     .font(Theme.Typography.bodyEmphasis)
                     .foregroundColor(Theme.textPrimary)
 
-                Text(effect.durationType.description)
+                Text(subtitle)
                     .font(Theme.Typography.caption)
                     .foregroundColor(Theme.textTertiary)
             }
 
             Spacer()
 
-            Button(action: onRemove) {
-                Image(systemName: "xmark")
-                    .font(Theme.Typography.iconControl)
-                    .foregroundColor(Theme.textTertiary)
-                    .padding(Theme.Spacing.sm)
+            if let onRemove {
+                Button(action: onRemove) {
+                    Image(systemName: "xmark")
+                        .font(Theme.Typography.iconControl)
+                        .foregroundColor(Theme.textTertiary)
+                        .padding(Theme.Spacing.sm)
+                }
+                .accessibilityLabel("Remove \(effect.name)")
             }
-            .accessibilityLabel("Remove \(effect.name)")
         }
         .padding(.horizontal, Theme.Spacing.md)
         .padding(.vertical, Theme.Spacing.sm)

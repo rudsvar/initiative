@@ -48,4 +48,15 @@ final class DyingEffectTests: XCTestCase {
         saves.recordCriticalFailure()
         XCTAssertTrue(saves.isDead)
     }
+
+    /// The detail screen lists custom effects with a remove button and an editor.
+    /// Dying is not one of them: removing it would drop the tally, and editing it
+    /// would give it a roll of its own on top of the death save.
+    func testDyingIsNotListedAsACustomEffect() {
+        var combatant = Combatant(name: "Wren", initiative: 10, maxHP: 10, isPlayer: true)
+        combatant.deathSaves = DeathSaves()
+        combatant.effects.append(Effect(name: "Hexed", durationType: .untilRemoved))
+        combatant.effects.append(Effect(name: "Prone", durationType: .untilRemoved))
+        XCTAssertEqual(combatant.customEffects.map(\.name), ["Hexed"])
+    }
 }
