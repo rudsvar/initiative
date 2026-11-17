@@ -413,7 +413,8 @@ class CombatSession {
         clearDeathSavesIfAboveZero(at: index)
         appendLog(
             "\(combatants[index].name) healed \(amount) HP and gained \(overflow) temporary HP (\(maxHP)/\(maxHP) HP)",
-            combatantId: id
+            combatantId: id,
+            hpOperation: .healAboveMax(amount: amount)
         )
     }
 
@@ -538,6 +539,17 @@ class CombatSession {
                 currentHP = Swift.min(current, value)
             case .setTemporaryHP(let value):
                 temporaryHP = value > 0 ? value : nil
+            case .healAboveMax(let amount):
+                guard let current = currentHP, let max = maxHP else { continue }
+                let overflow = Self.healOverflow(current: current, max: max, amount: amount)
+                currentHP = Swift.min(max, current + amount)
+                if overflow > 0 { temporaryHP = overflow }
+            case .kill:
+                guard currentHP != nil else { continue }
+                currentHP = 0
+            case .revive:
+                guard let current = currentHP else { continue }
+                currentHP = Swift.max(1, current)
             case nil:
                 continue
             }
@@ -746,25 +758,27 @@ class CombatSession {
     func kill(_ id: UUID) {
         guard let index = combatants.firstIndex(where: { $0.id == id }), !combatants[index].isDead else { return }
         recordUndoPoint()
-        if combatants[index].currentHP != nil {
+        let tracked = combatants[index].currentHP != nil
+        if tracked {
             combatants[index].currentHP = 0
             combatants[index].deathSaves = nil
         } else {
             combatants[index].markedDead = true
         }
-        appendLog("\(combatants[index].name) was killed", combatantId: id)
+        appendLog("\(combatants[index].name) was killed", combatantId: id, hpOperation: tracked ? .kill : nil)
     }
 
     /// Brings a dead combatant back. A tracked HP at 0 comes back to 1. Undoable with Previous.
     func revive(_ id: UUID) {
         guard let index = combatants.firstIndex(where: { $0.id == id }), combatants[index].isDead else { return }
         recordUndoPoint()
-        if combatants[index].currentHP != nil {
+        let tracked = combatants[index].currentHP != nil
+        if tracked {
             combatants[index].currentHP = max(1, combatants[index].currentHP ?? 1)
             combatants[index].deathSaves = nil
         }
         combatants[index].markedDead = nil
-        appendLog("\(combatants[index].name) was revived", combatantId: id)
+        appendLog("\(combatants[index].name) was revived", combatantId: id, hpOperation: tracked ? .revive : nil)
     }
 
     // MARK: - Turn order
@@ -925,7 +939,7 @@ class CombatSession {
                 // A natural 20 regains 1 HP, which ends the dying state.
                 combatants[index].deathSaves = nil
                 combatants[index].currentHP = 1
-                appendLog("\(combatants[index].name) rolled a natural 20 and regained 1 HP", combatantId: combatants[index].id)
+                appendLog("\(combatants[index].name) rolled a natural 20 and regained 1 HP", combatantId: combatants[index].id, hpOperation: .revive)
                 return
             }
             if outcome == .criticalFailure {

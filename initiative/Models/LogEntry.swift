@@ -3,9 +3,10 @@ import Foundation
 /// A structured HP change underlying a log entry's display text. Entries that carry
 /// one of these can be deleted from the log — deleting recomputes the affected
 /// combatant's current/max HP from scratch by replaying the remaining HP-operation
-/// entries for just that combatant, in order. Entries without one (turn changes,
-/// combatant added/removed, deaths) aren't deletable — there's no defined "undo"
-/// for them yet.
+/// entries for just that combatant, in order. So every change to HP needs one,
+/// or the replay would quietly drop it. Entries without one (turn changes,
+/// combatant added/removed, effects) aren't deletable — there's no defined
+/// "undo" for them yet.
 enum HPOperation: Codable, Equatable {
     case enableTracking(amount: Int)
     case damage(amount: Int)
@@ -21,6 +22,13 @@ enum HPOperation: Codable, Equatable {
     /// the rest — temporary HP has to be part of the log or deleting a damage
     /// entry would recompute current HP without the buffer that absorbed it.
     case grantTemporaryHP(amount: Int)
+    /// A heal past max that goes above it: current HP fills to max and the rest
+    /// becomes temporary HP, replacing any there was.
+    case healAboveMax(amount: Int)
+    /// Kill: tracked HP drops to 0.
+    case kill
+    /// Revive, or a natural 20 on a death save: back to at least 1 HP.
+    case revive
 }
 
 struct LogEntry: Identifiable, Codable {

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0531C55B50718D39601BD1AD /* HPReplayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2582A5BD6876D6C40BA8E388 /* HPReplayTests.swift */; };
 		0543723AC0B30CD5C7C48168 /* CloneNameSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8173780D06E58806AD3ECB9 /* CloneNameSheet.swift */; };
 		09EC53CC26EE7304C61FC102 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611558F2EA5435F55E881973 /* SessionStore.swift */; };
 		0AA9FF4319791B99D1C8E708 /* ChallengeEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2FD5CFF1FB57A831740651F /* ChallengeEstimator.swift */; };
@@ -136,6 +137,7 @@
 		21A26435742E5B5BA833BFCF /* BurningTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BurningTests.swift; sourceTree = "<group>"; };
 		236012BD8426FA8D17541295 /* CodableCompatibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodableCompatibilityTests.swift; sourceTree = "<group>"; };
 		255483B3F433841EC3581AEB /* initiativeTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = initiativeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		2582A5BD6876D6C40BA8E388 /* HPReplayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HPReplayTests.swift; sourceTree = "<group>"; };
 		267F7D9CB28FC2AB8F2427E2 /* ChallengeEstimatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeEstimatorTests.swift; sourceTree = "<group>"; };
 		2A3EC616C676736F8FBC87E6 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
 		2B8E15FBD1B4F61AE31A398B /* PremadeBalanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremadeBalanceTests.swift; sourceTree = "<group>"; };
@@ -314,6 +316,7 @@
 				3613CF49D1C24697119764CE /* EffectOperationsTests.swift */,
 				72FCF480130756D02B000115 /* EncounterXP.swift */,
 				CB71B1C8EC7F8A5D678FC25A /* EncounterXPTests.swift */,
+				2582A5BD6876D6C40BA8E388 /* HPReplayTests.swift */,
 				20C4BD7EA18DC487773DC9EE /* KillReviveTests.swift */,
 				9C033583CC9AE407903E6C47 /* LimitedUse.swift */,
 				DB8DD2DEFF231D1EBD80E195 /* LimitedUseTests.swift */,
@@ -644,6 +647,7 @@
 				7E5C7BB027F7BC0907ECA434 /* EffectOperationsTests.swift in Sources */,
 				1A85F56E1359778680CB6BE8 /* EncounterStoreTests.swift in Sources */,
 				B2976DA28F065B09A12D312C /* EncounterXPTests.swift in Sources */,
+				0531C55B50718D39601BD1AD /* HPReplayTests.swift in Sources */,
 				0B02BE41EBA8297838514FED /* KillReviveTests.swift in Sources */,
 				62C2CEF33F96A4573D4BC9C4 /* LimitedUseTests.swift in Sources */,
 				39A9BA2DDE7B0C7A9C00E552 /* ListSectionsTests.swift in Sources */,
