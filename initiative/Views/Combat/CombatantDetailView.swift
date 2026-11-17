@@ -391,18 +391,7 @@ struct EffectChip: View {
                 .buttonStyle(.plain)
             }
         }
-        // A larger tap target than a chip strictly needs to be — these are
-        // pressed mid-combat, when a bigger target beats a denser grid.
-        .foregroundColor(isActive ? tint : Theme.textSecondary)
-        .padding(.horizontal, Theme.Spacing.md)
-        .padding(.vertical, Theme.Spacing.md)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(isActive ? tint.opacity(0.20) : Theme.surface)
-        .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.sm, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: Theme.Radius.sm, style: .continuous)
-                .stroke(isActive ? tint.opacity(0.55) : Theme.border.opacity(0.5), lineWidth: Theme.hairline)
-        )
+        .toggleChip(tint: tint, isActive: isActive, inactiveForeground: Theme.textSecondary)
     }
 }
 
@@ -450,16 +439,7 @@ struct LimitedUseChip: View {
             }
             .buttonStyle(.plain)
         }
-        .foregroundColor(isExhausted ? Theme.textTertiary : Theme.statusWarn)
-        .padding(.horizontal, Theme.Spacing.md)
-        .padding(.vertical, Theme.Spacing.md)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(isExhausted ? Theme.surface : Theme.statusWarn.opacity(0.20))
-        .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.sm, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: Theme.Radius.sm, style: .continuous)
-                .stroke(isExhausted ? Theme.border.opacity(0.5) : Theme.statusWarn.opacity(0.55), lineWidth: Theme.hairline)
-        )
+        .toggleChip(tint: Theme.statusWarn, isActive: !isExhausted, inactiveForeground: Theme.textTertiary)
     }
 }
 
@@ -508,6 +488,22 @@ struct EffectRowView: View {
         .padding(.vertical, Theme.Spacing.sm)
         .background(Theme.surfaceRaised)
         .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.sm, style: .continuous))
+    }
+}
+
+private extension View {
+    /// The look shared by the combatant screen's chips: filled with `tint` while
+    /// active, plain surface otherwise. A larger tap target than a chip strictly
+    /// needs — these are pressed mid-combat, when a bigger target beats a denser grid.
+    func toggleChip(tint: Color, isActive: Bool, inactiveForeground: Color) -> some View {
+        let shape = RoundedRectangle(cornerRadius: Theme.Radius.sm, style: .continuous)
+        return self
+            .foregroundColor(isActive ? tint : inactiveForeground)
+            .padding(Theme.Spacing.md)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(isActive ? tint.opacity(0.20) : Theme.surface)
+            .clipShape(shape)
+            .overlay(shape.stroke(isActive ? tint.opacity(0.55) : Theme.border.opacity(0.5), lineWidth: Theme.hairline))
     }
 }
 
