@@ -24,10 +24,6 @@ struct ContentView: View {
     /// resolves directly, since the turn has already moved.
     @State private var raisedChecks: [TurnPrompt] = []
     @State private var concentrationCheck: TurnPrompt?
-    /// The title's width, measured so it stays on the screen's centre line: the
-    /// left has one button and the right two, and a title wider than the room
-    /// either side of the centre would be pushed off it.
-    @State private var titleWidth: CGFloat?
 
     private var nameBinding: Binding<String> {
         Binding(get: { session.name }, set: { session.name = $0 })
@@ -101,7 +97,12 @@ struct ContentView: View {
                 TurnControlBar(
                     canGoBack: session.canGoToPreviousTurn,
                     canAdvance: !session.combatants.isEmpty,
+                    playerViewEnabled: Binding(
+                        get: { session.playerViewEnabled },
+                        set: { session.playerViewEnabled = $0 }
+                    ),
                     onPrevious: { session.previousTurn() },
+                    onShowLog: { showLog = true },
                     onNext: { advanceTurn() }
                 )
                 .padding(.horizontal, Theme.Spacing.lg)
@@ -112,7 +113,8 @@ struct ContentView: View {
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
         .toolbar {
-            // Icon-only (no "Menu" text), so the title has room.
+            // Icon-only (no "Menu" text): the same width as the + on the other
+            // side, which is what lets the title sit on the screen's centre line.
             ToolbarItem(placement: .navigationBarLeading) {
                 Button(action: backToMenu) {
                     Image(systemName: "chevron.left")
@@ -132,38 +134,14 @@ struct ContentView: View {
                         .sectionLabel(color: Theme.accent)
                         .allowsHitTesting(false)
                 }
-                .frame(width: titleWidth)
+                // Fills the space between the two buttons; with one icon on each
+                // side that space is centred on the screen.
+                .frame(maxWidth: .infinity)
             }
 
             // "+" adds a combatant, exactly as it does on Creatures and
-            // Encounters, so it keeps the corner to itself. The ⋯ menu beside it
-            // holds what is reached for less often: player view and the log.
-            ToolbarItemGroup(placement: .navigationBarTrailing) {
-                Menu {
-                    Toggle(isOn: Binding(
-                        get: { session.playerViewEnabled },
-                        set: { session.playerViewEnabled = $0 }
-                    )) {
-                        Label("Player View", systemImage: "eye")
-                    }
-                    Button { showLog = true } label: {
-                        Label("Log", systemImage: "list.bullet.clipboard")
-                    }
-                } label: {
-                    // Player view has no button of its own, so the menu's symbol
-                    // shows when it is on: a filled eye instead of the ⋯.
-                    Image(systemName: session.playerViewEnabled ? "eye.circle.fill" : "ellipsis.circle")
-                        .background(
-                            GeometryReader { proxy in
-                                let minX = proxy.frame(in: .global).minX
-                                Color.clear
-                                    .onAppear { fitTitle(besideMenuAt: minX) }
-                                    .onChange(of: minX) { _, new in fitTitle(besideMenuAt: new) }
-                            }
-                        )
-                }
-                .accessibilityLabel(session.playerViewEnabled ? "More, player view on" : "More")
-
+            // Encounters, in the same corner as on every other screen.
+            ToolbarItem(placement: .navigationBarTrailing) {
                 Button(action: { showAddCombatant = true }) {
                     Image(systemName: "plus")
                 }
@@ -212,13 +190,6 @@ struct ContentView: View {
         }
     }
 
-    /// Room for the title: twice the distance from the screen's centre to the ⋯
-    /// symbol, less the glass capsule around it and a gap.
-    private func fitTitle(besideMenuAt menuMinX: CGFloat) {
-        let half = menuMinX - UIScreen.main.bounds.midX - Theme.Spacing.xl
-        titleWidth = max(0, 2 * half)
-    }
-
     private func backToMenu() {
         autosave()
         path.removeLast(backReturnsToPreviousScreen ? 1 : path.count)
@@ -231,18 +202,22 @@ struct ContentView: View {
     }
 }
 
-/// Previous and Next, pinned below the initiative list, one at each end where
-/// the thumbs are. Written once with the iOS 26 glass treatment applied
-/// conditionally, rather than as two near-identical copies of the whole bar.
-/// Separate buttons, not one fused bar (tried and it read as a single odd blob
-/// rather than distinct controls). Previous is the undo arrow, since it reverts
-/// to before the last Next; Next is a plain arrow on to the next combatant. The
-/// media-style ⏪/⏩ they replaced read as "skip". Player view and the log live
-/// in the ⋯ menu at the top right.
+/// Previous, ⋯ and Next, pinned below the initiative list: the turn controls at
+/// the ends where the thumbs are, and a menu between them for player view and the
+/// log. Written once with the iOS 26 glass treatment applied conditionally, rather
+/// than as two near-identical copies of the whole bar. Separate buttons, not one
+/// fused bar (tried and it read as a single odd blob rather than distinct
+/// controls). Previous is the undo arrow, since it reverts to before the last
+/// Next; Next is a plain arrow on to the next combatant. The media-style ⏪/⏩
+/// they replaced read as "skip". The ⋯ was in the toolbar beside + for a while,
+/// but one button on the left and two on the right pushed the title off-centre,
+/// and measuring it back into place left an invisible title over the back button.
 private struct TurnControlBar: View {
     let canGoBack: Bool
     let canAdvance: Bool
+    @Binding var playerViewEnabled: Bool
     let onPrevious: () -> Void
+    let onShowLog: () -> Void
     let onNext: () -> Void
 
     var body: some View {
@@ -257,52 +232,68 @@ private struct TurnControlBar: View {
 
     private func content(glass: Bool) -> some View {
         HStack(spacing: 0) {
-            barButton(
-                "arrow.uturn.backward",
-                label: "Previous Turn",
+            barStyle(
+                Button(action: onPrevious) { barIcon("arrow.uturn.backward") }
+                    .accessibilityLabel("Previous Turn"),
                 tint: canGoBack ? Theme.accent : Theme.textTertiary,
-                glass: glass,
-                action: onPrevious
+                glass: glass
             )
             .disabled(!canGoBack)
 
             Spacer()
 
-            barButton("arrow.right", label: "Next Turn", tint: Theme.accent, glass: glass, prominent: true, action: onNext)
-                .disabled(!canAdvance)
+            // Player view has no button of its own, so the menu's symbol shows
+            // when it is on: a filled eye instead of the ⋯.
+            barStyle(
+                Menu {
+                    Toggle(isOn: $playerViewEnabled) {
+                        Label("Player View", systemImage: "eye")
+                    }
+                    Button(action: onShowLog) {
+                        Label("Log", systemImage: "list.bullet.clipboard")
+                    }
+                } label: {
+                    barIcon(playerViewEnabled ? "eye.fill" : "ellipsis")
+                }
+                .accessibilityLabel(playerViewEnabled ? "More, player view on" : "More"),
+                tint: Theme.textSecondary,
+                glass: glass
+            )
+
+            Spacer()
+
+            barStyle(
+                Button(action: onNext) { barIcon("arrow.right") }
+                    .accessibilityLabel("Next Turn"),
+                tint: Theme.accent,
+                glass: glass,
+                prominent: true
+            )
+            .disabled(!canAdvance)
         }
     }
 
-    /// `.frame(maxWidth: .infinity)` on the label (not chained onto the
-    /// `Button` from outside) plus `.contentShape(Rectangle())` — a plain
-    /// `Button`'s tap target is only ever as big as its label's own rendered
-    /// content, so a `.frame()` applied afterward stretches the layout slot
-    /// without stretching what's actually tappable inside it.
-    @ViewBuilder
-    private func barButton(
-        _ systemImage: String,
-        label: String,
-        tint: Color,
-        glass: Bool,
-        prominent: Bool = false,
-        action: @escaping () -> Void
-    ) -> some View {
-        let button = Button(action: action) {
-            Image(systemName: systemImage)
-                .font(Theme.Typography.iconPrimaryAction)
-                .frame(width: 52, height: 52)
-                .contentShape(Rectangle())
-        }
-        .accessibilityLabel(label)
+    /// The symbol, in a frame with `.contentShape(Rectangle())` so the whole
+    /// circle is tappable, not only the symbol's own pixels.
+    private func barIcon(_ systemImage: String) -> some View {
+        Image(systemName: systemImage)
+            .font(Theme.Typography.iconPrimaryAction)
+            .frame(width: 52, height: 52)
+            .contentShape(Rectangle())
+    }
 
+    /// The glass circle on iOS 26 and later, a plain bordered circle before it.
+    /// Works for a `Menu` as well as a `Button`: both take the button style.
+    @ViewBuilder
+    private func barStyle(_ control: some View, tint: Color, glass: Bool, prominent: Bool = false) -> some View {
         if glass, #available(iOS 26.0, *) {
             if prominent {
-                button.buttonStyle(.glassProminent).tint(Theme.accent)
+                control.buttonStyle(.glassProminent).tint(Theme.accent)
             } else {
-                button.buttonStyle(.glass).tint(tint)
+                control.buttonStyle(.glass).tint(tint)
             }
         } else {
-            button
+            control
                 .buttonStyle(.plain)
                 .foregroundColor(tint)
                 .background(Theme.background)
