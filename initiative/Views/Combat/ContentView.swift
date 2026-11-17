@@ -75,7 +75,7 @@ struct ContentView: View {
                             Button {
                                 session.revive(combatant.id)
                             } label: {
-                                Label("Revive", systemImage: "arrow.uturn.backward")
+                                Label("Revive", systemImage: "heart.fill")
                             }
                             .tint(Theme.statusGood)
                         }
@@ -209,9 +209,10 @@ struct ContentView: View {
 /// and belongs in the same top-right corner, while these two exist only here.
 /// Four separate buttons, not one fused bar (tried and it read as a single
 /// odd blob rather than distinct controls) — Log paired next to Previous,
-/// View paired next to Next, evenly spaced across the width. Media-style
-/// icons (`backward.fill`/`forward.fill`, not chevrons) since stepping
-/// through turns is the same shape as transport controls. View and Log used
+/// View paired next to Next, evenly spaced across the width. Previous is the
+/// undo arrow, since it reverts to before the last Next; Next is a plain
+/// arrow on to the next combatant. The media-style ⏪/⏩ they replaced read as
+/// "skip". View and Log used
 /// to live behind a hamburger `Menu` — direct, always-visible buttons are one
 /// tap instead of two for the pair of things reached for almost as often as
 /// Next itself.
@@ -239,7 +240,7 @@ private struct TurnControlBar: View {
             // Arrows on the ends, View/Log in the middle two slots — Log
             // still sits next to Previous and View next to Next.
             barButton(
-                "backward.fill",
+                "arrow.uturn.backward",
                 label: "Previous Turn",
                 tint: canGoBack ? Theme.accent : Theme.textTertiary,
                 glass: glass,
@@ -260,7 +261,7 @@ private struct TurnControlBar: View {
             )
             .frame(maxWidth: .infinity)
 
-            barButton("forward.fill", label: "Next Turn", tint: Theme.accent, glass: glass, prominent: true, action: onNext)
+            barButton("arrow.right", label: "Next Turn", tint: Theme.accent, glass: glass, prominent: true, action: onNext)
                 .disabled(!canAdvance)
                 .frame(maxWidth: .infinity)
         }

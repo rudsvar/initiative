@@ -313,11 +313,12 @@ ends, View/Log filling the middle two slots. A single fused pill sharing one
 background shape was tried first and reverted — it read as one odd blob
 rather than four distinct controls. Log still sits next to Previous and View
 next to Next:
-- **Previous** (`backward.fill`, media-transport style rather than a bare
-  chevron — stepping through turns is the same shape as transport controls):
+- **Previous** (`arrow.uturn.backward`, the undo arrow, since it reverts;
+  the media-style `backward.fill` it replaced read as "skip back"):
   reverts to the previous turn's full state (turn index, reactions, effects,
   and log entries — see §9); disabled when there's no prior turn to return to
-- **Next** (`forward.fill`, accent-tinted/prominent to read as the primary
+- **Next** (`arrow.right`, not `forward.fill`, which read as "skip";
+  accent-tinted/prominent to read as the primary
   action): advance to next combatant, reset current's reaction to available
 - **View** (`eye.fill`/`eye.slash.fill`, toggles per state): the DM/player-view
   toggle (§12) — a direct button, not behind a menu. A hamburger `Menu` was
