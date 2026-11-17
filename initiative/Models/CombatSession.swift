@@ -59,11 +59,15 @@ class CombatSession {
         log.append(LogEntry(text: text, roundNumber: roundNumber, combatantId: combatantId, hpOperation: hpOperation))
     }
 
-    private static func defaultName() -> String {
+    /// When the session started, as the phone's region writes a short date and
+    /// time ("11/17/26, 10:20 PM", "17.11.2026, 22:20").
+    static func defaultName(at date: Date = Date(), locale: Locale = .current, timeZone: TimeZone = .current) -> String {
         let formatter = DateFormatter()
+        formatter.locale = locale
+        formatter.timeZone = timeZone
         formatter.dateStyle = .short
         formatter.timeStyle = .short
-        return formatter.string(from: Date())
+        return formatter.string(from: date)
     }
 
     // MARK: - Roster
