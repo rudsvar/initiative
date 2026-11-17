@@ -12,6 +12,7 @@
 		09EC53CC26EE7304C61FC102 /* SessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 611558F2EA5435F55E881973 /* SessionStore.swift */; };
 		0AA9FF4319791B99D1C8E708 /* ChallengeEstimator.swift in Sources */ = {isa = PBXBuildFile; fileRef = D2FD5CFF1FB57A831740651F /* ChallengeEstimator.swift */; };
 		0B02BE41EBA8297838514FED /* KillReviveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20C4BD7EA18DC487773DC9EE /* KillReviveTests.swift */; };
+		0C9D76407CA487542C5CB0B4 /* EffectAppearanceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29A0DC051B72937D75E4D13A /* EffectAppearanceTests.swift */; };
 		0EEDCD5F856176554A09AFA8 /* TemporaryHPTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2FC2E8E196F28000B570FBDA /* TemporaryHPTests.swift */; };
 		135F810397EE6974720E3937 /* AddCombatantSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 66946360373B910B6577F839 /* AddCombatantSheet.swift */; };
 		13A8DA4DB83B14C9EB1F0D0E /* ConcentrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7265419AD964CF0CC71037D4 /* ConcentrationTests.swift */; };
@@ -147,6 +148,7 @@
 		255483B3F433841EC3581AEB /* initiativeTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = initiativeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		2582A5BD6876D6C40BA8E388 /* HPReplayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HPReplayTests.swift; sourceTree = "<group>"; };
 		267F7D9CB28FC2AB8F2427E2 /* ChallengeEstimatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeEstimatorTests.swift; sourceTree = "<group>"; };
+		29A0DC051B72937D75E4D13A /* EffectAppearanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectAppearanceTests.swift; sourceTree = "<group>"; };
 		2A3EC616C676736F8FBC87E6 /* Signing.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Signing.xcconfig; sourceTree = "<group>"; };
 		2B8E15FBD1B4F61AE31A398B /* PremadeBalanceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PremadeBalanceTests.swift; sourceTree = "<group>"; };
 		2C8308DCF55F94E73FD06573 /* ThemeControllerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeControllerTests.swift; sourceTree = "<group>"; };
@@ -425,6 +427,7 @@
 				D21AAC93B6F1C0C492D21EF5 /* Conditions.swift */,
 				9DF981AA6DF6B717D16FCD4F /* ConditionsTests.swift */,
 				0B11A437D714C86669EA9B73 /* CooldownLibrary.swift */,
+				29A0DC051B72937D75E4D13A /* EffectAppearanceTests.swift */,
 				6D6427D74AA5360A780F88C8 /* FlowLayout.swift */,
 				15E6FA70EC4196E9C9DA719A /* Format.swift */,
 				4AF22B663D7FA19C198D9258 /* ListSections.swift */,
@@ -660,6 +663,7 @@
 				4D5AF4D833355B9CDA7A42CE /* DefaultContentTests.swift in Sources */,
 				A6CAC928C62BC2EFC03D965A /* DyingEffectTests.swift in Sources */,
 				F0B9253CC9AF6782988E90BD /* DyingScenarioTests.swift in Sources */,
+				0C9D76407CA487542C5CB0B4 /* EffectAppearanceTests.swift in Sources */,
 				7E5C7BB027F7BC0907ECA434 /* EffectOperationsTests.swift in Sources */,
 				9E0B6764EB01C45F561CA65C /* EffectTimingTests.swift in Sources */,
 				1A85F56E1359778680CB6BE8 /* EncounterStoreTests.swift in Sources */,

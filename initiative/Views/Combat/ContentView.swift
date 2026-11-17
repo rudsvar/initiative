@@ -331,24 +331,6 @@ struct CombatantRow: View {
         UIScreen.main.bounds.width - (2 * Theme.Spacing.sm + 2 * Theme.Spacing.md)
     }
 
-    private func chipSymbol(for effect: Effect, condition: StandardCondition?) -> String {
-        if effect.deathSaves != nil { return "heart.slash.fill" }
-        switch effect.kind {
-        case .cooldown: return effect.durationType.awaitsRoll ? "hourglass" : "clock"
-        case .condition: return condition?.symbolName ?? "sparkles"
-        }
-    }
-
-    private func chipTint(for effect: Effect, condition: StandardCondition?) -> Color {
-        if effect.deathSaves != nil { return Theme.statusBad }
-        switch effect.kind {
-        // A cooldown is something you can't do, not something wrong with you —
-        // quiet, like the reaction chip.
-        case .cooldown: return Theme.textTertiary
-        case .condition: return condition?.color ?? Theme.accent
-        }
-    }
-
     /// Player view exists for turning the screen around, and the party do not
     /// necessarily share their hit points with each other, so it hides everyone's
     /// numbers, party included. The table can share them if it wants to.
@@ -476,16 +458,7 @@ struct CombatantRow: View {
                 FlowLayout {
                     // The Dying effect shows as a plain "Dying" chip; its tally is beside the name.
                     ForEach(combatant.visibleEffects) { effect in
-                        do {
-                            let condition = ConditionLibrary.matching(name: effect.name)
-                            StatusChip(
-                                symbolName: chipSymbol(for: effect, condition: condition),
-                                label: effect.name,
-                                // A cooldown is something you can't do, not something
-                                // wrong with you — quiet, like the reaction chip.
-                                color: chipTint(for: effect, condition: condition)
-                            )
-                        }
+                        StatusChip(symbolName: effect.symbolName, label: effect.name, color: effect.tint)
                     }
                     // Stabilised is a status, not a mark: at 0 HP, not rolling, not
                     // waking up. Yellow, the warning colour, so it reads as "still

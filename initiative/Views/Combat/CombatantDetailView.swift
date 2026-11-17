@@ -281,7 +281,7 @@ struct CombatantDetailView: View {
                 // own header — a category of one doesn't need a label.
                 ForEach(StandardCooldown.all) { cooldown in
                     EffectChip(
-                        symbolName: cooldown.durationType.awaitsRoll ? "hourglass" : "clock",
+                        symbolName: Effect.cooldownSymbol(for: cooldown.durationType),
                         label: cooldown.label,
                         tint: Theme.textSecondary,
                         isActive: false,
@@ -475,12 +475,6 @@ struct EffectRowView: View {
     /// Nil for a row that can't be removed by hand (Dying).
     let onRemove: (() -> Void)?
 
-    private var condition: StandardCondition? {
-        ConditionLibrary.matching(name: effect.name)
-    }
-
-    private var tint: Color { effect.deathSaves != nil ? Theme.statusBad : (condition?.color ?? Theme.accent) }
-
     private var subtitle: String {
         guard let saves = effect.deathSaves else { return effect.durationType.description }
         return "\(saves.successes) made · \(saves.failures) failed"
@@ -488,11 +482,11 @@ struct EffectRowView: View {
 
     var body: some View {
         HStack(spacing: Theme.Spacing.md) {
-            Image(systemName: effect.deathSaves != nil ? "heart.slash.fill" : (condition?.symbolName ?? "sparkles"))
+            Image(systemName: effect.symbolName)
                 .font(Theme.Typography.iconRow)
-                .foregroundColor(tint)
+                .foregroundColor(effect.tint)
                 .frame(width: 30, height: 30)
-                .background(tint.opacity(0.14))
+                .background(effect.tint.opacity(0.14))
                 .clipShape(Circle())
 
             VStack(alignment: .leading, spacing: Theme.Spacing.xxs) {

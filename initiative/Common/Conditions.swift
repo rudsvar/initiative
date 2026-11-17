@@ -103,3 +103,31 @@ extension Combatant {
         visibleEffects.filter { $0.deathSaves == nil && ConditionLibrary.matching(name: $0.name) == nil }
     }
 }
+
+/// How an effect looks, decided once for the roster chip, the effect row and the
+/// cooldown chip.
+extension Effect {
+    var symbolName: String {
+        if deathSaves != nil { return "heart.slash.fill" }
+        switch kind {
+        case .cooldown: return Self.cooldownSymbol(for: durationType)
+        case .condition: return ConditionLibrary.matching(name: name)?.symbolName ?? "sparkles"
+        }
+    }
+
+    /// Never the accent, which marks the current turn. A cooldown is something
+    /// you can't do yet rather than something wrong with you, so it is quiet; a
+    /// custom effect is quiet too, as it has no category to colour it.
+    var tint: Color {
+        if deathSaves != nil { return Theme.statusBad }
+        switch kind {
+        case .cooldown: return Theme.textTertiary
+        case .condition: return ConditionLibrary.matching(name: name)?.color ?? Theme.textSecondary
+        }
+    }
+
+    /// An hourglass while a roll is owed, a clock while it counts down.
+    static func cooldownSymbol(for duration: DurationType) -> String {
+        duration.awaitsRoll ? "hourglass" : "clock"
+    }
+}
