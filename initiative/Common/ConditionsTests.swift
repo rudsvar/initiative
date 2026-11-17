@@ -99,6 +99,6 @@ extension ConditionLibraryTests {
     func testEveryConditionHasADefaultDuration() {
         // Nothing to assert beyond it compiling and being reachable, but this
         // fails loudly if a condition is added without one being considered.
-        XCTAssertEqual(ConditionLibrary.all.count, 16)
+        XCTAssertEqual(ConditionLibrary.all.count, 17)
     }
 }

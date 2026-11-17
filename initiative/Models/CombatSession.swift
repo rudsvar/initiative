@@ -830,6 +830,7 @@ class CombatSession {
         let starting = combatants[nextIndex]
 
         var prompts = rollPrompts(for: ending, at: .endOfTurn)
+        prompts += actionPrompts(for: ending)
         prompts += rollPrompts(for: starting, at: .startOfTurn)
         prompts += damagePrompts(for: starting)
 
@@ -876,6 +877,27 @@ class CombatSession {
     /// Effects that hurt at the start of their owner's turn, and what to roll for them.
     /// The app asks and applies; the DM rolls.
     private static let startOfTurnDamage: [String: String] = ["Burning": "1d4 fire"]
+
+    /// Effects that end when their owner does something the app can't see, and
+    /// what that is. Asked as the owner's turn ends: yes ends the effect.
+    private static let endsOnAction: [String: String] = ["Invisible": "attack, deal damage or cast a spell"]
+
+    private func actionPrompts(for combatant: Combatant) -> [TurnPrompt] {
+        combatant.effects.compactMap { effect in
+            // Case-insensitive, like every other effect-name match: the name can be typed.
+            guard let action = Self.endsOnAction.first(where: { $0.key.localizedCaseInsensitiveCompare(effect.name) == .orderedSame })?.value
+            else { return nil }
+            return TurnPrompt(
+                id: effect.id,
+                combatantID: combatant.id,
+                combatantName: combatant.name,
+                subject: .endsOnAction(effectID: effect.id),
+                title: "Did \(combatant.name) \(action)?",
+                hint: "If so, \(effect.name) ends.",
+                deathSaves: nil
+            )
+        }
+    }
 
     private func damagePrompts(for combatant: Combatant) -> [TurnPrompt] {
         combatant.effects.compactMap { effect in
@@ -952,6 +974,11 @@ class CombatSession {
             } else {
                 appendLog("\(combatants[index].name) failed the roll for \(effect.name)", combatantId: combatants[index].id)
             }
+
+        case .endsOnAction(let effectID):
+            guard succeeded, let effect = combatants[index].effects.first(where: { $0.id == effectID }) else { return }
+            combatants[index].effects.removeAll { $0.id == effectID }
+            appendLog("\(combatants[index].name) is no longer \(effect.name)", combatantId: combatants[index].id)
 
         case .concentration:
             if succeeded {

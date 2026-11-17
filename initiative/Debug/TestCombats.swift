@@ -67,6 +67,18 @@ enum TestCombats {
         return session
     }
 
+    /// Wren is Invisible and it's her turn: Next asks "Did Wren attack, deal damage
+    /// or cast a spell?". Yes ends Invisible, No keeps it. The goblin is Greater
+    /// Invisible and is never asked.
+    static func invisibleAsksAtTurnEnd() -> CombatSession {
+        let session = CombatSession()
+        session.addCombatant(name: "Wren", initiative: 20, maxHP: 22, armorClass: 14, isPlayer: true)
+        session.addCombatant(name: "Goblin", initiative: 10, maxHP: 7, armorClass: 15)
+        session.combatants[0].effects.append(Effect(name: "Invisible", durationType: .untilRemoved))
+        session.combatants[1].effects.append(Effect(name: "Greater Invisible", durationType: .untilEndOfTheirTurn(remainingTurns: 10)))
+        return session
+    }
+
     /// Alpha and Omega, both at 20 HP and AC 14. Changes to them show beside their
     /// numbers until their own turn starts.
     static func hpAndACChangesShowUntilTurnStarts() -> CombatSession {
@@ -145,6 +157,7 @@ extension TestCombats {
         "lastStandingKeepsTheTurn": lastStandingKeepsTheTurn,
         "wrenWithArmorClass": wrenWithArmorClass,
         "buffsAreMarkedOnTheRoster": buffsAreMarkedOnTheRoster,
+        "invisibleAsksAtTurnEnd": invisibleAsksAtTurnEnd,
         "hpAndACChangesShowUntilTurnStarts": hpAndACChangesShowUntilTurnStarts,
         "wolfWithChanges": wolfWithChanges,
         "dyingWithTally": dyingWithTally,

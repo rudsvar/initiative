@@ -66,7 +66,10 @@ enum ConditionLibrary {
     static let all: [StandardCondition] = [
         StandardCondition(name: "Blinded", symbolName: "eye.slash.fill", category: .sensory, defaultDuration: .untilEndOfTheirTurn(remainingTurns: 1)),
         StandardCondition(name: "Deafened", symbolName: "ear.fill", category: .sensory, defaultDuration: .untilEndOfTheirTurn(remainingTurns: 1)),
+        // Ends when they attack, deal damage or cast a spell: asked as their turn ends.
         StandardCondition(name: "Invisible", symbolName: "circle.dashed", category: .sensory, defaultDuration: .untilRemoved),
+        // Not broken by attacking or casting; lasts a minute, ten of their turns.
+        StandardCondition(name: "Greater Invisible", symbolName: "circle.dashed.inset.filled", category: .sensory, defaultDuration: .untilEndOfTheirTurn(remainingTurns: 10)),
 
         StandardCondition(name: "Charmed", symbolName: "heart.fill", category: .mental, defaultDuration: .untilRollSucceeds(at: .endOfTurn, hint: nil)),
         StandardCondition(name: "Frightened", symbolName: "exclamationmark.triangle.fill", category: .mental, defaultDuration: .untilRollSucceeds(at: .endOfTurn, hint: nil)),

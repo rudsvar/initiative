@@ -33,6 +33,9 @@ struct TurnPrompt: Identifiable, Hashable {
         /// Damage that comes due at the start of the combatant's turn (Burning). The
         /// DM rolls it and types the number; the app only asks and applies it.
         case damage(effectID: UUID)
+        /// A question, not a roll: did the combatant do what ends this effect
+        /// (Invisible ends on an attack, damage dealt or a spell)? Yes removes it.
+        case endsOnAction(effectID: UUID)
     }
 
     let id: UUID
@@ -55,6 +58,14 @@ struct TurnPrompt: Identifiable, Hashable {
     /// it") was tried first, but every prompt already states what's being
     /// rolled for in its own `title`, so restating the outcome in different
     /// words each time added variety without adding information.
-    var successLabel: String { "Success" }
-    var failureLabel: String { "Failure" }
+    /// The exception is a yes-or-no question (`endsOnAction`), where "Success"
+    /// would not answer what was asked.
+    var successLabel: String {
+        if case .endsOnAction = subject { return "Yes, it ends" }
+        return "Success"
+    }
+    var failureLabel: String {
+        if case .endsOnAction = subject { return "No" }
+        return "Failure"
+    }
 }

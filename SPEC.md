@@ -549,8 +549,8 @@ systems — not trademarked, confirmed before adding this.
 
 `ConditionLibrary` (`Conditions.swift`) ships a fixed list of standard status
 conditions — Blinded, Charmed, Deafened, Frightened, Grappled, Incapacitated,
-Invisible, Paralyzed, Poisoned, Prone, Restrained, Stunned, Unconscious,
-Exhausted, Burning, Bleeding — each with an SF Symbol icon and a
+Invisible, Greater Invisible, Paralyzed, Poisoned, Prone, Restrained, Stunned,
+Unconscious, Exhausted, Burning, Bleeding — each with an SF Symbol icon and a
 `ConditionCategory`. Plain
 generic English condition words, not trademarked or ruleset-specific (single
 descriptive words like "stunned" aren't ownable), and SF Symbols are licensed
@@ -904,6 +904,13 @@ thing seen from two sides** — *at this boundary, something gets rolled, and on
 success this goes away* — differing only in the verb, which `kind` supplies. That
 is entirely a consequence of the app not rolling: had it rolled, the two would
 have needed separate rules for evaluating and reporting.
+
+**Effects that end on an action** are asked about, not rolled. Invisible ends
+when its owner attacks, deals damage or casts a spell, which the app can't see,
+so as the owner's turn ends a prompt asks "Did Wren attack, deal damage or cast
+a spell?" with "Yes, it ends" and "No". It is matched by name, like Burning, so
+nothing new is saved. Greater Invisible isn't broken that way: it never asks,
+and lasts ten of its owner's turns (a minute).
 
 `hint` is free text (`"DC 14 Con"`), shown in the prompt and nowhere else so
 chips stay short. It is never parsed. `StandardCooldown` offers a "Recharge"
