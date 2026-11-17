@@ -90,6 +90,7 @@
 		D3CD6FBE48E2B828A0D1F6BD /* CooldownLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0B11A437D714C86669EA9B73 /* CooldownLibrary.swift */; };
 		D4ADBB872E79EAE1392E517B /* ThemeControllerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C8308DCF55F94E73FD06573 /* ThemeControllerTests.swift */; };
 		D70ED16D8E221B2A6356B929 /* RecentChangeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CBA266038CF00AE2EAE654AE /* RecentChangeTests.swift */; };
+		D95EFEEE225DBACB374FA20F /* LogDeleteUndoTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D8E4A9EECCA346A105C667B /* LogDeleteUndoTests.swift */; };
 		DAEB96CD4CC56EC581D52D47 /* ChallengeRatingPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = 213E3C397F0B45EBEF8E5BBA /* ChallengeRatingPicker.swift */; };
 		DB9E38359998F12BC2B2686B /* LogEntry.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE5F2E9E2F63F368EE903186 /* LogEntry.swift */; };
 		DC00506D4EA5A3DB9DBDA7AE /* SessionListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 318B1885CECDD4B4231E7420 /* SessionListView.swift */; };
@@ -179,6 +180,7 @@
 		6B7BA1EEAB4461B78D817DB4 /* ModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModelsTests.swift; sourceTree = "<group>"; };
 		6D6427D74AA5360A780F88C8 /* FlowLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowLayout.swift; sourceTree = "<group>"; };
 		6D6B3D18CAD7D9BF42DBDB61 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		6D8E4A9EECCA346A105C667B /* LogDeleteUndoTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogDeleteUndoTests.swift; sourceTree = "<group>"; };
 		7265419AD964CF0CC71037D4 /* ConcentrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConcentrationTests.swift; sourceTree = "<group>"; };
 		72FCF480130756D02B000115 /* EncounterXP.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncounterXP.swift; sourceTree = "<group>"; };
 		74CF92255CFA4102CC5F52CE /* StatusBand.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBand.swift; sourceTree = "<group>"; };
@@ -329,6 +331,7 @@
 				20C4BD7EA18DC487773DC9EE /* KillReviveTests.swift */,
 				9C033583CC9AE407903E6C47 /* LimitedUse.swift */,
 				DB8DD2DEFF231D1EBD80E195 /* LimitedUseTests.swift */,
+				6D8E4A9EECCA346A105C667B /* LogDeleteUndoTests.swift */,
 				AE5F2E9E2F63F368EE903186 /* LogEntry.swift */,
 				6B7BA1EEAB4461B78D817DB4 /* ModelsTests.swift */,
 				CBA266038CF00AE2EAE654AE /* RecentChangeTests.swift */,
@@ -663,6 +666,7 @@
 				0B02BE41EBA8297838514FED /* KillReviveTests.swift in Sources */,
 				62C2CEF33F96A4573D4BC9C4 /* LimitedUseTests.swift in Sources */,
 				39A9BA2DDE7B0C7A9C00E552 /* ListSectionsTests.swift in Sources */,
+				D95EFEEE225DBACB374FA20F /* LogDeleteUndoTests.swift in Sources */,
 				3E634FE120E1F078B6C1172F /* ModelsTests.swift in Sources */,
 				9FE8D77649E294094C52166C /* PlayerViewTests.swift in Sources */,
 				5CB09B2243D7D6297802150B /* PremadeBalanceTests.swift in Sources */,

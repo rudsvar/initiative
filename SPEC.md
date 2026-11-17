@@ -514,7 +514,7 @@ too frequent/low-value to be worth the noise.
 increase, HP-tracking-started) can be swiped away to correct a mistake —
 deleting one **recomputes that combatant's current/max HP from scratch** by
 replaying its remaining HP-operation entries, in order (`CombatSession.
-deleteLogEntry`/`recomputeHP`). Structured data (`HPOperation` enum: which
+deleteLogEntry`/`replayHP`). Structured data (`HPOperation` enum: which
 operation + amount, plus the target `combatantId`) backs this; the entry's
 `text` is only ever the display rendering, never parsed back. Turn changes,
 combatant add/remove, and death entries are **not** deletable yet — no

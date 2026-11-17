@@ -6,7 +6,7 @@ import SwiftUI
 /// entry) since that's what you almost always want to see first. HP-affecting
 /// entries (damage/heal/max-HP-increase/enable-tracking) can be swiped away —
 /// deleting one recomputes the affected combatant's current/max HP from the
-/// remaining entries. See CombatSession.deleteLogEntry/recomputeHP. Other entries
+/// remaining entries. See CombatSession.deleteLogEntry/replayHP. Other entries
 /// (turn changes, adds/removes, deaths) aren't deletable yet.
 struct LogView: View {
     let session: CombatSession

@@ -96,7 +96,7 @@ class CombatSession {
         sortByInitiative()
         appendLog("\(name) added to combat (initiative \(resolvedInitiative))")
         if let maxHP {
-            // A separate, structured entry so recomputeHP has a baseline to replay
+            // A separate, structured entry so replayHP has a baseline to replay
             // from even when HP was set at creation time rather than via "Track HP".
             appendLog(
                 "\(name) started tracking HP (\(maxHP)/\(maxHP))",
@@ -124,7 +124,7 @@ class CombatSession {
         appendLog(count > 1 ? "\(count)x \(name) added to combat" : "\(name) added to combat")
         if let maxHP {
             // Same reasoning as addCombatant: a structured baseline entry per
-            // spawned copy, tied to that copy's own id, so recomputeHP works.
+            // spawned copy, tied to that copy's own id, so replayHP works.
             for combatant in spawned {
                 appendLog(
                     "\(combatant.name) started tracking HP (\(maxHP)/\(maxHP))",
@@ -221,7 +221,7 @@ class CombatSession {
 
     /// Splits an incoming hit between the temporary buffer and real hit points.
     ///
-    /// Shared by `applyDamage` and `recomputeHP` deliberately: the live path and
+    /// Shared by `applyDamage` and `replayHP` deliberately: the live path and
     /// the replay path have to agree exactly or deleting a log entry would
     /// recompute a different answer than the one the DM originally saw, and
     /// keeping them as one function makes that true by construction rather than
@@ -508,17 +508,28 @@ class CombatSession {
 
     /// Deletes a log entry. If it carried an HP operation, the affected combatant's
     /// current/max HP is recomputed from scratch by replaying the remaining
-    /// HP-operation entries for that combatant, in order — see `recomputeHP`.
+    /// HP-operation entries for that combatant, in order — see `replayHP`.
     func deleteLogEntry(_ entryId: UUID) {
         guard let index = log.firstIndex(where: { $0.id == entryId }) else { return }
         let entry = log[index]
         log.remove(at: index)
-        if let combatantId = entry.combatantId, entry.hpOperation != nil {
-            recomputeHP(for: combatantId)
+        let replayedCombatant = entry.hpOperation != nil ? entry.combatantId : nil
+        if let replayedCombatant {
+            Self.replayHP(of: replayedCombatant, in: &combatants, from: log)
+        }
+        // Undo snapshots taken after the entry was logged held it too. Take it out
+        // of each, or Previous would cut the log one entry too late and bring back
+        // the HP the deletion took away.
+        for i in history.indices where history[i].logCount > index {
+            history[i].logCount -= 1
+            if let replayedCombatant {
+                Self.replayHP(of: replayedCombatant, in: &history[i].combatants, from: Array(log.prefix(history[i].logCount)))
+            }
         }
     }
 
-    private func recomputeHP(for combatantId: UUID) {
+    /// Recomputes one combatant's HP from scratch by replaying `log`'s HP operations.
+    private static func replayHP(of combatantId: UUID, in combatants: inout [Combatant], from log: [LogEntry]) {
         guard let index = combatants.firstIndex(where: { $0.id == combatantId }) else { return }
         var maxHP: Int?
         var currentHP: Int?
