@@ -35,9 +35,15 @@ A short index of the rules that matter most. Keep it current: when a rule
 changes, change it here and in the section it points to.
 
 - **Data format changes:** any change to a saved type (`SessionRecord`,
-  `Combatant`, `Effect`, `CreaturePreset`, `Encounter`) needs a test that
-  decodes the previous format and a migration test, so existing saves and
-  presets keep working. See "Session persistence compatibility".
+  `Combatant`, `Effect`, `DurationType`, `LogEntry`, `HPOperation`,
+  `CreaturePreset`, `Encounter`) needs a literal-JSON fixture of the previous
+  format, a test that decodes it, and a migration test when the meaning
+  changes, so existing saves and presets keep working. See "Saved data
+  compatibility".
+- **Never delete someone's data:** no change may delete or rewrite a person's
+  saved sessions, characters, creatures or encounters without the owner's
+  explicit approval for that specific change, and a test that shows what is
+  kept. See "Saved data compatibility".
 - **User content is never changed silently:** never modify a custom
   (user-made) creature or encounter. Only the built-in ones are read-only, and
   the user can change a built-in only through Clone, which makes their own
@@ -426,18 +432,51 @@ Swift's *synthesized* `Codable` does **not** fall back to a property's declared
 default when the key is missing, so a new non-optional field silently breaks
 every previously saved session. Those three types therefore have hand-written
 `init(from:)` decoders that use `decodeIfPresent(...) ?? default`. Keep it that
-way, and add a literal-JSON case to `CodableCompatibilityTests` for anything new.
+way, and add a literal-JSON fixture to `CodableCompatibilityTests` for anything
+new (see "Saved data compatibility").
 
-## Session persistence compatibility
+## Saved data compatibility
 
-**Not yet published — no compatibility constraint currently applies.** Once this app
-ships to a device as a "real" install the user relies on day-to-day, `SessionRecord`
-(in `SessionStore.swift`) and its `Codable` encoding become a durable on-disk format:
-saved sessions must keep decoding across app updates, or a person's in-progress combat
-gets silently wiped. At that point: only add fields with defaults (never remove/rename
-existing `CodingKeys` without a migration), and treat `DurationType`'s manual `Codable`
-implementation as equally frozen. Revisit this note and make it a hard rule once the
-app is actually installed/published somewhere real.
+**A hard rule: the app is in testers' hands, and what it saved is theirs.**
+Sessions (`SessionRecord`), presets (`CreaturePreset`), encounters
+(`Encounter`) and the `UserDefaults` keys are durable on-disk formats. An
+update that fails to decode one of them, or deletes one, wipes a person's
+combat, party or prepared encounters, and there is no way to get it back.
+
+**When a saved type changes** (a field, an enum case, a `CodingKey`, the
+meaning of a value):
+
+- **Fixture first.** Before changing the type, add a literal-JSON fixture of
+  the *current* format to `CodableCompatibilityTests`: JSON as the previous
+  build writes it, typed out in the test, never produced by the new encoder.
+  Then make the change and add the decode test against that fixture.
+- **Migration test** when old data must mean something new (as when the
+  death-save tally moved from `Combatant` onto the Dying effect): decode the
+  old fixture and assert the migrated result, not just that it decodes.
+- **Fixtures are permanent.** Never edit or delete a committed fixture to make
+  a test pass: it is the record of what is on someone's phone. If a fixture
+  stops decoding, the change is wrong, not the fixture.
+- Only add fields with defaults, decoded with `decodeIfPresent(...) ?? default`
+  (see "Adding a field to a saved type"). Never remove or rename a `CodingKey`
+  without a migration. `DurationType`'s hand-written `Codable` is frozen the
+  same way.
+- New enum cases decode fine in the new build, but an older build can't read
+  data that uses them. Say so in the commit message.
+
+**Never delete or rewrite someone's data.** A launch-time clean-up, a one-time
+migration that drops entries, a store method that deletes files, or an
+"install defaults" that overwrites: each needs
+
+- the owner's explicit approval for that specific change, asked for before it
+  is written;
+- a test that sets up every kind of saved data (sessions, characters,
+  creatures, encounters, built-ins included) and asserts what survives, not
+  only what is removed. Characters are presets with `isPlayer`, so a filter on
+  "not built-in" deletes them too;
+- a commit message that says exactly what is deleted.
+
+When in doubt, migrate instead of deleting, and leave data you don't
+understand alone.
 
 ## Session model (no explicit save)
 

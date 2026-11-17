@@ -8,7 +8,7 @@ import XCTest
 /// round-tripped through the current encoder — so they still fail if a future
 /// change breaks yesterday's files while remaining self-consistent.
 ///
-/// See CLAUDE.md, "Session persistence compatibility".
+/// See CLAUDE.md, "Saved data compatibility".
 final class CodableCompatibilityTests: XCTestCase {
 
     private func decode<T: Decodable>(_ type: T.Type, _ json: String) throws -> T {
