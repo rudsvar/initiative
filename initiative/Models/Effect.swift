@@ -119,6 +119,13 @@ enum DurationType: Equatable, Codable {
         }
     }
 
+    /// `description` for an effect that belongs to the round rather than to a
+    /// combatant: its roll comes when the round turns over, not on a turn.
+    var roundDescription: String {
+        guard case .untilRollSucceeds(_, let hint) = self else { return description }
+        return "Until a roll succeeds, when the round turns over" + (hint.map { " (\($0))" } ?? "")
+    }
+
     /// True for durations that never tick down on their own — they wait on the DM.
     var awaitsRoll: Bool {
         if case .untilRollSucceeds = self { return true }

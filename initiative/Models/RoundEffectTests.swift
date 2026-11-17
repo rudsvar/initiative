@@ -156,4 +156,14 @@ final class RoundEffectTests: XCTestCase {
 
         XCTAssertTrue(session.roundEffects.isEmpty)
     }
+
+    /// A round effect's roll comes when the round turns over, not on anyone's turn.
+    func testARoundEffectsRollIsDescribedByTheRound() {
+        XCTAssertEqual(
+            DurationType.untilRollSucceeds(at: .startOfTurn, hint: "DC 12 Dex").roundDescription,
+            "Until a roll succeeds, when the round turns over (DC 12 Dex)"
+        )
+        XCTAssertEqual(DurationType.forRounds(remaining: 3).roundDescription, "For 3 more rounds")
+        XCTAssertEqual(DurationType.untilRemoved.roundDescription, "Until removed")
+    }
 }

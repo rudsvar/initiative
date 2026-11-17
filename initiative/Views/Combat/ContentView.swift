@@ -516,7 +516,7 @@ private struct RoundEffectStrip: View {
                             Text(effect.name)
                                 .font(Theme.Typography.bodyEmphasis)
                                 .foregroundColor(Theme.textPrimary)
-                            Text(effect.durationType.description)
+                            Text(effect.durationType.roundDescription)
                                 .font(Theme.Typography.caption)
                                 .foregroundColor(Theme.textTertiary)
                         }
