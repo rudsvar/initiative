@@ -425,9 +425,14 @@ enum DefaultContent {
 
     // MARK: - Lookup
 
+    /// Case-insensitive. A lookup rather than a scan: every library row asks
+    /// whether it is built in, on every redraw.
     static func creature(named name: String) -> Creature? {
-        creatures.first { $0.name.localizedCaseInsensitiveCompare(name) == .orderedSame }
+        creaturesByLowercasedName[name.lowercased()]
     }
+
+    private static let creaturesByLowercasedName: [String: Creature] =
+        Dictionary(creatures.map { ($0.name.lowercased(), $0) }, uniquingKeysWith: { first, _ in first })
 
     /// Builds a saveable `Encounter` from a template, resolving each line's stats
     /// from the creature table. A line naming a creature that isn't in the table
