@@ -23,7 +23,7 @@ final class CombatSessionTests: XCTestCase {
         session.addCombatant(name: "Fast", initiative: 20)
         session.addCombatant(name: "Medium", initiative: 12)
 
-        let sorted = session.sortedCombatants
+        let sorted = session.combatants
         XCTAssertEqual(sorted[0].initiative, 20)
         XCTAssertEqual(sorted[1].initiative, 12)
         XCTAssertEqual(sorted[2].initiative, 5)

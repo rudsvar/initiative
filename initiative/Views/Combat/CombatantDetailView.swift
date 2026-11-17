@@ -16,6 +16,11 @@ struct CombatantDetailView: View {
     /// Which limited-use resource the cog opened, or nil when adding a new one.
     @State private var editingLimitedUse: LimitedUse?
     @State private var creatingLimitedUse = false
+    /// The initiative being typed. Applied when the field loses focus or the
+    /// screen closes, not per keystroke: each change re-sorts the order and is
+    /// logged, so typing "25" must not also log a 2.
+    @State private var initiativeText = ""
+    @FocusState private var initiativeFocused: Bool
 
     var combatant: Combatant? {
         session.combatants.first { $0.id == combatantId }
@@ -37,15 +42,11 @@ struct CombatantDetailView: View {
         )
     }
 
-    private var initiativeBinding: Binding<String> {
-        Binding(
-            get: { combatant.map { String($0.initiative) } ?? "" },
-            set: { newValue in
-                guard let index = session.combatants.firstIndex(where: { $0.id == combatantId }) else { return }
-                guard let value = Int(newValue) else { return }
-                session.combatants[index].initiative = value
-            }
-        )
+    private func applyInitiative() {
+        if let value = Int(initiativeText) {
+            session.setInitiative(value, for: combatantId)
+        }
+        initiativeText = combatant.map { String($0.initiative) } ?? ""
     }
 
     /// Pushed from tapping a roster row — an inline-under-the-row disclosure
@@ -68,6 +69,11 @@ struct CombatantDetailView: View {
             }
         }
         .themedScreen()
+        .onAppear { initiativeText = combatant.map { String($0.initiative) } ?? "" }
+        .onChange(of: initiativeFocused) { _, focused in
+            if !focused { applyInitiative() }
+        }
+        .onDisappear { applyInitiative() }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             // Editable in place rather than a static title with a separate
@@ -139,9 +145,10 @@ struct CombatantDetailView: View {
         HStack(alignment: .center, spacing: Theme.Spacing.md) {
             VStack(alignment: .leading, spacing: Theme.Spacing.xs) {
                 Text("Initiative").cardHeading()
-                TextField(text: initiativeBinding) {
+                TextField(text: $initiativeText) {
                     Text("—").foregroundColor(Theme.placeholderText)
                 }
+                .focused($initiativeFocused)
                 .keyboardType(.numberPad)
                 .font(Theme.Typography.statLarge)
                 .foregroundColor(Theme.accent)

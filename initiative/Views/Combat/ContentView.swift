@@ -36,7 +36,7 @@ struct ContentView: View {
             }
 
             List {
-                ForEach(session.sortedCombatants) { combatant in
+                ForEach(session.combatants) { combatant in
                     let isCurrent = session.highlightedCombatantID(awaitingPrompts: !pendingPrompts.isEmpty) == combatant.id
                     // A real Button, not a hidden NavigationLink in the
                     // background: the hidden-link pattern gave the row zero
@@ -93,7 +93,7 @@ struct ContentView: View {
             .safeAreaInset(edge: .bottom) {
                 TurnControlBar(
                     canGoBack: session.canGoToPreviousTurn,
-                    canAdvance: !session.sortedCombatants.isEmpty,
+                    canAdvance: !session.combatants.isEmpty,
                     playerViewEnabled: session.playerViewEnabled,
                     onPrevious: { session.previousTurn() },
                     onTogglePlayerView: { session.playerViewEnabled.toggle() },

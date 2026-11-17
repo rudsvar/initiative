@@ -77,8 +77,13 @@ class CombatSession {
         return combatants[currentTurnIndex]
     }
 
-    var sortedCombatants: [Combatant] {
-        combatants.sorted { $0.initiative > $1.initiative }
+    /// Highest initiative first; ties keep the order they were in. Stable on
+    /// purpose: `Array.sort` is not, and an unstable sort could swap two tied
+    /// combatants each time, moving the turn under the DM's feet.
+    private func sortByInitiative() {
+        combatants = combatants.enumerated()
+            .sorted { $0.element.initiative != $1.element.initiative ? $0.element.initiative > $1.element.initiative : $0.offset < $1.offset }
+            .map(\.element)
     }
 
     /// `initiative: nil` rolls 1...20 plus `initiativeBonus` (a flat modifier, e.g. from
@@ -88,7 +93,7 @@ class CombatSession {
         let resolvedInitiative = initiative ?? (Int.random(in: 1...20) + initiativeBonus)
         let combatant = Combatant(name: name, initiative: resolvedInitiative, maxHP: maxHP, armorClass: armorClass, isPlayer: isPlayer)
         combatants.append(combatant)
-        combatants.sort { $0.initiative > $1.initiative }
+        sortByInitiative()
         appendLog("\(name) added to combat (initiative \(resolvedInitiative))")
         if let maxHP {
             // A separate, structured entry so recomputeHP has a baseline to replay
@@ -115,7 +120,7 @@ class CombatSession {
             spawned.append(Combatant(name: displayName, initiative: resolvedInitiative, maxHP: maxHP, armorClass: armorClass, isPlayer: isPlayer))
         }
         combatants.append(contentsOf: spawned)
-        combatants.sort { $0.initiative > $1.initiative }
+        sortByInitiative()
         appendLog(count > 1 ? "\(count)x \(name) added to combat" : "\(name) added to combat")
         if let maxHP {
             // Same reasoning as addCombatant: a structured baseline entry per
@@ -128,6 +133,20 @@ class CombatSession {
                 )
             }
         }
+    }
+
+    /// Changes a combatant's initiative and moves them to their new place in the
+    /// order. The turn in progress stays with whoever has it, even if they moved.
+    func setInitiative(_ value: Int, for id: UUID) {
+        guard let index = combatants.firstIndex(where: { $0.id == id }),
+              combatants[index].initiative != value else { return }
+        let current = currentCombatant?.id
+        combatants[index].initiative = value
+        sortByInitiative()
+        if let current, let newIndex = combatants.firstIndex(where: { $0.id == current }) {
+            currentTurnIndex = newIndex
+        }
+        appendLog("\(combatants.first { $0.id == id }!.name)'s initiative changed to \(value)", combatantId: id)
     }
 
     // MARK: - Health
