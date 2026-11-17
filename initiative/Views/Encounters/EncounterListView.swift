@@ -168,7 +168,6 @@ private struct EditEncounterView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Theme.backgroundGradient.ignoresSafeArea()
                 Form {
                     Section {
                         TextField(text: $encounter.name) {
@@ -220,6 +219,7 @@ private struct EditEncounterView: View {
                 // view stops scrolling, so a built-in's creatures could not be read.
                 .environment(\.isEnabled, !isReadOnly)
             }
+            .themedScreen()
             .navigationTitle(isReadOnly ? encounter.name : "Edit Encounter")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -265,7 +265,6 @@ private struct AddEncounterEntryView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Theme.backgroundGradient.ignoresSafeArea()
                 Form {
                     if !presets.isEmpty {
                         Section("Creature") {
@@ -321,6 +320,7 @@ private struct AddEncounterEntryView: View {
                 // every one of these was rendering system grey in all nine themes.
                 .scrollContentBackground(.hidden)
             }
+            .themedScreen()
             .navigationTitle("Add Creature")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

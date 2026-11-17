@@ -37,7 +37,6 @@ struct CloneNameSheet: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Theme.backgroundGradient.ignoresSafeArea()
                 Form {
                     Section {
                         TextField(text: $name) {
@@ -61,6 +60,7 @@ struct CloneNameSheet: View {
                 }
                 .scrollContentBackground(.hidden)
             }
+            .themedScreen()
             .navigationTitle(title)
             .navigationBarTitleDisplayMode(.inline)
             .onAppear {

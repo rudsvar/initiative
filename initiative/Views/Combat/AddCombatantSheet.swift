@@ -28,7 +28,6 @@ struct AddCombatantSheet: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Theme.backgroundGradient.ignoresSafeArea()
                 Form {
                     Section {
                         // One row split in two, a list per kind instead of a switch: the
@@ -107,6 +106,7 @@ struct AddCombatantSheet: View {
                 // every one of these was rendering system grey in all nine themes.
                 .scrollContentBackground(.hidden)
             }
+            .themedScreen()
             .navigationTitle("Add Combatant")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

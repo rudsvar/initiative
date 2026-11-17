@@ -32,7 +32,6 @@ struct EffectEditorView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Theme.backgroundGradient.ignoresSafeArea()
                 Form {
                     Section(nameSectionTitle) {
                         TextField(text: $effectName) {
@@ -79,6 +78,7 @@ struct EffectEditorView: View {
                 }
                 .scrollContentBackground(.hidden)
             }
+            .themedScreen()
             .navigationTitle(existing == nil ? "Custom Effect" : "Configure Effect")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

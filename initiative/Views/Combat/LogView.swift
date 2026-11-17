@@ -23,8 +23,6 @@ struct LogView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Theme.backgroundGradient.ignoresSafeArea()
-
                 if session.log.isEmpty {
                     ContentUnavailableView(
                         "No Events Yet",
@@ -72,6 +70,7 @@ struct LogView: View {
                     }
                 }
             }
+            .themedScreen()
             .navigationTitle("Log")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

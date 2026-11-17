@@ -19,7 +19,6 @@ struct RoundEffectsView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                Theme.backgroundGradient.ignoresSafeArea()
                 Form {
                     if !session.roundEffects.isEmpty {
                         Section {
@@ -91,6 +90,7 @@ struct RoundEffectsView: View {
                 }
                 .scrollContentBackground(.hidden)
             }
+            .themedScreen()
             .navigationTitle("Round Effects")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

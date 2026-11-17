@@ -91,7 +91,6 @@ struct CreatureDetailView: View {
 
     private var editableForm: some View {
         ZStack {
-            Theme.backgroundGradient.ignoresSafeArea()
             Form {
                 Section {
                     TextField(text: $name) {
@@ -152,6 +151,7 @@ struct CreatureDetailView: View {
             // the Form it is silently ignored.
             .scrollContentBackground(.hidden)
         }
+        .themedScreen()
     }
 
     private func save() {
