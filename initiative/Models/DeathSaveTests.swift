@@ -36,7 +36,8 @@ final class DeathSaveTests: XCTestCase {
         XCTAssertTrue(combatant(session, "Goblin").isDead)
     }
 
-    /// Damage taken while already down mustn't restart the tally.
+    /// Damage taken while already down mustn't restart the tally: it adds a
+    /// failure to the one already rolled.
     func testFurtherDamageDoesNotResetTheTally() {
         let (session, wren) = session()
         session.applyDamage(to: wren, amount: 10)
@@ -44,7 +45,7 @@ final class DeathSaveTests: XCTestCase {
 
         session.applyDamage(to: wren, amount: 3)
 
-        XCTAssertEqual(combatant(session, "Wren").deathSaves?.failures, 1)
+        XCTAssertEqual(combatant(session, "Wren").deathSaves?.failures, 2)
     }
 
     // MARK: - Resolving
