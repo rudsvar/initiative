@@ -114,18 +114,9 @@ struct PresetListView: View {
                 if onPick != nil { pick(copy) }
             }
         }
-        .alert(
-            "Delete creature?",
-            isPresented: Binding(get: { pendingDelete != nil }, set: { if !$0 { pendingDelete = nil } }),
-            presenting: pendingDelete
-        ) { preset in
-            Button("Delete", role: .destructive) {
-                presetStore.delete(id: preset.id)
-                reload()
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: { preset in
-            Text("\(preset.name) will be removed. This can't be undone.")
+        .deleteConfirmation($pendingDelete, noun: noun.lowercased(), name: \.name) { preset in
+            presetStore.delete(id: preset.id)
+            reload()
         }
     }
 

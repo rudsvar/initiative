@@ -16,6 +16,7 @@ struct EncounterListView: View {
     @State private var encounters: [Encounter]
     @State private var editingEncounter: Encounter?
     @State private var cloning: Encounter?
+    @State private var pendingDelete: Encounter?
     @State private var query = ""
 
     init(encounterStore: EncounterStore, presetStore: PresetStore) {
@@ -68,6 +69,10 @@ struct EncounterListView: View {
                 encounters = encounterStore.listEncounters()
             }
         }
+        .deleteConfirmation($pendingDelete, noun: "encounter", name: \.name) { encounter in
+            encounterStore.delete(id: encounter.id)
+            encounters = encounterStore.listEncounters()
+        }
         .sheet(item: $editingEncounter) { encounter in
             EditEncounterView(encounterStore: encounterStore, presetStore: presetStore, encounter: encounter) {
                 encounters = encounterStore.listEncounters()
@@ -113,8 +118,7 @@ struct EncounterListView: View {
                     .swipeActions(edge: .trailing) {
                         if !encounter.isBuiltIn {
                             Button(role: .destructive) {
-                                encounterStore.delete(id: encounter.id)
-                                encounters = encounterStore.listEncounters()
+                                pendingDelete = encounter
                             } label: {
                                 Label("Delete", systemImage: "trash")
                             }

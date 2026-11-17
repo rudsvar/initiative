@@ -88,6 +88,7 @@
 		B136FF45EE256B0523ED89A4 /* LogView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0E8595FB2990C1DF76AD4C /* LogView.swift */; };
 		B16C32ECC2B3F0908F2E4EDA /* ThemeController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A7840FBA3A62622584D6A22 /* ThemeController.swift */; };
 		B2976DA28F065B09A12D312C /* EncounterXPTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB71B1C8EC7F8A5D678FC25A /* EncounterXPTests.swift */; };
+		B380D7CCEA9F142E33041910 /* DeleteConfirmation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E935ED3A1BD49E3833046A2 /* DeleteConfirmation.swift */; };
 		B6B0A3D296F731263220A862 /* SearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC27CA470043E0B89A9580AA /* SearchBar.swift */; };
 		BA433734B987BA122D5BFAFD /* CombatSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F6ECF4848029671F86C86AA /* CombatSession.swift */; };
 		BD69EB924172237EA2FE7D06 /* initiativeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 173E70DAD215FA1517F8B1AF /* initiativeApp.swift */; };
@@ -180,6 +181,7 @@
 		54DD0236F790EE085E97A432 /* TurnPromptView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TurnPromptView.swift; sourceTree = "<group>"; };
 		54F42B0AFD76C65718DAABAD /* CloneableRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloneableRow.swift; sourceTree = "<group>"; };
 		5AB92BFBD1A901C57446D6A5 /* CombatantDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CombatantDetailView.swift; sourceTree = "<group>"; };
+		5E935ED3A1BD49E3833046A2 /* DeleteConfirmation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteConfirmation.swift; sourceTree = "<group>"; };
 		611558F2EA5435F55E881973 /* SessionStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SessionStore.swift; sourceTree = "<group>"; };
 		612E1F0FAD7DF6DBEAB03D05 /* ChallengeRating.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChallengeRating.swift; sourceTree = "<group>"; };
 		629D89F106ACC02FC654FB52 /* ConcentrationCheckSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConcentrationCheckSheet.swift; sourceTree = "<group>"; };
@@ -446,6 +448,7 @@
 				D21AAC93B6F1C0C492D21EF5 /* Conditions.swift */,
 				9DF981AA6DF6B717D16FCD4F /* ConditionsTests.swift */,
 				0B11A437D714C86669EA9B73 /* CooldownLibrary.swift */,
+				5E935ED3A1BD49E3833046A2 /* DeleteConfirmation.swift */,
 				29A0DC051B72937D75E4D13A /* EffectAppearanceTests.swift */,
 				6D6427D74AA5360A780F88C8 /* FlowLayout.swift */,
 				15E6FA70EC4196E9C9DA719A /* Format.swift */,
@@ -628,6 +631,7 @@
 				30612A0282CDFEEA1E7F79E6 /* DeathSaves.swift in Sources */,
 				9E619E17AE246450D08A306D /* DebugScenariosView.swift in Sources */,
 				497810B3563B071D9F877FB7 /* DefaultContent.swift in Sources */,
+				B380D7CCEA9F142E33041910 /* DeleteConfirmation.swift in Sources */,
 				7B78D0FA978026999015844A /* Effect.swift in Sources */,
 				7D58FB15FBAFA3FAAEB93866 /* EffectEditorView.swift in Sources */,
 				A7F71F3040C430E21FDB0387 /* EffectTiming.swift in Sources */,
