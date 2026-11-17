@@ -67,6 +67,8 @@ struct CombatantDetailView: View {
                 .padding(Theme.Spacing.lg)
             }
         }
+        // Renaming, or typing an initiative: a tap anywhere else puts the keyboard away.
+        .dismissesKeyboardOnTap()
         .themedScreen()
         .onAppear { initiativeText = combatant.map { String($0.initiative) } ?? "" }
         .onChange(of: initiativeFocused) { _, focused in

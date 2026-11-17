@@ -304,7 +304,7 @@ out-of-scope in an earlier draft of this section, was added — see the
 - **Session name + Round N** (`.principal`): a two-line stack, editable name
   field above, plain round counter below, neither a button. It fills the
   space between the two buttons, which is centred because each side holds one
-  icon. Two trailing buttons
+  icon. A tap anywhere else on the screen ends editing. Two trailing buttons
   (⋯ and +) were tried: the title went off-centre, and measuring it back into
   place left an invisible title over the back button that swallowed taps
 - **Add Combatant** (trailing, `+`): opens the add-combatant modal

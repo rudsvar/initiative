@@ -203,3 +203,16 @@ extension Text {
             .foregroundColor(Theme.textPrimary)
     }
 }
+
+extension View {
+    /// A tap anywhere on this view ends text editing and puts the keyboard away,
+    /// as a tap outside the field does in most apps. Simultaneous, so buttons and
+    /// rows under the tap still get it.
+    func dismissesKeyboardOnTap() -> some View {
+        simultaneousGesture(
+            TapGesture().onEnded {
+                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+            }
+        )
+    }
+}

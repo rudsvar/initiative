@@ -109,6 +109,8 @@ struct ContentView: View {
                 .padding(.bottom, Theme.Spacing.sm)
             }
         }
+        // Renaming the session: a tap anywhere else puts the keyboard away.
+        .dismissesKeyboardOnTap()
         .themedScreen()
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(true)
