@@ -83,7 +83,10 @@ struct RootView: View {
             }
             #endif
             // One-time clean-up before the creature list is rebuilt: the owner's
-            // own creatures are removed, so the new built-in set starts clean.
+            // own creatures and characters are removed, so the new built-in set
+            // starts clean. Approved by the owner on 2026-11-17, before release.
+            // The key is what makes it run once per install: never rename or
+            // reuse it, or it runs again over data people have made since.
             presetStore.removeUserCreatures(once: "removedUserCreaturesV2")
             presetStore.installDefaults()
             #if DEBUG

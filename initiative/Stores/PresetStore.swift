@@ -98,9 +98,10 @@ class PresetStore {
         self.baseDirectory = directory
     }
 
-    /// Removes every creature the owner made, once. Built-in creatures are left
-    /// alone; `installDefaults` restores any that are missing. `key` records that
-    /// the clean-up has run, so it does not repeat on later launches.
+    /// Removes every creature and character the owner made, once. Built-in
+    /// creatures are left alone; `installDefaults` restores any that are missing.
+    /// `key` records that the clean-up has run, so it does not repeat on later
+    /// launches. Sessions and encounters are not touched.
     func removeUserCreatures(once key: String, defaults: UserDefaults = .standard) {
         guard !defaults.bool(forKey: key) else { return }
         for preset in listPresets() where !preset.isBuiltIn {

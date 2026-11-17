@@ -276,25 +276,37 @@ final class PresetStoreTests: XCTestCase {
         XCTAssertFalse(store.clone(goblin, named: "Goblin Raider", isPlayer: false).isPlayer)
     }
 
-    func testOneTimeCleanupRemovesOwnCreaturesAndKeepsBuiltIns() {
-        store.installDefaults()
-        store.upsert(name: "My Ogre", maxHP: 40)
+    /// The one-time clean-up across every kind of saved data, as CLAUDE.md asks of
+    /// anything that deletes: the owner's creatures and characters go (approved
+    /// 2026-11-17, before release); built-ins, sessions and encounters stay. A
+    /// relaunch with the same defaults never runs it again.
+    func testOneTimeCleanupKeepsEverythingButOwnCreaturesAndCharactersAcrossRelaunches() {
         let defaults = UserDefaults(suiteName: "cleanup-\(UUID().uuidString)")!
+        let sessions = SessionStore(baseDirectory: tempDirectory.appendingPathComponent("Sessions"), userDefaults: defaults)
+        let encounters = EncounterStore(baseDirectory: tempDirectory.appendingPathComponent("Encounters"))
+        let presets = PresetStore(baseDirectory: tempDirectory.appendingPathComponent("Presets"))
+        presets.installDefaults()
+        presets.upsert(name: "My Ogre", maxHP: 40)
+        presets.upsert(name: "Wren", maxHP: 22, isPlayer: true)
+        sessions.save(SessionRecord(name: "Friday", combatants: [Combatant(name: "Wren", initiative: 12)], currentTurnIndex: 0))
+        encounters.save(Encounter(name: "Swamp Ambush", entries: [EncounterEntry(name: "My Ogre")]))
+        let builtInCount = presets.listPresets().filter(\.isBuiltIn).count
 
-        store.removeUserCreatures(once: "k", defaults: defaults)
+        presets.removeUserCreatures(once: "k", defaults: defaults)
 
-        XCTAssertNil(store.preset(named: "My Ogre"))
-        XCTAssertNotNil(store.preset(named: "Wolf"))
-    }
+        XCTAssertNil(presets.preset(named: "My Ogre"))
+        XCTAssertNil(presets.preset(named: "Wren"))
+        XCTAssertEqual(presets.listPresets().filter(\.isBuiltIn).count, builtInCount)
+        XCTAssertEqual(sessions.listSavedSessions().map(\.name), ["Friday"])
+        XCTAssertEqual(encounters.listEncounters().map(\.name), ["Swamp Ambush"])
 
-    func testOneTimeCleanupRunsOnlyOnce() {
-        let defaults = UserDefaults(suiteName: "cleanup-\(UUID().uuidString)")!
-        store.removeUserCreatures(once: "k", defaults: defaults)
-
-        store.upsert(name: "Later Ogre", maxHP: 40)
-        store.removeUserCreatures(once: "k", defaults: defaults)
-
-        XCTAssertNotNil(store.preset(named: "Later Ogre"))
+        // Next launch: new stores over the same files and defaults.
+        let relaunched = PresetStore(baseDirectory: tempDirectory.appendingPathComponent("Presets"))
+        relaunched.upsert(name: "Wren", maxHP: 22, isPlayer: true)
+        relaunched.removeUserCreatures(once: "k", defaults: defaults)
+        let again = PresetStore(baseDirectory: tempDirectory.appendingPathComponent("Presets"))
+        again.removeUserCreatures(once: "k", defaults: defaults)
+        XCTAssertNotNil(again.preset(named: "Wren"))
     }
 
     // MARK: - Names
