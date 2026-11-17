@@ -344,10 +344,6 @@ struct CombatantRow: View {
                 // No HP tracked: the heart stays, with a dash for each number.
                 Text("−/−").foregroundColor(Theme.textTertiary)
             }
-        } footnote: {
-            if !playerViewEnabled, let current = combatant.effectiveCurrentHP, let max = combatant.maxHP {
-                healthFootnote(current: current, max: max)
-            }
         }
     }
 
@@ -358,39 +354,8 @@ struct CombatantRow: View {
     private func maxText(_ max: Int) -> Text { marked(max, change: combatant.recentMaxHPChange) }
     private var slash: Text { Text("/").foregroundColor(Theme.textTertiary) }
 
-    /// Temporary HP as "+N" under current HP, and a change to max HP as "+N" or
-    /// "−N" under max, as temporary AC shows under AC. The first row is the value
-    /// again, invisible and zero-height, so the grid's columns take its measured
-    /// widths and each amount centres under its own number.
-    @ViewBuilder
-    private func healthFootnote(current: Int, max: Int) -> some View {
-        let temp = combatant.temporaryHP
-        let maxChange = combatant.recentMaxHPChange
-        if temp != nil || maxChange != nil {
-            Grid(horizontalSpacing: 0, verticalSpacing: 0) {
-                GridRow {
-                    currentText(current)
-                    slash
-                    maxText(max)
-                }
-                .font(Theme.Typography.readout)
-                .frame(height: 0)
-                .hidden()
-                GridRow {
-                    Text(temp.map { "+\($0)" } ?? "")
-                        .foregroundColor(Theme.statusGood)
-                    Color.clear.frame(width: 0, height: 0)
-                    Text(maxChange.map { $0 < 0 ? "−\(-$0)" : "+\($0)" } ?? "")
-                        .foregroundColor((maxChange ?? 0) < 0 ? Theme.statusBad : Theme.statusGood)
-                }
-                .fontWeight(.bold)
-                .fixedSize()
-            }
-        }
-    }
-
-    /// A number that changed since its turn started: bold, red when down, green when up.
-    /// No amount here: the footnote under it or the detail screen shows that.
+    /// A number that is raised or lowered: bold, red when down, green when up. No
+    /// amount on the roster: the detail screen shows how much.
     private func marked(_ value: Int, change: Int?) -> Text {
         if let change {
             let color = change < 0 ? Theme.statusBad : Theme.statusGood
@@ -408,12 +373,9 @@ struct CombatantRow: View {
                 if playerViewEnabled {
                     Text(StatusBand.armorClass(ac)).foregroundColor(Theme.textSecondary)
                 } else {
-                    marked(ac, change: combatant.recentACChange)
-                }
-            } footnote: {
-                // How much of it is temporary, as temporary HP shows under HP.
-                if !playerViewEnabled, let temp = combatant.temporaryAC {
-                    Text("+\(temp)").fontWeight(.bold).foregroundColor(Theme.statusInfo)
+                    // Marked for as long as temporary AC lasts, as current HP is
+                    // for temporary HP; otherwise for a change since the turn began.
+                    marked(ac, change: combatant.temporaryAC != nil ? 1 : combatant.recentACChange)
                 }
             }
         }
@@ -423,10 +385,8 @@ struct CombatantRow: View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
             // Five sections, each with its own column, so the same section lines up
             // down the list: initiative, name, death-save tally, HP, AC. The tally's
-            // column is reserved even when the combatant is not dying. Aligned on
-            // the readouts' symbol and value, so a temporary-HP or AC footnote
-            // under one hangs below instead of pushing it up.
-            HStack(alignment: .readoutCenter, spacing: Theme.Spacing.sm) {
+            // column is reserved even when the combatant is not dying.
+            HStack(spacing: Theme.Spacing.sm) {
                 Text("\(combatant.initiative)")
                     .font(Theme.Typography.numeric(21))
                     .foregroundColor(isCurrent ? Theme.accent : Theme.textSecondary)

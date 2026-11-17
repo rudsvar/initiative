@@ -15,50 +15,22 @@ enum StatColumn {
 /// the list (`sharedStatColumns()`) keeps the widest per column, and every readout
 /// sizes to that. Larger text or a three-digit HP widens the column on its own, and
 /// the name keeps whatever is left.
-///
-/// A `footnote` (temporary HP or AC) hangs under the value without moving it: in a
-/// row aligned on `.readoutCenter`, the symbol and value stay centred on the
-/// name whether or not a footnote is there.
-struct StatReadout<Value: View, Footnote: View>: View {
+struct StatReadout<Value: View>: View {
     let systemImage: String
     let iconColor: Color
     let column: StatColumn
     @ViewBuilder let value: () -> Value
-    @ViewBuilder let footnote: () -> Footnote
 
     var body: some View {
         VStack(spacing: Theme.Spacing.xxs) {
-            VStack(spacing: Theme.Spacing.xxs) {
-                Image(systemName: systemImage)
-                    .font(Theme.Typography.readoutIcon)
-                    .foregroundColor(iconColor)
-                value()
-                    .font(Theme.Typography.readout)
-            }
-            .alignmentGuide(.readoutCenter) { $0[VerticalAlignment.center] }
-            footnote()
+            Image(systemName: systemImage)
                 .font(Theme.Typography.readoutIcon)
+                .foregroundColor(iconColor)
+            value()
+                .font(Theme.Typography.readout)
         }
         .statColumn(column)
     }
-}
-
-extension StatReadout where Footnote == EmptyView {
-    init(systemImage: String, iconColor: Color, column: StatColumn, @ViewBuilder value: @escaping () -> Value) {
-        self.init(systemImage: systemImage, iconColor: iconColor, column: column, value: value, footnote: { EmptyView() })
-    }
-}
-
-extension VerticalAlignment {
-    private enum ReadoutCenter: AlignmentID {
-        static func defaultValue(in context: ViewDimensions) -> CGFloat {
-            context[VerticalAlignment.center]
-        }
-    }
-
-    /// The centre of a `StatReadout`'s symbol and value, ignoring any footnote under
-    /// them. Anything else in the row centres as usual.
-    static let readoutCenter = VerticalAlignment(ReadoutCenter.self)
 }
 
 /// Reports this view's width for `column` and widens it to the column's widest.

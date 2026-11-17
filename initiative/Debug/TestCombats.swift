@@ -50,38 +50,20 @@ enum TestCombats {
         return session
     }
 
-    /// Wren has temporary HP and AC, the goblin has neither: the hearts, shields and
-    /// numbers of both rows sit at the same height as the names, with Wren's
-    /// temporary amounts hanging underneath.
-    static func temporaryAmountsDoNotShiftTheRow() -> CombatSession {
-        let session = CombatSession()
-        session.addCombatant(name: "Wren", initiative: 15, maxHP: 22, armorClass: 14, isPlayer: true)
-        session.addCombatant(name: "Goblin", initiative: 10, maxHP: 7, armorClass: 15)
-        let wren = session.combatants.first { $0.name == "Wren" }!.id
-        session.grantTemporaryHP(to: wren, amount: 5)
-        session.grantTemporaryAC(to: wren, amount: 2)
-        return session
-    }
-
-    /// Wren has 5 temporary HP (27/22), the ogre's max HP went up by 4 and the goblin's
-    /// down by 2: each amount sits under the number it belongs to, "+5" under
-    /// Wren's current HP, "+4" and "−2" under the max.
-    static func hpAmountsSitUnderTheirNumbers() -> CombatSession {
+    /// Buffs are marked on the roster, with the amounts only on the detail screen.
+    /// Wren has 5 temporary HP and 2 temporary AC: 27/22 and AC 16, both bold
+    /// green. The ogre's max HP went up by 4 (bold green max), the goblin's down by
+    /// 2 (bold red max). No "+N" under any number.
+    static func buffsAreMarkedOnTheRoster() -> CombatSession {
         let session = CombatSession()
         session.addCombatant(name: "Wren", initiative: 15, maxHP: 22, armorClass: 14, isPlayer: true)
         session.addCombatant(name: "Ogre", initiative: 12, maxHP: 59, armorClass: 11)
         session.addCombatant(name: "Goblin", initiative: 10, maxHP: 7, armorClass: 15)
         let id = { name in session.combatants.first { $0.name == name }!.id }
         session.grantTemporaryHP(to: id("Wren"), amount: 5)
+        session.grantTemporaryAC(to: id("Wren"), amount: 2)
         session.increaseMaxHP(for: id("Ogre"), amount: 4)
         session.decreaseMaxHP(for: id("Goblin"), amount: 2)
-        return session
-    }
-
-    /// A character with temporary armor class granted, to check the "+N" under AC.
-    static func wrenWithTemporaryAC() -> CombatSession {
-        let session = wrenWithArmorClass()
-        session.grantTemporaryAC(to: session.combatants[0].id, amount: 2)
         return session
     }
 
@@ -162,9 +144,7 @@ extension TestCombats {
         "dyingCharacterKeepsItsTurns": dyingCharacterKeepsItsTurns,
         "lastStandingKeepsTheTurn": lastStandingKeepsTheTurn,
         "wrenWithArmorClass": wrenWithArmorClass,
-        "wrenWithTemporaryAC": wrenWithTemporaryAC,
-        "temporaryAmountsDoNotShiftTheRow": temporaryAmountsDoNotShiftTheRow,
-        "hpAmountsSitUnderTheirNumbers": hpAmountsSitUnderTheirNumbers,
+        "buffsAreMarkedOnTheRoster": buffsAreMarkedOnTheRoster,
         "hpAndACChangesShowUntilTurnStarts": hpAndACChangesShowUntilTurnStarts,
         "wolfWithChanges": wolfWithChanges,
         "dyingWithTally": dyingWithTally,

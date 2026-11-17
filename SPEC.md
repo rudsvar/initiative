@@ -236,10 +236,13 @@ combatant and the detail screen's Health card both use the same component)
   with no immediate benefit) and is the deliberate exception to that clamp,
   since it moves the ceiling itself. Temporary HP never stacks: a new grant keeps the
   larger (see below)
-- **Current is bolded whenever temporary HP is present; Max is bolded once
-  it's ever been raised** by Increase Max HP (`Combatant.maxHPIncreased`) —
-  a lightweight visual flag that the number isn't the base value anymore,
-  without a separate label
+- **On the roster, a buffed number is bold and coloured, with no amount.**
+  Current HP shows the total in play (temporary HP included, as AC includes
+  temporary AC) and is bold green while temporary HP lasts; AC likewise while
+  temporary AC lasts. A max HP or AC change is bold green or red until that
+  combatant's turn starts. How much of it is temporary or changed is only on
+  the detail screen: a "+N" under each number was tried and dropped as
+  clutter
 - Direct numeric entry on the Initiative/AC fields (detail screen) still
   exists for exact corrections; Current/Max HP themselves are edited only
   through the buttons above, not a raw text field
