@@ -955,9 +955,9 @@ moment of creation rather than inferred later — the tempting heuristic ("count
 1 means monsters") would be right often enough to be trusted and wrong often
 enough to hurt.
 
-Only death saves use it today, but it's a property of the combatant rather than a
-flag on that feature because it's the same distinction player view will want in
-order to hide the monsters' numbers and not the party's.
+Only death saves use it today. Player view does not use it: it hides every
+combatant's numbers, party included, because the party does not necessarily share
+their hit points with each other (rudi, 2026-11-17).
 
 ### Configuring a duration
 

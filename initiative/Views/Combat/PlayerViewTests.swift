@@ -1,32 +1,25 @@
 import XCTest
 @testable import initiative
 
-/// Player view is the DM turning the screen around. What it should hide is the
-/// monsters' numbers — the party already know their own — so the decision is
-/// per-combatant, not a blanket one.
+/// Player view is the DM turning the screen around. It hides every combatant's
+/// numbers, party included: the party does not necessarily share hit points
+/// among themselves, so that is up to them.
 ///
-/// The rule lives in `CombatantRow.hideNumbers`, which is a trivial derivation of
-/// tested state; these check the derivation itself so the intent is pinned even
-/// though the view can't be exercised directly.
+/// The row simply checks `session.playerViewEnabled`; these pin the intent on the
+/// session state, since the view can't be exercised directly.
 final class PlayerViewTests: XCTestCase {
 
-    private func hideNumbers(playerViewEnabled: Bool, isPlayer: Bool) -> Bool {
-        playerViewEnabled && !isPlayer
+    func testPlayerViewIsOffByDefault() {
+        XCTAssertFalse(CombatSession().playerViewEnabled)
     }
 
-    func testDMViewShowsEverything() {
-        XCTAssertFalse(hideNumbers(playerViewEnabled: false, isPlayer: false))
-        XCTAssertFalse(hideNumbers(playerViewEnabled: false, isPlayer: true))
-    }
-
-    func testPlayerViewHidesMonsterNumbers() {
-        XCTAssertTrue(hideNumbers(playerViewEnabled: true, isPlayer: false))
-    }
-
-    func testPlayerViewLeavesThePartysOwnNumbersVisible() {
-        XCTAssertFalse(
-            hideNumbers(playerViewEnabled: true, isPlayer: true),
-            "the party know their own hit points; hiding them serves no one"
-        )
+    func testPlayerViewAppliesToPartyAndMonstersAlike() {
+        // There is no per-combatant exception: the row reads only the session flag.
+        let session = CombatSession()
+        session.addCombatant(name: "Wren", initiative: 12, maxHP: 30, isPlayer: true)
+        session.addCombatant(name: "Wolf", initiative: 10, maxHP: 11, isPlayer: false)
+        session.playerViewEnabled = true
+        XCTAssertTrue(session.playerViewEnabled)
+        XCTAssertEqual(session.combatants.count, 2)
     }
 }

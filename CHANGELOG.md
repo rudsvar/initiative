@@ -4,6 +4,10 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Changed — player view hides the party's HP too
+
+- Player view now shows HP as a band (Healthy, Wounded, Critical) for every combatant, party included. The party does not necessarily share hit points, so that is up to the table. This reverses the earlier rule that left the party's numbers visible.
+
 ### Changed — AC band has no colour
 
 - In player view the AC band (Low, Medium, High) is shown in the neutral text colour. AC is not good or bad the way HP is, so the band no longer reads as a verdict.
