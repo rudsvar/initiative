@@ -192,11 +192,7 @@ struct AddCombatantSheet: View {
         let count = max(1, Int(countText) ?? 1)
         let bonus = matchedPresetBonus ?? 0
 
-        if count > 1 {
-            session.addCombatants(name: trimmedName, initiative: initiative, maxHP: maxHP, armorClass: armorClass, count: count, initiativeBonus: bonus, isPlayer: isPlayer)
-        } else {
-            session.addCombatant(name: trimmedName, initiative: initiative, maxHP: maxHP, armorClass: armorClass, initiativeBonus: bonus, isPlayer: isPlayer)
-        }
+        session.addCombatants(name: trimmedName, initiative: initiative, maxHP: maxHP, armorClass: armorClass, count: count, initiativeBonus: bonus, isPlayer: isPlayer)
         presetStore.upsert(name: trimmedName, maxHP: maxHP, armorClass: armorClass, isPlayer: isPlayer)
 
         isPresented = false

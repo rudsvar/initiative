@@ -86,31 +86,16 @@ class CombatSession {
             .map(\.element)
     }
 
-    /// `initiative: nil` rolls 1...20 plus `initiativeBonus` (a flat modifier, e.g. from
-    /// a creature preset). An explicit `initiative` value is used exactly as given —
-    /// the bonus only applies to random rolls, never on top of a deliberate value.
+    /// One combatant; see `addCombatants`.
     func addCombatant(name: String, initiative: Int? = nil, maxHP: Int? = nil, armorClass: Int? = nil, initiativeBonus: Int = 0, isPlayer: Bool = false) {
-        let resolvedInitiative = initiative ?? (Int.random(in: 1...20) + initiativeBonus)
-        let combatant = Combatant(name: name, initiative: resolvedInitiative, maxHP: maxHP, armorClass: armorClass, isPlayer: isPlayer)
-        combatants.append(combatant)
-        sortByInitiative()
-        appendLog("\(name) added to combat (initiative \(resolvedInitiative))")
-        if let maxHP {
-            // A separate, structured entry so replayHP has a baseline to replay
-            // from even when HP was set at creation time rather than via "Track HP".
-            appendLog(
-                "\(name) started tracking HP (\(maxHP)/\(maxHP))",
-                combatantId: combatant.id,
-                hpOperation: .enableTracking(amount: maxHP)
-            )
-        }
+        addCombatants(name: name, initiative: initiative, maxHP: maxHP, armorClass: armorClass, count: 1, initiativeBonus: initiativeBonus, isPlayer: isPlayer)
     }
 
-    /// Spawns `count` copies of the same creature. `initiative: nil` rolls each copy
-    /// independently (1...20 + initiativeBonus); an explicit `initiative` value is
-    /// used as-is for every copy (no per-copy randomization — if you typed a number,
-    /// that's what they all get). Names get a numeric suffix ("Goblin 1", "Goblin 2",
-    /// ...) when count > 1.
+    /// Adds `count` copies of the same creature. `initiative: nil` rolls each copy
+    /// independently (1...20 plus `initiativeBonus`, a flat modifier from a preset);
+    /// an explicit `initiative` is used exactly as given for every copy, never with
+    /// the bonus on top. Names get a numeric suffix ("Goblin 1", "Goblin 2", ...)
+    /// when count > 1.
     func addCombatants(name: String, initiative: Int?, maxHP: Int?, armorClass: Int? = nil, count: Int, initiativeBonus: Int = 0, isPlayer: Bool = false) {
         guard count > 0 else { return }
         var spawned: [Combatant] = []
@@ -121,10 +106,11 @@ class CombatSession {
         }
         combatants.append(contentsOf: spawned)
         sortByInitiative()
-        appendLog(count > 1 ? "\(count)x \(name) added to combat" : "\(name) added to combat")
+        appendLog(count > 1 ? "\(count)x \(name) added to combat" : "\(name) added to combat (initiative \(spawned[0].initiative))")
         if let maxHP {
-            // Same reasoning as addCombatant: a structured baseline entry per
-            // spawned copy, tied to that copy's own id, so replayHP works.
+            // A separate, structured entry per copy, tied to that copy's own id, so
+            // replayHP has a baseline even when HP was set at creation time
+            // rather than via "Track HP".
             for combatant in spawned {
                 appendLog(
                     "\(combatant.name) started tracking HP (\(maxHP)/\(maxHP))",
@@ -654,7 +640,7 @@ class CombatSession {
     func removeRoundEffect(_ effectID: UUID) {
         guard let effect = roundEffects.first(where: { $0.id == effectID }) else { return }
         roundEffects.removeAll { $0.id == effectID }
-        appendLog("Round effect ended: \(effect.name)")
+        logRoundEffectEnded(effect)
     }
 
 
@@ -684,11 +670,15 @@ class CombatSession {
         return (next, wrapped)
     }
 
+    private func logRoundEffectEnded(_ effect: Effect) {
+        appendLog("Round effect ended: \(effect.name)")
+    }
+
     private func tickRoundEffects() {
         roundEffects = roundEffects.compactMap { effect in
             guard case .forRounds(let remaining) = effect.durationType else { return effect }
             if remaining <= 1 {
-                appendLog("Round effect ended: \(effect.name)")
+                logRoundEffectEnded(effect)
                 return nil
             }
             var updated = effect
@@ -774,8 +764,8 @@ class CombatSession {
         }
     }
 
-    /// Saves the current state so Previous can rewind to it. Used by actions that
-    /// change the fight without advancing the turn.
+    /// Saves the current state so Previous can rewind to it: before each advance,
+    /// and before actions that change the fight without advancing the turn.
     private func recordUndoPoint() {
         history.append((combatants: combatants, roundEffects: roundEffects, currentTurnIndex: currentTurnIndex, roundNumber: roundNumber, logCount: log.count))
     }
@@ -938,7 +928,7 @@ class CombatSession {
             guard let effect = roundEffects.first(where: { $0.id == effectID }) else { return }
             if succeeded {
                 roundEffects.removeAll { $0.id == effectID }
-                appendLog("Round effect ended: \(effect.name)")
+                logRoundEffectEnded(effect)
             } else {
                 appendLog("Round effect continues: \(effect.name)")
             }
@@ -1020,7 +1010,7 @@ class CombatSession {
     func nextTurn(resolving answers: [TurnPrompt: RollOutcome] = [:], damage: [TurnPrompt: Int] = [:]) -> [TurnPrompt] {
         guard !combatants.isEmpty else { return [] }
 
-        history.append((combatants: combatants, roundEffects: roundEffects, currentTurnIndex: currentTurnIndex, roundNumber: roundNumber, logCount: log.count))
+        recordUndoPoint()
 
         for (prompt, outcome) in answers.sorted(by: { $0.key.combatantName < $1.key.combatantName }) {
             resolvePrompt(prompt, outcome: outcome)
