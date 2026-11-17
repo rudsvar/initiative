@@ -16,8 +16,8 @@ enum ListSections {
     /// Whether `query` matches an item, given every string worth searching in it.
     ///
     /// Terms are ANDed and may match different fields, so "goblin boss" finds the
-    /// Goblin Chief creature and "troll boar" finds the Bridge Troll encounter
-    /// (whose name contains neither word — its *lineup* does).
+    /// Goblin Boss creature but not a plain Goblin. Used by the creature and
+    /// character libraries; encounters use `matchesAny`.
     ///
     /// Matching is `localizedStandardContains`, which is the case- and
     /// diacritic-insensitive comparison Apple uses for user-facing search; a
@@ -67,11 +67,10 @@ extension CreaturePreset {
     /// Only the name — it's the only text a creature has.
     var searchableText: [String] { [name] }
 
-    /// Identity is by **name**, not by a stored flag: a preset the user renamed
-    /// has become theirs, while one they edited the stats of but kept the name of
-    /// is still recognisably the built-in creature. That also means no migration
-    /// of the on-disk format, and nothing to get out of step if the default
-    /// roster changes.
+    /// Identity is by **name**, not by a stored flag: no migration of the on-disk
+    /// format, and nothing to get out of step if the default roster changes. It is
+    /// also why no entry of the owner's may take a built-in's name
+    /// (`PresetStore.isNameAvailable`).
     var isBuiltIn: Bool { DefaultContent.creature(named: name) != nil }
 }
 

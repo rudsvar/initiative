@@ -657,17 +657,7 @@ class CombatSession {
         appendLog("Round effect ended: \(effect.name)")
     }
 
-    func updateRoundEffect(_ effect: Effect) {
-        guard let index = roundEffects.firstIndex(where: { $0.id == effect.id }) else { return }
-        roundEffects[index] = effect
-    }
 
-    /// True when the *next* advance rolls the round over. Round-anchored things
-    /// key off this rather than off any combatant's turn.
-    /// The next combatant who can act after `index`. Dead combatants are passed
-    /// over: a creature at 0 HP, or a character whose death saves failed. `wrapped`
-    /// is true when the walk passes the end of the list, which starts a new round.
-    /// If nobody else can act, the result is `index` itself.
     /// The combatant the roster marks as current. While start-of-turn prompts are
     /// open, that is the one whose turn is about to start, so the marker shows who
     /// the prompt is for. Cancelling clears the prompts and the marker returns to
@@ -680,6 +670,10 @@ class CombatSession {
         return combatants[nextIndex].id
     }
 
+    /// The next combatant who can act after `index`. Dead combatants are passed
+    /// over: a creature at 0 HP, or a character whose death saves failed. `wrapped`
+    /// is true when the walk passes the end of the list, which starts a new round.
+    /// If nobody else can act, the result is `index` itself.
     func nextActiveIndex(after index: Int) -> (index: Int, wrapped: Bool) {
         var next = index
         var wrapped = false

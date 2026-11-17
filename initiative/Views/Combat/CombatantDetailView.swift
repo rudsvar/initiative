@@ -214,7 +214,7 @@ struct CombatantDetailView: View {
                     label: "Reaction",
                     tint: Theme.textTertiary,
                     isActive: combatant.reactionUsed,
-                    onTap: { toggleReaction(for: combatant) },
+                    onTap: { session.toggleReaction(for: combatant.id) },
                     onConfigure: nil
                 )
                 EffectChip(
@@ -317,7 +317,7 @@ struct CombatantDetailView: View {
                         // `onTapGesture` rather than wrapping in a `Button`: the
                         // row already contains its own Remove button, and a
                         // button nested in a button loses its own tap target.
-                        EffectRowView(effect: effect, onRemove: { removeEffect(effect, from: combatant) })
+                        EffectRowView(effect: effect, onRemove: { session.removeEffect(effect.id, from: combatant.id) })
                             .contentShape(Rectangle())
                             .onTapGesture { editingEffect = effect }
                     }
@@ -333,15 +333,6 @@ struct CombatantDetailView: View {
         .sectionCard()
     }
 
-    // MARK: - Actions
-
-    private func toggleReaction(for combatant: Combatant) {
-        session.toggleReaction(for: combatant.id)
-    }
-
-    private func removeEffect(_ effect: Effect, from combatant: Combatant) {
-        session.removeEffect(effect.id, from: combatant.id)
-    }
 }
 
 struct DeadBadge: View {

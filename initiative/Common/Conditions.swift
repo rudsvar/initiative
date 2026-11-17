@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Standard status conditions offered as quick-pick options in `AddEffectView`,
+/// Standard status conditions offered as one-tap chips on the combatant screen,
 /// each with an SF Symbol + color for display. Plain generic English condition
 /// names — not trademarked or ruleset-specific (single descriptive words like
 /// "stunned" aren't ownable; see project history for the research behind this).
@@ -50,7 +50,7 @@ enum ConditionCategory {
     /// none of the five may sit near `Theme.accent`, because a chip that reads as
     /// accent-colored competes with the current-turn marker, which is the one
     /// thing the accent is reserved for. `ThemePaletteTests` enforces that for
-    /// all four palettes.
+    /// every palette.
     var color: Color {
         switch self {
         case .sensory: return Theme.palette.conditionSensory

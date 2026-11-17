@@ -1,8 +1,8 @@
 import SwiftUI
 
 /// Picks an amount with − and + and applies it in one of two directions. Used by
-/// current HP, max HP and armor class: tap the number, choose how much, then choose
-/// the direction. The sheet closes after either.
+/// armor class: tap the number, choose how much, then choose the direction. The
+/// sheet closes after either.
 struct AdjustAmountSheet: View {
     let title: String
     let decreaseLabel: String

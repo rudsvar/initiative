@@ -2,7 +2,7 @@ import SwiftUI
 
 /// Effects belonging to the fight rather than to any creature in it.
 ///
-/// A separate screen from `EffectsView` rather than a mode of it, because almost
+/// A separate screen from the combatant's effects (`EffectEditorView`) rather than a mode of it, because almost
 /// nothing carries over: there are no conditions to pick from (a bridge isn't
 /// Frightened), no concentration, and the durations available are different —
 /// a round-anchored effect counts rounds, not somebody's turns. Sharing the

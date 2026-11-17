@@ -38,10 +38,9 @@ struct Combatant: Identifiable, Codable {
 
     /// Whether this is one of the party rather than something they're fighting.
     ///
-    /// Only death saves use it today (an NPC at 0 HP is simply dead; a player
-    /// starts rolling), but it's a property of the combatant rather than a flag
-    /// on that feature because it's the same distinction player view will want in
-    /// order to hide the monsters' numbers and not the party's.
+    /// Decides death saves (an NPC at 0 HP is simply dead; a player starts
+    /// rolling), which numbers player view hides (the monsters', not the party's)
+    /// and the roster's person or paw icon.
     var isPlayer: Bool = false
 
     /// Something the combatant is actively holding — no name, no duration, just
@@ -51,8 +50,8 @@ struct Combatant: Identifiable, Codable {
     /// clutter with nothing to say.
     var isConcentrating: Bool = false
 
-    /// Countable resources like Legendary Actions — see `LimitedUse`. Resets to
-    /// full at the start of this combatant's own turn, same rule as `Reaction`.
+    /// Countable resources like Legendary Actions — see `LimitedUse`. Refilled when
+    /// the round turns over, not on this combatant's own turn.
     var limitedUses: [LimitedUse] = []
 
     /// The death-save tally, held by the Dying effect. Setting it adds, updates or

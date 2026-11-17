@@ -1,11 +1,5 @@
 import Foundation
 
-/// One thing the DM has to answer before the turn can move on.
-///
-/// The app's job here is to *remember that a roll is owed* — the part that
-/// actually gets forgotten mid-combat — not to roll it or judge it. Every prompt
-/// is answered with one tap, and the two answers always mean the same shape of
-/// thing: it went the good way, or it didn't.
 /// The result of a roll the DM reports. A death save can be a natural 20 or a natural 1;
 /// every other prompt is a plain success or failure.
 enum RollOutcome: Equatable, Hashable {
@@ -16,6 +10,12 @@ enum RollOutcome: Equatable, Hashable {
     init(succeeded: Bool) { self = succeeded ? .success : .failure }
 }
 
+/// One thing the DM has to answer before the turn can move on.
+///
+/// The app's job here is to *remember that a roll is owed* — the part that
+/// actually gets forgotten mid-combat — not to roll it or judge it. Every prompt
+/// is answered with one tap, and the two answers always mean the same shape of
+/// thing: it went the good way, or it didn't.
 struct TurnPrompt: Identifiable, Hashable {
     enum Subject: Hashable {
         /// A `.untilRollSucceeds` effect: succeeding removes it.
