@@ -4,6 +4,10 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Changed — AC band has no colour
+
+- In player view the AC band (Low, Medium, High) is shown in the neutral text colour. AC is not good or bad the way HP is, so the band no longer reads as a verdict.
+
 ### Changed — built-in creatures
 
 - Sixteen built-in creatures now use stat blocks from the System Reference

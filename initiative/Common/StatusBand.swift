@@ -19,10 +19,11 @@ enum StatusBand {
     }
 
     /// A plain band for how hard the creature is to hit, instead of a bare number.
-    /// Named by AC level, not by the kind of armour worn.
-    static func armorClass(_ ac: Int) -> (label: String, color: Color) {
-        if ac >= 17 { return ("High AC", Theme.statusGood) }
-        if ac >= 13 { return ("Medium AC", Theme.statusWarn) }
-        return ("Low AC", Theme.statusBad)
+    /// Named by AC level, not by the kind of armour worn. Deliberately no colour:
+    /// AC is neither good nor bad the way HP is, so no band suggests a verdict.
+    static func armorClass(_ ac: Int) -> String {
+        if ac >= 17 { return "High AC" }
+        if ac >= 13 { return "Medium AC" }
+        return "Low AC"
     }
 }

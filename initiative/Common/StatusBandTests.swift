@@ -63,12 +63,12 @@ final class StatusBandTests: XCTestCase {
     // MARK: - Armor class
 
     func testArmorClassBands() {
-        XCTAssertEqual(StatusBand.armorClass(20).label, "High AC")
-        XCTAssertEqual(StatusBand.armorClass(17).label, "High AC")
-        XCTAssertEqual(StatusBand.armorClass(16).label, "Medium AC")
-        XCTAssertEqual(StatusBand.armorClass(13).label, "Medium AC")
-        XCTAssertEqual(StatusBand.armorClass(12).label, "Low AC")
-        XCTAssertEqual(StatusBand.armorClass(0).label, "Low AC")
+        XCTAssertEqual(StatusBand.armorClass(20), "High AC")
+        XCTAssertEqual(StatusBand.armorClass(17), "High AC")
+        XCTAssertEqual(StatusBand.armorClass(16), "Medium AC")
+        XCTAssertEqual(StatusBand.armorClass(13), "Medium AC")
+        XCTAssertEqual(StatusBand.armorClass(12), "Low AC")
+        XCTAssertEqual(StatusBand.armorClass(0), "Low AC")
     }
 
     /// No ruleset-specific or trademarked wording (e.g. "Bloodied") may leak into

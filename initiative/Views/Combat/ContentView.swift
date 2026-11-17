@@ -396,8 +396,7 @@ struct CombatantRow: View {
                 // In player view AC is a band for every combatant, so no row shows a
                 // raw number that another row hides. HP keeps its own rule (hideNumbers).
                 if playerViewEnabled {
-                    let band = StatusBand.armorClass(ac)
-                    Text(band.label).foregroundColor(band.color)
+                    Text(StatusBand.armorClass(ac)).foregroundColor(Theme.textSecondary)
                 } else {
                     marked(ac, change: combatant.recentACChange, showsSign: combatant.recentACChange != nil)
                 }
