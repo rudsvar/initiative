@@ -345,8 +345,9 @@ struct CombatantRow: View {
         }
     }
 
+    /// Current HP is marked as raised for as long as temporary HP is on top of it.
     private func currentText(_ current: Int) -> Text {
-        marked(current, change: combatant.temporaryHP != nil ? combatant.recentHPChange : nil)
+        marked(current, change: combatant.temporaryHP != nil ? 1 : nil)
     }
     private func maxText(_ max: Int) -> Text { marked(max, change: combatant.recentMaxHPChange) }
     private var slash: Text { Text("/").foregroundColor(Theme.textTertiary) }
@@ -371,11 +372,12 @@ struct CombatantRow: View {
                 .hidden()
                 GridRow {
                     Text(temp.map { "+\($0)" } ?? "")
-                        .foregroundColor(Theme.statusInfo)
+                        .foregroundColor(Theme.statusGood)
                     Color.clear.frame(width: 0, height: 0)
                     Text(maxChange.map { $0 < 0 ? "−\(-$0)" : "+\($0)" } ?? "")
                         .foregroundColor((maxChange ?? 0) < 0 ? Theme.statusBad : Theme.statusGood)
                 }
+                .fontWeight(.bold)
                 .fixedSize()
             }
         }
@@ -405,7 +407,7 @@ struct CombatantRow: View {
             } footnote: {
                 // How much of it is temporary, as temporary HP shows under HP.
                 if !playerViewEnabled, let temp = combatant.temporaryAC {
-                    Text("+\(temp)").foregroundColor(Theme.statusInfo)
+                    Text("+\(temp)").fontWeight(.bold).foregroundColor(Theme.statusInfo)
                 }
             }
         }
