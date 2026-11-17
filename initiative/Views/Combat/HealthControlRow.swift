@@ -4,7 +4,7 @@ import SwiftUI
 /// decrease button, a number box for the amount, and an increase button. Current HP
 /// decreases by damage and increases by healing. Healing past max asks first: go above
 /// max as temporary HP, or cap at max. Max HP is lowered or raised directly. "Grant temp"
-/// sets temporary HP by hand, which replaces any earlier grant.
+/// sets temporary HP by hand; a new grant never stacks, the larger one stays.
 struct HealthControlRow: View {
     let session: CombatSession
     let combatantId: UUID

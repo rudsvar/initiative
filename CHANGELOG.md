@@ -4,6 +4,16 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Changed — hit points follow the rules as written
+
+- Temporary HP never stacks: a new grant keeps whichever is larger, instead of always replacing.
+- A player dropped to 0 HP by damage that carries at least their max HP past zero dies outright (massive damage). Temporary HP absorbed first does not count.
+- Damage taken at 0 HP is a failed death save, and breaks a stable creature's stability.
+- Max HP can be reduced to 0, which kills; it was floored at 1. Reducing max HP now replays correctly when a log entry is deleted.
+- The concentration prompt shows the DC (10 or half the damage, whichever is higher).
+- Healing past max can still be turned into temporary HP by choice; that is not in the rules, so it stays an option.
+- Not built or run here (no Xcode on this machine); new tests are in `TemporaryHPTests.swift`.
+
 ### Changed — player view hides the party's HP too
 
 - Player view now shows HP as a band (Healthy, Wounded, Critical) for every combatant, party included. The party does not necessarily share hit points, so that is up to the table. This reverses the earlier rule that left the party's numbers visible.

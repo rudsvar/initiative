@@ -30,7 +30,13 @@ final class ConcentrationTests: XCTestCase {
 
         XCTAssertNotNil(prompt)
         XCTAssertEqual(prompt?.title, "Roll to hold concentration")
-        XCTAssertEqual(prompt?.hint, "Took 7 damage", "the app reports the damage, not a DC — the threshold is a rule, and rules are the DM's")
+        XCTAssertEqual(prompt?.hint, "Took 7 damage, DC 10")
+    }
+
+    func testDCIsHalfTheDamageWhenThatIsHigher() {
+        XCTAssertEqual(CombatSession.concentrationDC(damage: 7), 10)
+        XCTAssertEqual(CombatSession.concentrationDC(damage: 20), 10)
+        XCTAssertEqual(CombatSession.concentrationDC(damage: 25), 12)
     }
 
     func testNoCheckWithoutConcentration() {

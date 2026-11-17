@@ -234,8 +234,8 @@ combatant and the detail screen's Health card both use the same component)
 - Damage/Heal clamp `currentHP` to `0...maxHP`. Increase Max HP raises *both*
   max and current by the amount (a buff/level-up, not just a higher ceiling
   with no immediate benefit) and is the deliberate exception to that clamp,
-  since it moves the ceiling itself. Temporary HP replaces rather than stacks
-  (see below)
+  since it moves the ceiling itself. Temporary HP never stacks: a new grant keeps the
+  larger (see below)
 - **Current is bolded whenever temporary HP is present; Max is bolded once
   it's ever been raised** by Increase Max HP (`Combatant.maxHPIncreased`) —
   a lightweight visual flag that the number isn't the base value anymore,
@@ -256,6 +256,14 @@ combatant and the detail screen's Health card both use the same component)
   under the existing Phase 2 "remove/edit combatant" item, not automatic
 - HP display in the list (e.g. "12/20") is colored by remaining-HP fraction so
   a wounded combatant is visible without opening the detail screen
+
+**Rules as written**
+- Temporary HP absorbs damage first and is not healed; two grants keep the larger.
+- A player reduced to 0 HP by damage that carries at least max HP past zero dies outright.
+- Damage taken at 0 HP is a failed death save; it also ends a stable state.
+- Max HP can be lowered to 0, which kills. Raising it raises current HP by the same amount.
+- Concentration prompt: DC is 10 or half the damage, whichever is higher.
+- Healing past max can be turned into temporary HP as an optional choice (not in the rules).
 
 **Explicitly out of scope**: overheal, damage types/resistances, or any
 specific ruleset's dying mechanics beyond the generic death-saves flow above —

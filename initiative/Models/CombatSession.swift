@@ -165,7 +165,39 @@ class CombatSession {
             hpOperation: .damage(amount: amount)
         )
         startDyingOrDieIfNeeded(at: index)
+        applyDeathConsequences(at: index, hpDamage: amount - absorbed, hpBefore: current)
         return concentrationCheck(at: index, afterTaking: amount)
+    }
+
+    /// Damage that carries a player past 0 HP by at least their max HP kills them
+    /// outright (massive damage). Damage taken while already at 0 HP is a failed
+    /// death save, and breaks a stable creature's stability. Only players have
+    /// death saves here; anything else is simply dead at 0.
+    static func isMassiveDamage(hpDamage: Int, hpBefore: Int, maxHP: Int) -> Bool {
+        hpDamage - hpBefore >= maxHP
+    }
+
+    private func applyDeathConsequences(at index: Int, hpDamage: Int, hpBefore: Int) {
+        let combatant = combatants[index]
+        guard combatant.isPlayer, combatant.currentHP == 0, hpDamage > 0,
+              let maxHP = combatant.maxHP, maxHP > 0 else { return }
+        if Self.isMassiveDamage(hpDamage: hpDamage, hpBefore: hpBefore, maxHP: maxHP) {
+            guard combatants[index].deathSaves?.isDead != true else { return }
+            combatants[index].deathSaves = DeathSaves(successes: 0, failures: DeathSaves.required)
+            appendLog("\(combatant.name) died outright (massive damage)", combatantId: combatant.id)
+            return
+        }
+        guard hpBefore == 0 else { return }
+        var saves = combatants[index].deathSaves ?? DeathSaves()
+        if saves.isDead { return }
+        if saves.isStable { saves = DeathSaves() }
+        saves.record(success: false)
+        combatants[index].deathSaves = saves
+        appendLog(
+            "\(combatant.name) took damage at 0 HP and failed a death save (\(saves.successes) made, \(saves.failures) failed)",
+            combatantId: combatant.id
+        )
+        if saves.isDead { appendLog("\(combatant.name) died", combatantId: combatant.id) }
     }
 
     /// Splits an incoming hit between the temporary buffer and real hit points.
@@ -184,15 +216,22 @@ class CombatSession {
         return (remaining > 0 ? remaining : nil, max(0, currentHP - (damage - absorbed)))
     }
 
-    /// Grants temporary hit points, **replacing** whatever was there rather than
-    /// adding to it. Two sources of temporary HP don't stack in any system this
-    /// app is likely to be used with, and "replace" is the version a DM can
-    /// predict without the app having a rule about which is larger.
+    /// Temporary hit points don't stack: a new grant either replaces what is
+    /// there or is ignored, whichever is larger (the player's choice by the rules,
+    /// and nobody chooses the smaller one). Shared with `recomputeHP`.
+    static func grantedTemporaryHP(existing: Int?, new: Int) -> Int {
+        Swift.max(existing ?? 0, new)
+    }
+
     func grantTemporaryHP(to id: UUID, amount: Int) {
         guard amount > 0, let index = combatants.firstIndex(where: { $0.id == id }) else { return }
-        combatants[index].temporaryHP = amount
+        let existing = combatants[index].temporaryHP ?? 0
+        combatants[index].temporaryHP = Self.grantedTemporaryHP(existing: existing, new: amount)
+        let text = amount > existing
+            ? "\(combatants[index].name) gained \(amount) temporary HP"
+            : "\(combatants[index].name) kept \(existing) temporary HP instead of \(amount)"
         appendLog(
-            "\(combatants[index].name) gained \(amount) temporary HP",
+            text,
             combatantId: id,
             hpOperation: .grantTemporaryHP(amount: amount)
         )
@@ -203,6 +242,10 @@ class CombatSession {
         guard amount > 0, let index = combatants.firstIndex(where: { $0.id == id }) else { return }
         combatants[index].temporaryAC = amount
         appendLog("\(combatants[index].name) gained \(amount) temporary AC", combatantId: id)
+    }
+
+    static func concentrationDC(damage: Int) -> Int {
+        Swift.max(10, damage / 2)
     }
 
     /// Damage threatens concentration. Being dropped to 0 ends it outright —
@@ -220,9 +263,8 @@ class CombatSession {
             combatantName: combatants[index].name,
             subject: .concentration,
             title: "Roll to hold concentration",
-            // The damage, not a DC: the threshold is a rule, and rules are the
-            // DM's. What the app knows is how hard they were hit.
-            hint: "Took \(amount) damage",
+            // The DC is 10 or half the damage taken, whichever is higher.
+            hint: "Took \(amount) damage, DC \(Self.concentrationDC(damage: amount))",
             deathSaves: nil
         )
     }
@@ -326,15 +368,21 @@ class CombatSession {
         guard amount > 0, let index = combatants.firstIndex(where: { $0.id == id }),
               let maxHP = combatants[index].maxHP,
               let current = combatants[index].currentHP else { return }
-        let newMax = max(1, maxHP - amount)
+        let newMax = max(0, maxHP - amount)
         combatants[index].maxHP = newMax
         noteMaxHPChange(at: index, by: newMax - maxHP)
         combatants[index].currentHP = min(current, newMax)
         noteHPChange(at: index, by: combatants[index].currentHP! - current)
         appendLog(
             "\(combatants[index].name)'s max HP decreased by \(maxHP - newMax) (\(combatants[index].currentHP!)/\(newMax) HP)",
-            combatantId: id
+            combatantId: id,
+            hpOperation: .maxHPDecrease(amount: amount)
         )
+        // A max of 0 kills outright, with no death saves.
+        if newMax == 0, combatants[index].isPlayer, combatants[index].deathSaves?.isDead != true {
+            combatants[index].deathSaves = DeathSaves(successes: 0, failures: DeathSaves.required)
+            appendLog("\(combatants[index].name) died (max HP reduced to 0)", combatantId: id)
+        }
     }
 
     /// Changes armor class by `delta` (negative lowers it), for the rest of the
@@ -386,7 +434,7 @@ class CombatSession {
                 maxHP = amount
                 currentHP = amount
             case .grantTemporaryHP(let amount):
-                temporaryHP = amount
+                temporaryHP = Self.grantedTemporaryHP(existing: temporaryHP, new: amount)
             case .damage(let amount):
                 guard let current = currentHP else { continue }
                 let result = Self.absorb(damage: amount, temporaryHP: temporaryHP, currentHP: current)
@@ -400,6 +448,11 @@ class CombatSession {
                 maxHP = max + amount
                 currentHP = current + amount
                 maxHPIncreased = true
+            case .maxHPDecrease(let amount):
+                guard let ceiling = maxHP, let current = currentHP else { continue }
+                let reduced = Swift.max(0, ceiling - amount)
+                maxHP = reduced
+                currentHP = Swift.min(current, reduced)
             case nil:
                 continue
             }

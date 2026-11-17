@@ -53,15 +53,16 @@ final class TemporaryHPTests: XCTestCase {
         XCTAssertEqual(session.combatants[0].currentHP, 28)
     }
 
-    /// Replace rather than add: two sources don't stack, and "replace" is what a
-    /// DM can predict without the app having a rule about which is larger.
-    func testGrantingAgainReplacesRatherThanStacks() {
+    /// Two grants never stack: the larger one stays (the rules let you choose).
+    func testGrantingAgainKeepsTheLargerRatherThanStacking() {
         let (session, id) = session()
         session.grantTemporaryHP(to: id, amount: 8)
 
         session.grantTemporaryHP(to: id, amount: 5)
+        XCTAssertEqual(session.combatants[0].temporaryHP, 8)
 
-        XCTAssertEqual(session.combatants[0].temporaryHP, 5)
+        session.grantTemporaryHP(to: id, amount: 12)
+        XCTAssertEqual(session.combatants[0].temporaryHP, 12)
     }
 
     func testABufferCanSaveSomeoneFromDying() {
@@ -118,5 +119,97 @@ final class TemporaryHPTests: XCTestCase {
         let result = CombatSession.absorb(damage: 100, temporaryHP: 3, currentHP: 10)
         XCTAssertNil(result.temporaryHP)
         XCTAssertEqual(result.currentHP, 0)
+    }
+}
+
+/// Hit point rules as written: temporary HP, massive damage, damage at 0 HP,
+/// and max HP reduced to 0.
+final class RulesAsWrittenTests: XCTestCase {
+
+    private func player(maxHP: Int = 20) -> (CombatSession, UUID) {
+        let session = CombatSession()
+        session.addCombatant(name: "Wren", initiative: 20, maxHP: maxHP, isPlayer: true)
+        return (session, session.combatants[0].id)
+    }
+
+    func testMassiveDamageKillsAPlayerOutright() {
+        let (session, id) = player(maxHP: 20)
+        session.applyDamage(to: id, amount: 5) // 15 HP left
+
+        session.applyDamage(to: id, amount: 35) // 20 past zero, equal to max HP
+
+        XCTAssertTrue(session.combatants[0].isDead)
+    }
+
+    func testJustUnderMassiveDamageOnlyStartsDying() {
+        let (session, id) = player(maxHP: 20)
+        session.applyDamage(to: id, amount: 5)
+
+        session.applyDamage(to: id, amount: 34) // 19 past zero
+
+        XCTAssertTrue(session.combatants[0].isDying)
+        XCTAssertFalse(session.combatants[0].isDead)
+    }
+
+    func testTemporaryHPCountsTowardNothingForMassiveDamage() {
+        let (session, id) = player(maxHP: 20)
+        session.grantTemporaryHP(to: id, amount: 10)
+
+        session.applyDamage(to: id, amount: 39) // 10 absorbed, 29 to HP, 9 past zero
+
+        XCTAssertFalse(session.combatants[0].isDead)
+    }
+
+    func testDamageAtZeroIsAFailedDeathSave() {
+        let (session, id) = player()
+        session.applyDamage(to: id, amount: 20)
+        XCTAssertEqual(session.combatants[0].deathSaves?.failures, 0)
+
+        session.applyDamage(to: id, amount: 3)
+
+        XCTAssertEqual(session.combatants[0].deathSaves?.failures, 1)
+    }
+
+    func testDamageBreaksStability() {
+        let (session, id) = player()
+        session.applyDamage(to: id, amount: 20)
+        session.combatants[0].deathSaves = DeathSaves(successes: 3, failures: 1)
+
+        session.applyDamage(to: id, amount: 2)
+
+        XCTAssertEqual(session.combatants[0].deathSaves, DeathSaves(successes: 0, failures: 1))
+    }
+
+    func testMaxHPCanBeReducedToZeroWhichKills() {
+        let (session, id) = player(maxHP: 20)
+
+        session.decreaseMaxHP(for: id, amount: 25)
+
+        XCTAssertEqual(session.combatants[0].maxHP, 0)
+        XCTAssertTrue(session.combatants[0].isDead)
+    }
+
+    func testReducingMaxHPSurvivesReplay() {
+        let (session, id) = player(maxHP: 30)
+        session.applyDamage(to: id, amount: 4)
+        session.decreaseMaxHP(for: id, amount: 10) // 20 max, 20 current
+        let damage = session.log.first { $0.hpOperation == .damage(amount: 4) }!
+
+        session.deleteLogEntry(damage.id)
+
+        XCTAssertEqual(session.combatants[0].maxHP, 20)
+        XCTAssertEqual(session.combatants[0].currentHP, 20)
+    }
+
+    func testNewTemporaryHPNeverLowersTheBufferAfterReplay() {
+        let (session, id) = player()
+        session.grantTemporaryHP(to: id, amount: 8)
+        session.grantTemporaryHP(to: id, amount: 5)
+        session.applyDamage(to: id, amount: 1)
+        let damage = session.log.first { $0.hpOperation == .damage(amount: 1) }!
+
+        session.deleteLogEntry(damage.id)
+
+        XCTAssertEqual(session.combatants[0].temporaryHP, 8)
     }
 }
