@@ -257,6 +257,10 @@ combatant and the detail screen's Health card both use the same component)
 - HP display in the list (e.g. "12/20") is colored by remaining-HP fraction so
   a wounded combatant is visible without opening the detail screen
 
+**Setting values directly**: tapping Current, Max or Temp HP in `HealthControlRow` opens a box to type the value. Corrections only: no temporary HP absorption, current clamped to `0...maxHP`, max at least 1 (current comes down with it, never up), temp 0 clears. Each is logged (`setCurrentHP`, `setMaxHP`, `setTemporaryHP`) and replays.
+
+**Armor class card** uses the same row layout as health (`ValueAmountLine`, `TempValueLine`): tap AC or Temp AC to type it, Lower/Raise with an amount box, Grant temp.
+
 **Rules as written**
 - Temporary HP absorbs damage first and is not healed; two grants keep the larger.
 - A player reduced to 0 HP by damage that carries at least max HP past zero dies outright.

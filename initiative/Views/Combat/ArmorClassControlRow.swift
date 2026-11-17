@@ -1,14 +1,18 @@
 import SwiftUI
 
-/// Armor class on one line: the tappable value (Lower/Raise), its change since the
-/// turn started, and "temp" text that grants a temporary buffer.
+/// Armor class laid out like the health rows: the tappable value (tap to type it
+/// directly), its change since the turn started, and Lower/Raise buttons with an amount
+/// box. Temp AC sits underneath like temp HP, with a Grant button.
 struct ArmorClassControlRow: View {
     let session: CombatSession
     let combatantId: UUID
 
-    @State private var adjusting = false
+    @State private var amount = "1"
     @State private var granting = false
-    @State private var amountText = ""
+    @State private var grantText = ""
+    @State private var setting = false
+    @State private var settingTemp = false
+    @State private var setText = ""
 
     private var combatant: Combatant? {
         session.combatants.first { $0.id == combatantId }
@@ -16,52 +20,57 @@ struct ArmorClassControlRow: View {
 
     var body: some View {
         if let combatant, let ac = combatant.armorClass {
-            HStack(spacing: Theme.Spacing.sm) {
-                Text("Armor Class")
-                    .font(Theme.Typography.caption)
-                    .foregroundColor(Theme.textTertiary)
-                    .frame(width: 84, alignment: .leading)
-                Button { adjusting = true } label: {
-                    Text("\(ac)")
-                        .font(Theme.Typography.statLarge)
-                        .padding(.horizontal, Theme.Spacing.sm)
-                        .padding(.vertical, Theme.Spacing.xxs)
-                        .background(Theme.surfaceRaised)
-                        .clipShape(RoundedRectangle(cornerRadius: Theme.Radius.md, style: .continuous))
-                }
-                .buttonStyle(.plain)
-                if let change = combatant.recentACChange {
-                    ChangeLabel(change: change)
-                        .font(Theme.Typography.bodyEmphasis)
-                }
-                Spacer(minLength: Theme.Spacing.sm)
-                Button { granting = true } label: {
-                    Text(combatant.temporaryAC.map { "temp \($0)" } ?? "temp —")
-                        .font(Theme.Typography.bodyEmphasis)
-                        .foregroundColor(combatant.temporaryAC == nil ? Theme.textTertiary : Theme.statusInfo)
-                }
-                .buttonStyle(.plain)
-            }
-            .foregroundColor(Theme.textPrimary)
-            .sheet(isPresented: $adjusting) {
-                AdjustAmountSheet(
-                    title: "Armor Class",
+            VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
+                ValueAmountLine(
+                    label: "Armor Class", value: "\(ac)", change: combatant.recentACChange,
+                    onTapValue: { setText = "\(ac)"; setting = true },
+                    amount: $amount,
+                    decrease: { session.adjustArmorClass(for: combatantId, by: -$0) },
+                    increase: { session.adjustArmorClass(for: combatantId, by: $0) },
                     decreaseLabel: "Lower",
-                    increaseLabel: "Raise",
-                    onDecrease: { amount in session.adjustArmorClass(for: combatantId, by: -amount) },
-                    onIncrease: { amount in session.adjustArmorClass(for: combatantId, by: amount) }
+                    increaseLabel: "Raise"
+                )
+                TempValueLine(
+                    label: "Temp AC",
+                    value: combatant.temporaryAC.map { "\($0)" },
+                    buttonTitle: "Grant temp",
+                    onTapValue: { setText = "\(combatant.temporaryAC ?? 0)"; settingTemp = true },
+                    onButton: { granting = true }
                 )
             }
+            .foregroundColor(Theme.textPrimary)
+            .alert("Set Armor Class", isPresented: $setting) {
+                TextField("Value", text: $setText)
+                    .keyboardType(.numberPad)
+                Button("Set") {
+                    if let value = Int(setText) { session.setArmorClass(for: combatantId, to: value) }
+                    setText = ""
+                }
+                Button("Cancel", role: .cancel) { setText = "" }
+            } message: {
+                Text("Corrects the value directly.")
+            }
+            .alert("Set Temporary AC", isPresented: $settingTemp) {
+                TextField("Value", text: $setText)
+                    .keyboardType(.numberPad)
+                Button("Set") {
+                    if let value = Int(setText) { session.setTemporaryAC(for: combatantId, to: value) }
+                    setText = ""
+                }
+                Button("Cancel", role: .cancel) { setText = "" }
+            } message: {
+                Text("0 clears it.")
+            }
             .alert("Grant Temporary AC", isPresented: $granting) {
-                TextField("Amount", text: $amountText)
+                TextField("Amount", text: $grantText)
                     .keyboardType(.numberPad)
                 Button("Apply") {
-                    if let amount = Int(amountText) {
+                    if let amount = Int(grantText) {
                         session.grantTemporaryAC(to: combatantId, amount: amount)
                     }
-                    amountText = ""
+                    grantText = ""
                 }
-                Button("Cancel", role: .cancel) { amountText = "" }
+                Button("Cancel", role: .cancel) { grantText = "" }
             }
         }
     }

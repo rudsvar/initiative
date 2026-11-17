@@ -4,6 +4,14 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Changed — armor class laid out like the health rows
+
+- The Armor Class card now has the same rows as Health: tap the value to type it, Lower/Raise buttons with an amount box, and a Temp AC row (tap to type, 0 clears, Grant temp adds).
+
+### Added — tap a value to set it
+
+- Tapping Current HP, Max HP or Temp HP in the health controls opens a box to type the value directly. It is a correction: temporary HP absorbs nothing, current HP is clamped to 0 through max, lowering max brings current down with it, and 0 clears temporary HP. Each set is logged and survives deleting an earlier log entry.
+
 ### Changed — hit points follow the rules as written
 
 - Temporary HP never stacks: a new grant keeps whichever is larger, instead of always replacing.

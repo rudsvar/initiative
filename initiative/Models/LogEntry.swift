@@ -13,6 +13,10 @@ enum HPOperation: Codable, Equatable {
     case maxHPIncrease(amount: Int)
     /// Lowers max HP (to a floor of 0, which is death) and current HP with it if needed.
     case maxHPDecrease(amount: Int)
+    /// Direct corrections typed over a value: no absorption, no stacking rules.
+    case setCurrentHP(value: Int)
+    case setMaxHP(value: Int)
+    case setTemporaryHP(value: Int)
     /// Grants temporary hit points, replacing whatever was there. Replayable like
     /// the rest — temporary HP has to be part of the log or deleting a damage
     /// entry would recompute current HP without the buffer that absorbed it.

@@ -337,6 +337,60 @@ class CombatSession {
         )
     }
 
+    /// Sets current HP directly, clamped to 0...max. A correction, so temporary HP
+    /// does not absorb anything. Reaching 0 starts dying or death as damage would.
+    func setCurrentHP(for id: UUID, to value: Int) {
+        guard let index = combatants.firstIndex(where: { $0.id == id }),
+              let maxHP = combatants[index].maxHP,
+              let current = combatants[index].currentHP else { return }
+        let newValue = Swift.min(Swift.max(0, value), maxHP)
+        guard newValue != current else { return }
+        combatants[index].currentHP = newValue
+        noteHPChange(at: index, by: newValue - current)
+        appendLog(
+            "\(combatants[index].name)'s HP set to \(newValue)/\(maxHP)",
+            combatantId: id,
+            hpOperation: .setCurrentHP(value: newValue)
+        )
+        startDyingOrDieIfNeeded(at: index)
+        clearDeathSavesIfAboveZero(at: index)
+    }
+
+    /// Sets max HP directly (at least 1; use "Lower max" to take it to 0). Current
+    /// HP comes down with it if it is now above the max, and does not go up.
+    func setMaxHP(for id: UUID, to value: Int) {
+        guard let index = combatants.firstIndex(where: { $0.id == id }),
+              let maxHP = combatants[index].maxHP,
+              let current = combatants[index].currentHP else { return }
+        let newMax = Swift.max(1, value)
+        guard newMax != maxHP else { return }
+        combatants[index].maxHP = newMax
+        noteMaxHPChange(at: index, by: newMax - maxHP)
+        combatants[index].currentHP = Swift.min(current, newMax)
+        noteHPChange(at: index, by: combatants[index].currentHP! - current)
+        appendLog(
+            "\(combatants[index].name)'s max HP set to \(newMax) (\(combatants[index].currentHP!)/\(newMax) HP)",
+            combatantId: id,
+            hpOperation: .setMaxHP(value: newMax)
+        )
+    }
+
+    /// Sets temporary HP directly; 0 clears it. Unlike a grant, this can lower it.
+    func setTemporaryHP(for id: UUID, to value: Int) {
+        guard let index = combatants.firstIndex(where: { $0.id == id }),
+              combatants[index].currentHP != nil else { return }
+        let newValue = Swift.max(0, value)
+        guard newValue != (combatants[index].temporaryHP ?? 0) else { return }
+        combatants[index].temporaryHP = newValue > 0 ? newValue : nil
+        appendLog(
+            newValue > 0
+                ? "\(combatants[index].name)'s temporary HP set to \(newValue)"
+                : "\(combatants[index].name)'s temporary HP cleared",
+            combatantId: id,
+            hpOperation: .setTemporaryHP(value: newValue)
+        )
+    }
+
     /// How far a heal would take current HP past max. Zero when it stays within max.
     static func healOverflow(current: Int, max: Int, amount: Int) -> Int {
         Swift.max(0, current + amount - max)
@@ -397,6 +451,28 @@ class CombatSession {
         appendLog("\(combatants[index].name)'s armor class \(newAC - ac >= 0 ? "rose" : "fell") to \(newAC)", combatantId: id)
     }
 
+    /// Sets armor class directly (at least 0), as a correction.
+    func setArmorClass(for id: UUID, to value: Int) {
+        guard let index = combatants.firstIndex(where: { $0.id == id }),
+              let ac = combatants[index].armorClass else { return }
+        adjustArmorClass(for: id, by: Swift.max(0, value) - ac)
+    }
+
+    /// Sets temporary AC directly; 0 clears it. Unlike a grant, this can lower it.
+    func setTemporaryAC(for id: UUID, to value: Int) {
+        guard let index = combatants.firstIndex(where: { $0.id == id }),
+              combatants[index].armorClass != nil else { return }
+        let newValue = Swift.max(0, value)
+        guard newValue != (combatants[index].temporaryAC ?? 0) else { return }
+        combatants[index].temporaryAC = newValue > 0 ? newValue : nil
+        appendLog(
+            newValue > 0
+                ? "\(combatants[index].name)'s temporary AC set to \(newValue)"
+                : "\(combatants[index].name)'s temporary AC cleared",
+            combatantId: id
+        )
+    }
+
     private func noteMaxHPChange(at index: Int, by delta: Int) {
         guard delta != 0 else { return }
         let total = (combatants[index].recentMaxHPChange ?? 0) + delta
@@ -453,6 +529,15 @@ class CombatSession {
                 let reduced = Swift.max(0, ceiling - amount)
                 maxHP = reduced
                 currentHP = Swift.min(current, reduced)
+            case .setCurrentHP(let value):
+                guard let ceiling = maxHP else { continue }
+                currentHP = Swift.min(Swift.max(0, value), ceiling)
+            case .setMaxHP(let value):
+                guard let current = currentHP else { continue }
+                maxHP = value
+                currentHP = Swift.min(current, value)
+            case .setTemporaryHP(let value):
+                temporaryHP = value > 0 ? value : nil
             case nil:
                 continue
             }

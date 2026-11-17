@@ -212,4 +212,81 @@ final class RulesAsWrittenTests: XCTestCase {
 
         XCTAssertEqual(session.combatants[0].temporaryHP, 8)
     }
+
+    // MARK: - Setting values directly
+
+    func testSetCurrentHPClampsAndSkipsTemporaryHP() {
+        let (session, id) = player(maxHP: 20)
+        session.grantTemporaryHP(to: id, amount: 5)
+
+        session.setCurrentHP(for: id, to: 7)
+        XCTAssertEqual(session.combatants[0].currentHP, 7)
+        XCTAssertEqual(session.combatants[0].temporaryHP, 5)
+
+        session.setCurrentHP(for: id, to: 99)
+        XCTAssertEqual(session.combatants[0].currentHP, 20)
+    }
+
+    func testSetCurrentHPToZeroStartsDyingAndBackClearsIt() {
+        let (session, id) = player()
+
+        session.setCurrentHP(for: id, to: 0)
+        XCTAssertTrue(session.combatants[0].isDying)
+
+        session.setCurrentHP(for: id, to: 3)
+        XCTAssertFalse(session.combatants[0].isDying)
+    }
+
+    func testSetMaxHPLowersCurrentButNeverRaisesIt() {
+        let (session, id) = player(maxHP: 20)
+
+        session.setMaxHP(for: id, to: 12)
+        XCTAssertEqual(session.combatants[0].currentHP, 12)
+
+        session.setMaxHP(for: id, to: 30)
+        XCTAssertEqual(session.combatants[0].currentHP, 12)
+        XCTAssertEqual(session.combatants[0].maxHP, 30)
+    }
+
+    func testSetTemporaryHPCanLowerAndClear() {
+        let (session, id) = player()
+        session.grantTemporaryHP(to: id, amount: 8)
+
+        session.setTemporaryHP(for: id, to: 3)
+        XCTAssertEqual(session.combatants[0].temporaryHP, 3)
+
+        session.setTemporaryHP(for: id, to: 0)
+        XCTAssertNil(session.combatants[0].temporaryHP)
+    }
+
+    func testDirectSetsSurviveReplay() {
+        let (session, id) = player(maxHP: 20)
+        session.setMaxHP(for: id, to: 25)
+        session.setTemporaryHP(for: id, to: 4)
+        session.applyDamage(to: id, amount: 6) // 4 absorbed, 2 to HP
+        session.setCurrentHP(for: id, to: 10)
+        let damage = session.log.first { $0.hpOperation == .damage(amount: 6) }!
+
+        session.deleteLogEntry(damage.id)
+
+        XCTAssertEqual(session.combatants[0].maxHP, 25)
+        XCTAssertEqual(session.combatants[0].currentHP, 10)
+        XCTAssertEqual(session.combatants[0].temporaryHP, 4)
+    }
+
+    func testSetArmorClassAndTemporaryACDirectly() {
+        let session = CombatSession()
+        session.addCombatant(name: "Wren", initiative: 20, armorClass: 15)
+        let id = session.combatants[0].id
+
+        session.setArmorClass(for: id, to: 18)
+        XCTAssertEqual(session.combatants[0].armorClass, 18)
+
+        session.grantTemporaryAC(to: id, amount: 5)
+        session.setTemporaryAC(for: id, to: 2)
+        XCTAssertEqual(session.combatants[0].temporaryAC, 2)
+
+        session.setTemporaryAC(for: id, to: 0)
+        XCTAssertNil(session.combatants[0].temporaryAC)
+    }
 }
