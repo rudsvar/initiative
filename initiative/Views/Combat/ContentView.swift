@@ -5,6 +5,9 @@ struct ContentView: View {
     let sessionStore: SessionStore
     let presetStore: PresetStore
     @Binding var path: NavigationPath
+    /// Back goes to the screen before instead of the main menu. Only Test
+    /// Scenarios sets it, so a tester can try one scenario after another.
+    var backReturnsToPreviousScreen = false
 
     @Environment(\.scenePhase) private var scenePhase
     @State private var showAddCombatant = false
@@ -114,7 +117,7 @@ struct ContentView: View {
                 Button(action: backToMenu) {
                     Image(systemName: "chevron.left")
                 }
-                .accessibilityLabel("Back to Menu")
+                .accessibilityLabel(backReturnsToPreviousScreen ? "Back" : "Back to Menu")
             }
 
             ToolbarItem(placement: .principal) {
@@ -218,7 +221,7 @@ struct ContentView: View {
 
     private func backToMenu() {
         autosave()
-        path.removeLast(path.count)
+        path.removeLast(backReturnsToPreviousScreen ? 1 : path.count)
     }
 
     private func autosave() {

@@ -11,6 +11,8 @@ enum Route: Hashable {
     case combatantDetail(UUID)
     #if DEBUG
     case scenarios
+    /// The combat screen opened from Test Scenarios: its back button returns there.
+    case scenarioCombat
     #endif
 }
 
@@ -65,6 +67,8 @@ struct RootView: View {
                 #if DEBUG
                 case .scenarios:
                     DebugScenariosView(session: session, path: $path)
+                case .scenarioCombat:
+                    ContentView(session: session, sessionStore: sessionStore, presetStore: presetStore, path: $path, backReturnsToPreviousScreen: true)
                 #endif
                 case .combatantDetail(let combatantId):
                     CombatantDetailView(session: session, combatantId: combatantId)

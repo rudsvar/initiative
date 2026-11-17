@@ -337,7 +337,7 @@ methods the unit tests use, so the owner sees the rule working on the real scree
 - **Naming:** name the scenario after what it verifies (`deadCreatureIsSkipped`,
   `dyingWithTally`), not after the screen. The unit tests use the same fixtures.
 - **Opening it:** the debug main menu has a **Test Scenarios** entry at the bottom.
-  Pick the scenario and the combat screen opens. From a terminal, a debug build also
+  Pick the scenario and the combat screen opens; its back button returns to the list. From a terminal, a debug build also
   opens one at launch with `-scenario <name>`.
 - **After each feature:** build the debug app for the phone, install it, and launch
   the scenario, then tell the owner what to check, for example "Next from Alpha should
