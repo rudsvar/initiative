@@ -69,10 +69,12 @@
 		88D4AA082DAD952345128352 /* TestCharacters.swift in Sources */ = {isa = PBXBuildFile; fileRef = E385BF84D5CF11F834092397 /* TestCharacters.swift */; };
 		8D5002435663177D3D860CF4 /* FlowLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D6427D74AA5360A780F88C8 /* FlowLayout.swift */; };
 		9D828DEFD356DF22B4C85C46 /* ChangeLabel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 198DAF52601518703A1CB383 /* ChangeLabel.swift */; };
+		9E0B6764EB01C45F561CA65C /* EffectTimingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 03883AEAD97907C72F152D6D /* EffectTimingTests.swift */; };
 		9E619E17AE246450D08A306D /* DebugScenariosView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FC75838D4FF442192212A7E /* DebugScenariosView.swift */; };
 		9FE8D77649E294094C52166C /* PlayerViewTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C86540C34D5CD3C7378276D /* PlayerViewTests.swift */; };
 		A487A5D42B5F78867A371A4C /* StatusBandTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6636EDC413749080974CA625 /* StatusBandTests.swift */; };
 		A6CAC928C62BC2EFC03D965A /* DyingEffectTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE1A9ED5BBE06EEC50B84DE4 /* DyingEffectTests.swift */; };
+		A7F71F3040C430E21FDB0387 /* EffectTiming.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0A982CB39CF049A97EEAA74D /* EffectTiming.swift */; };
 		A846E1C8F6638A7F4F7591BA /* TurnPromptTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4B3FB96497CF923A7DB11289 /* TurnPromptTests.swift */; };
 		AC7CF098098212A61FFADF42 /* ChallengeRating.swift in Sources */ = {isa = PBXBuildFile; fileRef = 612E1F0FAD7DF6DBEAB03D05 /* ChallengeRating.swift */; };
 		ADCD3ABB889BB6011688D66E /* ThemePalette.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9059D28D057C9E7FD6B83705 /* ThemePalette.swift */; };
@@ -122,7 +124,9 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		03883AEAD97907C72F152D6D /* EffectTimingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectTimingTests.swift; sourceTree = "<group>"; };
 		07CE13EA81450439CB74ECD2 /* TurnMarkerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TurnMarkerTests.swift; sourceTree = "<group>"; };
+		0A982CB39CF049A97EEAA74D /* EffectTiming.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EffectTiming.swift; sourceTree = "<group>"; };
 		0B11A437D714C86669EA9B73 /* CooldownLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CooldownLibrary.swift; sourceTree = "<group>"; };
 		0B266DEA642A436C6B0171B6 /* Combatant.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Combatant.swift; sourceTree = "<group>"; };
 		0DB17045A5515409AF2FD680 /* TurnPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TurnPrompt.swift; sourceTree = "<group>"; };
@@ -316,6 +320,8 @@
 				FE1A9ED5BBE06EEC50B84DE4 /* DyingEffectTests.swift */,
 				5105E7AA6B2BA4A20F4CBC35 /* Effect.swift */,
 				3613CF49D1C24697119764CE /* EffectOperationsTests.swift */,
+				0A982CB39CF049A97EEAA74D /* EffectTiming.swift */,
+				03883AEAD97907C72F152D6D /* EffectTimingTests.swift */,
 				72FCF480130756D02B000115 /* EncounterXP.swift */,
 				CB71B1C8EC7F8A5D678FC25A /* EncounterXPTests.swift */,
 				2582A5BD6876D6C40BA8E388 /* HPReplayTests.swift */,
@@ -591,6 +597,7 @@
 				497810B3563B071D9F877FB7 /* DefaultContent.swift in Sources */,
 				7B78D0FA978026999015844A /* Effect.swift in Sources */,
 				7D58FB15FBAFA3FAAEB93866 /* EffectEditorView.swift in Sources */,
+				A7F71F3040C430E21FDB0387 /* EffectTiming.swift in Sources */,
 				494371ED7B27C47A81A55FA0 /* EncounterListView.swift in Sources */,
 				753B7A6563DA08CED59C9981 /* EncounterStore.swift in Sources */,
 				F4D82D9946032C775F4CA713 /* EncounterXP.swift in Sources */,
@@ -648,6 +655,7 @@
 				A6CAC928C62BC2EFC03D965A /* DyingEffectTests.swift in Sources */,
 				F0B9253CC9AF6782988E90BD /* DyingScenarioTests.swift in Sources */,
 				7E5C7BB027F7BC0907ECA434 /* EffectOperationsTests.swift in Sources */,
+				9E0B6764EB01C45F561CA65C /* EffectTimingTests.swift in Sources */,
 				1A85F56E1359778680CB6BE8 /* EncounterStoreTests.swift in Sources */,
 				B2976DA28F065B09A12D312C /* EncounterXPTests.swift in Sources */,
 				0531C55B50718D39601BD1AD /* HPReplayTests.swift in Sources */,
