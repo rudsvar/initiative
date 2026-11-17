@@ -128,7 +128,7 @@ struct CombatantDetailView: View {
     private func statsCard(for combatant: Combatant) -> some View {
         VStack(alignment: .leading, spacing: Theme.Spacing.sm) {
             Text("Stats").cardHeading()
-            if let block = SRDCatalog.block(named: combatant.name) {
+            if let block = SRDCatalog.block(forCombatantNamed: combatant.name) {
                 StatFacts(block: block)
             } else {
                 Text("No stat block in the app for this name.")

@@ -35,4 +35,15 @@ enum SRDCatalog {
     static func block(named name: String) -> StatBlock? {
         byName[name]
     }
+
+    /// The stat block for a combatant. Copies added together are numbered
+    /// ("Goblin 2", see `CombatSession.addCombatants`), so a trailing number is
+    /// dropped when the full name finds nothing. No stat block name ends in one.
+    static func block(forCombatantNamed name: String) -> StatBlock? {
+        if let exact = block(named: name) { return exact }
+        guard let space = name.lastIndex(of: " "),
+              !name[name.index(after: space)...].isEmpty,
+              name[name.index(after: space)...].allSatisfy(\.isNumber) else { return nil }
+        return block(named: String(name[..<space]))
+    }
 }

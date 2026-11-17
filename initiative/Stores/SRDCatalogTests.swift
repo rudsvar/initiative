@@ -18,6 +18,15 @@ final class SRDCatalogTests: XCTestCase {
         XCTAssertNil(SRDCatalog.block(named: "Not A Creature"))
     }
 
+    /// Copies spawned together are numbered ("Wolf 2"); each is still a Wolf.
+    func testANumberedCopyFindsItsCreaturesBlock() {
+        XCTAssertEqual(SRDCatalog.block(forCombatantNamed: "Wolf")?.name, "Wolf")
+        XCTAssertEqual(SRDCatalog.block(forCombatantNamed: "Wolf 2")?.name, "Wolf")
+        XCTAssertEqual(SRDCatalog.block(forCombatantNamed: "Wolf 12")?.name, "Wolf")
+        XCTAssertNil(SRDCatalog.block(forCombatantNamed: "Wolfgang 2"))
+        XCTAssertNil(SRDCatalog.block(forCombatantNamed: "2"))
+    }
+
     func testFileLoadsWithTheExpectedCreatures() throws {
         let names = try repoStatBlocks().map(\.name)
         XCTAssertEqual(names.count, 323)
