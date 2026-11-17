@@ -81,7 +81,9 @@ enum TestCombats {
 
     /// It's Alpha's turn. Open the goblin and tap Frightened: the app asks "Is Alpha
     /// concentrating on Frightened?". Concentrating puts Alpha's concentration
-    /// chip on; tapping a condition on Alpha itself asks nothing.
+    /// chip on, on the combatant screen and in Alpha's roster row. Tapping a
+    /// condition on Alpha itself asks nothing. Next from the frightened goblin
+    /// asks its save with the marker still on the goblin.
     static func concentrationIsOffered() -> CombatSession {
         let session = CombatSession()
         session.addCombatant(name: "Alpha", initiative: 20, maxHP: 22, armorClass: 14, isPlayer: true)

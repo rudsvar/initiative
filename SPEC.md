@@ -349,9 +349,10 @@ buttons at the ends where the thumbs are.
 - Actions card: Reaction, Concentration, and any `LimitedUse` resources
 - Effects card: the full two-column condition/cooldown grid, named
   cooldowns/custom effects list, "Add Limited Use…", "Custom effect…"
-- The roster row's own read-only status strip shows only conditions/cooldowns
-  (`combatant.visibleEffects`) — Reaction and Concentration are not shown
-  there, only on this screen. Two designs that tried to unfold this content
+- The roster row's own read-only status strip shows conditions/cooldowns
+  (`combatant.visibleEffects`) and, first, a Concentrating chip while the
+  combatant concentrates, since damage can break it and the DM needs to see
+  that at a glance. Reaction is not shown there, only on this screen. Two designs that tried to unfold this content
   in place under the roster row instead of pushing to it — a chevron on
   every row, and before that an auto-expanding current-combatant row — were
   each tried and reverted (see "Declined" below); a pushed screen is what

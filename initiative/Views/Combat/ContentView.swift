@@ -398,11 +398,14 @@ struct CombatantRow: View {
 
             // Glance-at-a-glance list, not the detail screen — a short label
             // (e.g. "Stunned") alongside the icon in each chip, not bare
-            // symbols alone. Reaction and Concentration live only on the
-            // detail screen now, not here — this strip is conditions/
-            // cooldowns only. FlowLayout wraps to the next line on overflow.
-            if !combatant.visibleEffects.isEmpty || combatant.isStabilised {
+            // symbols alone. Concentration shows here too, first, since damage
+            // can break it; Reaction lives only on the detail screen.
+            // FlowLayout wraps to the next line on overflow.
+            if !combatant.visibleEffects.isEmpty || combatant.isStabilised || combatant.isConcentrating {
                 FlowLayout {
+                    if combatant.isConcentrating {
+                        StatusChip(symbolName: "wand.and.rays", label: "Concentrating", color: Theme.statusInfo)
+                    }
                     // The Dying effect shows as a plain "Dying" chip; its tally is beside the name.
                     ForEach(combatant.visibleEffects) { effect in
                         StatusChip(symbolName: effect.symbolName, label: effect.name, color: effect.tint)
