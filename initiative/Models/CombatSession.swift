@@ -135,6 +135,13 @@ class CombatSession {
         }
     }
 
+    /// Same rule as the session's name: trimmed, and a blank name is refused.
+    func renameCombatant(_ id: UUID, to name: String) {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, let index = combatants.firstIndex(where: { $0.id == id }) else { return }
+        combatants[index].name = trimmed
+    }
+
     /// Changes a combatant's initiative and moves them to their new place in the
     /// order. The turn in progress stays with whoever has it, even if they moved.
     func setInitiative(_ value: Int, for id: UUID) {

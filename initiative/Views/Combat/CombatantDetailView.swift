@@ -35,10 +35,7 @@ struct CombatantDetailView: View {
     private var nameBinding: Binding<String> {
         Binding(
             get: { combatant?.name ?? "" },
-            set: { newValue in
-                guard let index = session.combatants.firstIndex(where: { $0.id == combatantId }) else { return }
-                session.combatants[index].name = newValue
-            }
+            set: { session.renameCombatant(combatantId, to: $0) }
         )
     }
 

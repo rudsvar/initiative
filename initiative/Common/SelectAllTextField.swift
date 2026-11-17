@@ -27,7 +27,10 @@ struct SelectAllTextField: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: UITextField, context: Context) {
-        if uiView.text != text {
+        // Not while typing: the model may tidy what it is given (names are
+        // trimmed, a blank one refused), and writing that back mid-edit would
+        // swallow the space just typed. Editing's end syncs the field instead.
+        if !uiView.isFirstResponder, uiView.text != text {
             uiView.text = text
         }
         uiView.textColor = UIColor(textColor)
@@ -56,6 +59,11 @@ struct SelectAllTextField: UIViewRepresentable {
             DispatchQueue.main.async {
                 textField.selectAll(nil)
             }
+        }
+
+        /// Shows what the model kept, e.g. the old name if the field was left blank.
+        func textFieldDidEndEditing(_ textField: UITextField) {
+            textField.text = text.wrappedValue
         }
 
         func textFieldShouldReturn(_ textField: UITextField) -> Bool {
