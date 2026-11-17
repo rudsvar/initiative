@@ -665,16 +665,17 @@ class CombatSession {
     }
 
 
-    /// The combatant the roster marks as current. While start-of-turn prompts are
-    /// open, that is the one whose turn is about to start, so the marker shows who
-    /// the prompt is for. Cancelling clears the prompts and the marker returns to
-    /// the turn that is still in progress.
-    func highlightedCombatantID(awaitingPrompts: Bool) -> UUID? {
-        guard awaitingPrompts, combatants.indices.contains(currentTurnIndex) else {
+    /// The combatant the roster marks as current. While prompts are open, the
+    /// marker shows whose prompt it is: the combatant whose turn is about to start
+    /// when any prompt is theirs, otherwise the one whose turn is ending (a save at
+    /// the end of their own turn). Cancelling clears the prompts and the marker
+    /// returns to the turn that is still in progress.
+    func highlightedCombatantID(awaiting prompts: [TurnPrompt]) -> UUID? {
+        guard !prompts.isEmpty, combatants.indices.contains(currentTurnIndex) else {
             return currentCombatant?.id
         }
-        let (nextIndex, _) = nextActiveIndex(after: currentTurnIndex)
-        return combatants[nextIndex].id
+        let starting = combatants[nextActiveIndex(after: currentTurnIndex).index].id
+        return prompts.contains { $0.combatantID == starting } ? starting : currentCombatant?.id
     }
 
     /// The next combatant who can act after `index`. Dead combatants are passed

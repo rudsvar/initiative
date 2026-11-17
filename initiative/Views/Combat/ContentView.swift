@@ -40,7 +40,7 @@ struct ContentView: View {
 
             List {
                 ForEach(session.combatants) { combatant in
-                    let isCurrent = session.highlightedCombatantID(awaitingPrompts: !pendingPrompts.isEmpty) == combatant.id
+                    let isCurrent = session.highlightedCombatantID(awaiting: pendingPrompts) == combatant.id
                     // A real Button, not a hidden NavigationLink in the
                     // background: the hidden-link pattern gave the row zero
                     // visible feedback on tap, since its own press-dimming
