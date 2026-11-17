@@ -61,4 +61,13 @@ final class KillReviveTests: XCTestCase {
         XCTAssertNil(combatant.markedDead)
         XCTAssertFalse(combatant.isDead)
     }
+
+    /// Dropping to 0 by damage ends concentration; Kill must too.
+    func testKillEndsConcentration() {
+        let session = session()
+        let alpha = session.combatants[index(session, "Alpha")].id
+        session.toggleConcentration(for: alpha)
+        session.kill(alpha)
+        XCTAssertFalse(session.combatants[index(session, "Alpha")].isConcentrating)
+    }
 }

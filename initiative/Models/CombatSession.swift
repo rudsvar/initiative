@@ -796,6 +796,10 @@ class CombatSession {
             combatants[index].markedDead = true
         }
         appendLog("\(combatants[index].name) was killed", combatantId: id, hpOperation: tracked ? .kill : nil)
+        if combatants[index].isConcentrating {
+            combatants[index].isConcentrating = false
+            appendLog("\(combatants[index].name) lost concentration", combatantId: id)
+        }
     }
 
     /// Brings a dead combatant back. A tracked HP at 0 comes back to 1. Undoable with Previous.
