@@ -63,7 +63,7 @@ enum TestCombats {
         return session
     }
 
-    /// Wren has 5 temporary HP, the ogre's max HP went up by 4 and the goblin's
+    /// Wren has 5 temporary HP (27/22), the ogre's max HP went up by 4 and the goblin's
     /// down by 2: each amount sits under the number it belongs to, "+5" under
     /// Wren's current HP, "+4" and "−2" under the max.
     static func hpAmountsSitUnderTheirNumbers() -> CombatSession {

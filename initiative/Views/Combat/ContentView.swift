@@ -327,9 +327,11 @@ struct CombatantRow: View {
     @ViewBuilder
     private var healthRow: some View {
         StatReadout(systemImage: "heart.fill", iconColor: Theme.statusBad, column: .hp) {
-            if let current = combatant.currentHP, let max = combatant.maxHP {
+            // Current HP is the total in play, temporary HP included, as AC is;
+            // the band in player view still reads real HP against max.
+            if let current = combatant.effectiveCurrentHP, let real = combatant.currentHP, let max = combatant.maxHP {
                 if playerViewEnabled {
-                    let band = StatusBand.health(current: current, max: max)
+                    let band = StatusBand.health(current: real, max: max)
                     Text(band.label).foregroundColor(band.color)
                 } else {
                     currentText(current) + slash + maxText(max)
@@ -339,7 +341,7 @@ struct CombatantRow: View {
                 Text("−/−").foregroundColor(Theme.textTertiary)
             }
         } footnote: {
-            if !playerViewEnabled, let current = combatant.currentHP, let max = combatant.maxHP {
+            if !playerViewEnabled, let current = combatant.effectiveCurrentHP, let max = combatant.maxHP {
                 healthFootnote(current: current, max: max)
             }
         }

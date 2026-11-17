@@ -9,6 +9,22 @@ final class TemporaryHPTests: XCTestCase {
         return (session, session.combatants[0].id)
     }
 
+    // MARK: - Effective current HP
+
+    func testEffectiveCurrentHPCountsTemporaryHP() {
+        let (session, id) = session()
+        XCTAssertEqual(session.combatants[0].effectiveCurrentHP, 30)
+
+        session.grantTemporaryHP(to: id, amount: 5)
+
+        XCTAssertEqual(session.combatants[0].effectiveCurrentHP, 35)
+    }
+
+    func testEffectiveCurrentHPIsNilWithoutTracking() {
+        let combatant = Combatant(name: "Untracked", initiative: 5)
+        XCTAssertNil(combatant.effectiveCurrentHP)
+    }
+
     // MARK: - Absorption
 
     func testDamageComesOffTheBufferFirst() {
