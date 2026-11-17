@@ -1,9 +1,10 @@
 import SwiftUI
 
 /// Which column of readouts a `StatReadout` belongs to, so that the same stat lines
-/// up down a list.
+/// up down a list. `menuIcon` is the main menu's icon column, measured the same way
+/// so a wide symbol widens the column instead of sticking out of it.
 enum StatColumn {
-    case initiative, hp, ac, bonus
+    case initiative, hp, ac, bonus, menuIcon
 }
 
 /// One stat as a small stack: its symbol above its value. Used for HP, AC and
@@ -86,6 +87,7 @@ struct StatColumnWidths: Equatable {
     var hp: CGFloat = 0
     var ac: CGFloat = 0
     var bonus: CGFloat = 0
+    var menuIcon: CGFloat = 0
 
     init() {}
 
@@ -95,6 +97,7 @@ struct StatColumnWidths: Equatable {
         case .hp: hp = width
         case .ac: ac = width
         case .bonus: bonus = width
+        case .menuIcon: menuIcon = width
         }
     }
 
@@ -104,6 +107,7 @@ struct StatColumnWidths: Equatable {
         case .hp: hp
         case .ac: ac
         case .bonus: bonus
+        case .menuIcon: menuIcon
         }
     }
 }
@@ -116,6 +120,7 @@ private struct StatColumnWidthsKey: PreferenceKey {
         value.hp = max(value.hp, next.hp)
         value.ac = max(value.ac, next.ac)
         value.bonus = max(value.bonus, next.bonus)
+        value.menuIcon = max(value.menuIcon, next.menuIcon)
     }
 }
 

@@ -72,7 +72,7 @@ struct NewSessionView: View {
         ForEach(sectionEncounters) { encounter in
             Button(action: { startSession(from: encounter) }) {
                 row(
-                    icon: "shield.lefthalf.filled",
+                    icon: "person.3.fill",
                     title: encounter.name,
                     subtitle: entryDescription(for: encounter)
                 )

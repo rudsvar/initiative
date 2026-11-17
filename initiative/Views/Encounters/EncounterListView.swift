@@ -34,7 +34,7 @@ struct EncounterListView: View {
             if encounters.isEmpty {
                 ContentUnavailableView(
                     "No Encounters Yet",
-                    systemImage: "shield.lefthalf.filled",
+                    systemImage: "person.3.fill",
                     description: Text("Prepare a named list of creatures ahead of time to start a session with.")
                 )
             } else if matches.isEmpty {

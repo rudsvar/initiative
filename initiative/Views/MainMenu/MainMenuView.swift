@@ -64,7 +64,7 @@ struct MainMenuView: View {
                             path.append(Route.creatureList)
                         }
 
-                        MenuButton(title: "Encounters", systemImage: "shield.lefthalf.filled") {
+                        MenuButton(title: "Encounters", systemImage: "person.3.fill") {
                             path.append(Route.encounterList)
                         }
 
@@ -78,6 +78,8 @@ struct MainMenuView: View {
                         #endif
                     }
                     }
+                    // One icon column for every button, as wide as the widest symbol.
+                    .sharedStatColumns()
 
                     Spacer(minLength: 0)
                 }
@@ -109,7 +111,7 @@ private struct MenuButton: View {
             HStack(spacing: Theme.Spacing.md) {
                 Image(systemName: systemImage)
                     .font(Theme.Typography.iconRow)
-                    .frame(width: 20, alignment: .center)
+                    .statColumn(.menuIcon)
 
                 Text(title)
                     .font(isPrimary ? Theme.Typography.rowTitle : Theme.Typography.body)
