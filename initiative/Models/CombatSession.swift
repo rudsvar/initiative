@@ -292,11 +292,26 @@ class CombatSession {
         appendLog("\(combatants[index].name) gained \(amount) temporary AC", combatantId: id)
     }
 
-    func removeTemporaryAC(from id: UUID) {
-        guard let index = combatants.firstIndex(where: { $0.id == id }),
-              combatants[index].temporaryAC != nil else { return }
-        combatants[index].temporaryAC = nil
-        appendLog("\(combatants[index].name) lost temporary AC", combatantId: id)
+    /// Adds to temporary AC by hand, starting from none, as temporary HP does.
+    func raiseTemporaryAC(of id: UUID, by amount: Int) {
+        guard amount > 0, let index = combatants.firstIndex(where: { $0.id == id }) else { return }
+        let total = (combatants[index].temporaryAC ?? 0) + amount
+        combatants[index].temporaryAC = total
+        appendLog("\(combatants[index].name) gained \(amount) temporary AC (\(total) total)", combatantId: id)
+    }
+
+    /// Takes temporary AC off by hand, never the base armor class; past zero it is gone.
+    func lowerTemporaryAC(of id: UUID, by amount: Int) {
+        guard amount > 0, let index = combatants.firstIndex(where: { $0.id == id }),
+              let current = combatants[index].temporaryAC else { return }
+        let left = current - min(amount, current)
+        combatants[index].temporaryAC = left > 0 ? left : nil
+        appendLog(
+            left > 0
+                ? "\(combatants[index].name) lost \(current - left) temporary AC (\(left) left)"
+                : "\(combatants[index].name) lost all temporary AC",
+            combatantId: id
+        )
     }
 
     static func concentrationDC(damage: Int) -> Int {

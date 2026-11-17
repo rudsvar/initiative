@@ -261,7 +261,7 @@ combatant and the detail screen's Health card both use the same component)
 
 **Setting values directly**: tapping Current, Max or Temp HP in `HealthControlRow` opens a box to type the value. Corrections only: no temporary HP absorption, current clamped to `0...maxHP`, max at least 1 (current comes down with it, never up), temp 0 clears. Each is logged (`setCurrentHP`, `setMaxHP`, `setTemporaryHP`) and replays.
 
-**Armor class card** uses the same row layout as health (`ValueAmountLine`, `TempValueLine`): tap AC or Temp AC to type it, Lower/Raise with an amount box, Grant temp.
+**Armor class card** uses the same line as health (`AmountControlLine`): tap AC or Temp AC to type it, − / amount / + to lower or raise it.
 
 **Rules as written**
 - Temporary HP absorbs damage first and is not healed; two grants keep the larger.
@@ -544,6 +544,12 @@ armorClass: Int?`). Editable from the combatant detail screen (alongside Name/
 Initiative), the add-combatant modal, and the Creatures/Encounters editors.
 "Armor Class"/"AC" is a generic mechanical term used across many tabletop
 systems — not trademarked, confirmed before adding this.
+
+On the detail screen the Armor Class card has two lines in the Health card's
+layout (`AmountControlLine`, shared by both cards): **Armor Class** and **Temp
+AC**, each with − / amount / +. Temporary AC is added to armor class for the
+fight and taken off by hand, never touching the base. The roster shows the total
+in play, bold blue while temporary AC lasts.
 
 ### 11. Standard Conditions
 

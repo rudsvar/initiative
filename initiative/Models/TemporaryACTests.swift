@@ -54,12 +54,28 @@ final class TemporaryACTests: XCTestCase {
         XCTAssertNil(combatant.effectiveArmorClass)
     }
 
-    func testTemporaryACCanBeRemoved() {
+    // MARK: - Raising and lowering by hand, as temporary HP is
+
+    func testRaisingAddsToTemporaryAC() {
         let session = TestCombats.wrenWithArmorClass()
         let wren = session.combatants[0].id
-        session.grantTemporaryAC(to: wren, amount: 2)
-        session.removeTemporaryAC(from: wren)
+        session.raiseTemporaryAC(of: wren, by: 2)
+        session.raiseTemporaryAC(of: wren, by: 1)
+        XCTAssertEqual(session.combatants[0].temporaryAC, 3)
+        XCTAssertEqual(session.combatants[0].effectiveArmorClass, 17)
+        XCTAssertEqual(session.log.last?.text, "Wren gained 1 temporary AC (3 total)")
+    }
+
+    func testLoweringTakesOffTemporaryACAndPastZeroRemovesIt() {
+        let session = TestCombats.wrenWithArmorClass()
+        let wren = session.combatants[0].id
+        session.raiseTemporaryAC(of: wren, by: 3)
+        session.lowerTemporaryAC(of: wren, by: 1)
+        XCTAssertEqual(session.combatants[0].temporaryAC, 2)
+        XCTAssertEqual(session.log.last?.text, "Wren lost 1 temporary AC (2 left)")
+        session.lowerTemporaryAC(of: wren, by: 5)
         XCTAssertNil(session.combatants[0].temporaryAC)
-        XCTAssertEqual(session.log.last?.text, "Wren lost temporary AC")
+        XCTAssertEqual(session.combatants[0].armorClass, 14)
+        XCTAssertEqual(session.log.last?.text, "Wren lost all temporary AC")
     }
 }
