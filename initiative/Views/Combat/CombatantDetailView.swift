@@ -332,17 +332,15 @@ struct CombatantDetailView: View {
 
 struct DeadBadge: View {
     var body: some View {
-        HStack(spacing: Theme.Spacing.xs + 2) {
+        HStack(spacing: Theme.Spacing.xsm) {
             Image(systemName: "skull.fill")
             Text("Dead")
-                .font(Theme.Typography.label)
-                .textCase(.uppercase)
-                .tracking(0.9)
+                .sectionLabel(color: Theme.textPrimary)
         }
         .font(Theme.Typography.iconInline)
         .foregroundColor(Theme.textPrimary)
         .padding(.horizontal, Theme.Spacing.sm)
-        .padding(.vertical, Theme.Spacing.xs + 2)
+        .padding(.vertical, Theme.Spacing.xsm)
         .background(Theme.background)
         .clipShape(Capsule())
         .overlay(Capsule().stroke(Theme.border, lineWidth: Theme.hairline))

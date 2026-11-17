@@ -127,10 +127,7 @@ struct ContentView: View {
                     )
                     .frame(height: 20)
                     Text("Round \(session.roundNumber)")
-                        .font(Theme.Typography.label)
-                        .textCase(.uppercase)
-                        .tracking(0.9)
-                        .foregroundColor(Theme.accent)
+                        .sectionLabel(color: Theme.accent)
                         .allowsHitTesting(false)
                 }
                 .frame(width: 200)
@@ -532,7 +529,7 @@ private struct StatusChip: View {
         }
         .foregroundColor(color)
         .padding(.horizontal, Theme.Spacing.sm)
-        .padding(.vertical, Theme.Spacing.xs + 2)
+        .padding(.vertical, Theme.Spacing.xsm)
         .background(color.opacity(0.13))
         .overlay(
             RoundedRectangle(cornerRadius: Theme.Radius.sm, style: .continuous)

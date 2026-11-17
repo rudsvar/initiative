@@ -15,9 +15,9 @@ extension View {
         self
             .listRowSeparator(.hidden)
             .listRowInsets(EdgeInsets(
-                top: Theme.Spacing.xs + 2,
+                top: Theme.Spacing.xsm,
                 leading: Theme.Spacing.sm,
-                bottom: Theme.Spacing.xs + 2,
+                bottom: Theme.Spacing.xsm,
                 trailing: Theme.Spacing.sm
             ))
             .listRowBackground(Color.clear)
@@ -159,12 +159,14 @@ extension Text {
     /// Small all-caps label above an individual field. The letter-spacing is the
     /// point: at caption size, tracked uppercase reads as a deliberate label
     /// rather than as undersized body text.
-    func sectionLabel() -> some View {
+    /// `color` is tertiary text unless the label carries meaning of its own (the
+    /// round number in the accent, a badge in primary text).
+    func sectionLabel(color: Color = Theme.textTertiary) -> some View {
         self
             .font(Theme.Typography.label)
             .textCase(.uppercase)
             .tracking(0.9)
-            .foregroundColor(Theme.textTertiary)
+            .foregroundColor(color)
     }
 
     /// The title of a whole card ("Health", "Active Effects"). Deliberately a

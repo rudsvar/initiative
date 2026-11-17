@@ -3,8 +3,8 @@ import SwiftUI
 /// A left-to-right layout that wraps to the next line on overflow, like a row of
 /// tag/chip UI elements — unlike `HStack`, which never wraps and just overflows.
 struct FlowLayout: Layout {
-    var horizontalSpacing: CGFloat = Theme.Spacing.xs + 2
-    var verticalSpacing: CGFloat = Theme.Spacing.xs + 2
+    var horizontalSpacing: CGFloat = Theme.Spacing.xsm
+    var verticalSpacing: CGFloat = Theme.Spacing.xsm
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
         let maxWidth = proposal.width ?? .infinity
