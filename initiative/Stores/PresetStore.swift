@@ -87,15 +87,12 @@ struct CreaturePreset: Identifiable, Codable, Equatable, Hashable {
 /// there's no explicit "save as preset" step in the add-combatant flow.
 @Observable
 class PresetStore {
-    private let fileManager = FileManager.default
-    private let baseDirectory: URL
+    private let files: JSONFileDirectory<CreaturePreset>
 
     init(baseDirectory: URL? = nil) {
-        let directory = baseDirectory
+        files = JSONFileDirectory(url: baseDirectory
             ?? FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-                .appendingPathComponent("Presets", isDirectory: true)
-        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        self.baseDirectory = directory
+                .appendingPathComponent("Presets", isDirectory: true))
     }
 
     /// Removes every creature and character the owner made, once. Built-in
@@ -123,27 +120,16 @@ class PresetStore {
     }
 
     private func readPresets() -> [CreaturePreset] {
-        guard let files = try? fileManager.contentsOfDirectory(at: baseDirectory, includingPropertiesForKeys: nil) else {
-            return []
-        }
-        return files
-            .compactMap { url -> CreaturePreset? in
-                guard let data = try? Data(contentsOf: url) else { return nil }
-                return try? JSONDecoder().decode(CreaturePreset.self, from: data)
-            }
-            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        files.readAll().sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
 
     func save(_ preset: CreaturePreset) {
-        let url = baseDirectory.appendingPathComponent("\(preset.id.uuidString).json")
-        guard let data = try? JSONEncoder().encode(preset) else { return }
-        try? data.write(to: url)
+        files.write(preset)
         cache = nil
     }
 
     func delete(id: UUID) {
-        let url = baseDirectory.appendingPathComponent("\(id.uuidString).json")
-        try? fileManager.removeItem(at: url)
+        files.remove(id: id)
         cache = nil
     }
 

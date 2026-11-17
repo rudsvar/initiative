@@ -45,48 +45,27 @@ struct SessionRecord: Codable, Identifiable {
 /// "reload whichever session id was last active", tracked via UserDefaults.
 @Observable
 class SessionStore {
-    private let fileManager = FileManager.default
-    private let baseDirectory: URL
+    private let files: JSONFileDirectory<SessionRecord>
     private let userDefaults: UserDefaults
     private let lastActiveIDKey = "lastActiveSessionID"
 
     init(baseDirectory: URL? = nil, userDefaults: UserDefaults = .standard) {
         let directory = baseDirectory
             ?? FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        self.baseDirectory = directory
+        files = JSONFileDirectory(url: directory.appendingPathComponent("SavedSessions", isDirectory: true))
         self.userDefaults = userDefaults
     }
 
-    private var sessionsDirectory: URL {
-        let dir = baseDirectory.appendingPathComponent("SavedSessions", isDirectory: true)
-        if !fileManager.fileExists(atPath: dir.path) {
-            try? fileManager.createDirectory(at: dir, withIntermediateDirectories: true)
-        }
-        return dir
-    }
-
     func listSavedSessions() -> [SessionRecord] {
-        guard let files = try? fileManager.contentsOfDirectory(at: sessionsDirectory, includingPropertiesForKeys: nil) else {
-            return []
-        }
-        return files
-            .compactMap { url -> SessionRecord? in
-                guard let data = try? Data(contentsOf: url) else { return nil }
-                return try? JSONDecoder().decode(SessionRecord.self, from: data)
-            }
-            .sorted { $0.savedAt > $1.savedAt }
+        files.readAll().sorted { $0.savedAt > $1.savedAt }
     }
 
     func save(_ record: SessionRecord) {
-        let url = sessionsDirectory.appendingPathComponent("\(record.id.uuidString).json")
-        guard let data = try? JSONEncoder().encode(record) else { return }
-        try? data.write(to: url)
+        files.write(record)
     }
 
     func delete(id: UUID) {
-        let url = sessionsDirectory.appendingPathComponent("\(id.uuidString).json")
-        try? fileManager.removeItem(at: url)
+        files.remove(id: id)
         if lastActiveSessionID() == id {
             clearLastActiveSessionID()
         }
@@ -115,9 +94,7 @@ class SessionStore {
     /// itself is the single source of truth, so it must never lie about resumability.
     func resumableSession() -> SessionRecord? {
         guard let id = lastActiveSessionID() else { return nil }
-        let url = sessionsDirectory.appendingPathComponent("\(id.uuidString).json")
-        guard let data = try? Data(contentsOf: url),
-              let record = try? JSONDecoder().decode(SessionRecord.self, from: data) else {
+        guard let record = files.read(id: id) else {
             clearLastActiveSessionID()
             return nil
         }

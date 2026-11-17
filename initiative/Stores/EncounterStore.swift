@@ -45,38 +45,24 @@ struct Encounter: Identifiable, Codable, Equatable {
 /// Persists encounters as one JSON file per encounter, mirroring SessionStore/PresetStore.
 @Observable
 class EncounterStore {
-    private let fileManager = FileManager.default
-    private let baseDirectory: URL
+    private let files: JSONFileDirectory<Encounter>
 
     init(baseDirectory: URL? = nil) {
-        let directory = baseDirectory
+        files = JSONFileDirectory(url: baseDirectory
             ?? FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
-                .appendingPathComponent("Encounters", isDirectory: true)
-        try? FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        self.baseDirectory = directory
+                .appendingPathComponent("Encounters", isDirectory: true))
     }
 
     func listEncounters() -> [Encounter] {
-        guard let files = try? fileManager.contentsOfDirectory(at: baseDirectory, includingPropertiesForKeys: nil) else {
-            return []
-        }
-        return files
-            .compactMap { url -> Encounter? in
-                guard let data = try? Data(contentsOf: url) else { return nil }
-                return try? JSONDecoder().decode(Encounter.self, from: data)
-            }
-            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        files.readAll().sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
     }
 
     func save(_ encounter: Encounter) {
-        let url = baseDirectory.appendingPathComponent("\(encounter.id.uuidString).json")
-        guard let data = try? JSONEncoder().encode(encounter) else { return }
-        try? data.write(to: url)
+        files.write(encounter)
     }
 
     func delete(id: UUID) {
-        let url = baseDirectory.appendingPathComponent("\(id.uuidString).json")
-        try? fileManager.removeItem(at: url)
+        files.remove(id: id)
     }
 
     /// Saves an editable copy of an encounter under a fresh name, and returns it.
