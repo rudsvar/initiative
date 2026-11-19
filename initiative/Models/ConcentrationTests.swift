@@ -22,6 +22,29 @@ final class ConcentrationTests: XCTestCase {
         XCTAssertFalse(session.combatants[0].isConcentrating)
     }
 
+    /// Dropping to 0 ends concentration however it happens, not only by damage.
+    func testSettingHPToZeroEndsIt() {
+        let (session, id) = session()
+        session.toggleConcentration(for: id)
+        session.setCurrentHP(for: id, to: 0)
+        XCTAssertFalse(session.combatants[0].isConcentrating)
+        XCTAssertTrue(session.log.contains { $0.text == "Marchetta lost concentration" })
+    }
+
+    func testLoweringMaxHPToZeroEndsIt() {
+        let (session, id) = session()
+        session.toggleConcentration(for: id)
+        session.decreaseMaxHP(for: id, amount: 30)
+        XCTAssertFalse(session.combatants[0].isConcentrating)
+    }
+
+    func testSettingHPAboveZeroKeepsIt() {
+        let (session, id) = session()
+        session.toggleConcentration(for: id)
+        session.setCurrentHP(for: id, to: 5)
+        XCTAssertTrue(session.combatants[0].isConcentrating)
+    }
+
     func testDamageRaisesACheck() {
         let (session, id) = session()
         session.toggleConcentration(for: id)

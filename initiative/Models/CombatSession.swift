@@ -334,8 +334,7 @@ class CombatSession {
     private func concentrationCheck(at index: Int, afterTaking amount: Int) -> TurnPrompt? {
         guard combatants[index].isConcentrating else { return nil }
         guard combatants[index].currentHP ?? 0 > 0 else {
-            combatants[index].isConcentrating = false
-            appendLog("\(combatants[index].name) lost concentration", combatantId: combatants[index].id)
+            loseConcentration(at: index)
             return nil
         }
         return TurnPrompt(
@@ -348,6 +347,13 @@ class CombatSession {
             hint: "Took \(amount) damage, DC \(Self.concentrationDC(damage: amount))",
             deathSaves: nil
         )
+    }
+
+    /// Ends concentration, if any. Dropping to 0 HP does this however it happens.
+    private func loseConcentration(at index: Int) {
+        guard combatants[index].isConcentrating else { return }
+        combatants[index].isConcentrating = false
+        appendLog("\(combatants[index].name) lost concentration", combatantId: combatants[index].id)
     }
 
     /// Concentration is a bare flag rather than an `Effect` — no name, no
@@ -451,6 +457,7 @@ class CombatSession {
             combatantId: id,
             hpOperation: .setCurrentHP(value: newValue)
         )
+        if newValue == 0 { loseConcentration(at: index) }
         startDyingOrDieIfNeeded(at: index)
         clearDeathSavesIfAboveZero(at: index)
     }
@@ -532,6 +539,7 @@ class CombatSession {
             combatantId: id,
             hpOperation: .maxHPDecrease(amount: amount)
         )
+        if combatants[index].currentHP == 0 { loseConcentration(at: index) }
         // A max of 0 kills outright, with no death saves.
         if newMax == 0, combatants[index].isPlayer, combatants[index].deathSaves?.isDead != true {
             combatants[index].deathSaves = DeathSaves(successes: 0, failures: DeathSaves.required)
@@ -902,10 +910,7 @@ class CombatSession {
             combatants[index].markedDead = true
         }
         appendLog("\(combatants[index].name) was killed", combatantId: id, hpOperation: tracked ? .kill : nil)
-        if combatants[index].isConcentrating {
-            combatants[index].isConcentrating = false
-            appendLog("\(combatants[index].name) lost concentration", combatantId: id)
-        }
+        loseConcentration(at: index)
     }
 
     /// Brings a dead combatant back. A tracked HP at 0 comes back to 1. Undoable with Previous.
