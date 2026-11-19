@@ -46,4 +46,32 @@ final class InitiativeEditTests: XCTestCase {
         session.setInitiative(25, for: id(session, "Charlie"))
         XCTAssertEqual(session.log.last?.text, "Charlie's initiative changed to 25")
     }
+
+    // MARK: - Adding a combatant mid-fight
+
+    func testAddingACombatantMidFightKeepsTheTurn() {
+        let session = session()
+        session.nextTurn() // Bravo
+        session.addCombatant(name: "Scout", initiative: 18)
+        XCTAssertEqual(session.combatants.map(\.name), ["Alpha", "Scout", "Bravo", "Charlie"])
+        XCTAssertEqual(session.currentCombatant?.name, "Bravo")
+        session.nextTurn()
+        XCTAssertEqual(session.currentCombatant?.name, "Charlie")
+    }
+
+    func testAddingSeveralMidFightKeepsTheTurnInALaterRound() {
+        let session = session()
+        session.nextTurn(); session.nextTurn(); session.nextTurn() // Alpha, round 2
+        session.addCombatants(name: "Wolf", initiative: 25, maxHP: 11, count: 2)
+        XCTAssertEqual(session.currentCombatant?.name, "Alpha")
+        XCTAssertEqual(session.roundNumber, 2)
+    }
+
+    /// Before anyone has acted the roster is still being built (an encounter adds
+    /// its creatures one group at a time), so the top of the order goes first.
+    func testBeforeTheFightBeginsTheTopOfTheOrderGoesFirst() {
+        let session = session()
+        session.addCombatant(name: "Scout", initiative: 25)
+        XCTAssertEqual(session.currentCombatant?.name, "Scout")
+    }
 }

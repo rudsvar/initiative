@@ -90,6 +90,21 @@ class CombatSession {
             .map(\.element)
     }
 
+    /// Re-sorts the order while the turn in progress stays with whoever has it.
+    private func sortKeepingTheTurn() {
+        let current = currentCombatant?.id
+        sortByInitiative()
+        if let current, let newIndex = combatants.firstIndex(where: { $0.id == current }) {
+            currentTurnIndex = newIndex
+        }
+    }
+
+    /// Whether the turn has moved since the fight was set up. Until it has, the
+    /// roster is still being built and the top of the order goes first.
+    private var hasBegun: Bool {
+        roundNumber > 1 || currentTurnIndex > 0
+    }
+
     /// One combatant; see `addCombatants`.
     func addCombatant(name: String, initiative: Int? = nil, maxHP: Int? = nil, armorClass: Int? = nil, initiativeBonus: Int = 0, isPlayer: Bool = false) {
         addCombatants(name: name, initiative: initiative, maxHP: maxHP, armorClass: armorClass, count: 1, initiativeBonus: initiativeBonus, isPlayer: isPlayer)
@@ -109,7 +124,9 @@ class CombatSession {
             spawned.append(Combatant(name: displayName, initiative: resolvedInitiative, maxHP: maxHP, armorClass: armorClass, isPlayer: isPlayer))
         }
         combatants.append(contentsOf: spawned)
-        sortByInitiative()
+        // Mid-fight a late arrival waits for their place in the order; it does not
+        // take the turn from whoever has it.
+        if hasBegun { sortKeepingTheTurn() } else { sortByInitiative() }
         appendLog(count > 1 ? "\(count)x \(name) added to combat" : "\(name) added to combat (initiative \(spawned[0].initiative))")
         if let maxHP {
             // A separate, structured entry per copy, tied to that copy's own id, so
@@ -137,12 +154,8 @@ class CombatSession {
     func setInitiative(_ value: Int, for id: UUID) {
         guard let index = combatants.firstIndex(where: { $0.id == id }),
               combatants[index].initiative != value else { return }
-        let current = currentCombatant?.id
         combatants[index].initiative = value
-        sortByInitiative()
-        if let current, let newIndex = combatants.firstIndex(where: { $0.id == current }) {
-            currentTurnIndex = newIndex
-        }
+        sortKeepingTheTurn()
         appendLog("\(combatants.first { $0.id == id }!.name)'s initiative changed to \(value)", combatantId: id)
     }
 
