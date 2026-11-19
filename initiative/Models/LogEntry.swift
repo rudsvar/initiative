@@ -18,12 +18,12 @@ enum HPOperation: Codable, Equatable {
     case setCurrentHP(value: Int)
     case setMaxHP(value: Int)
     case setTemporaryHP(value: Int)
-    /// Grants temporary hit points, replacing whatever was there. Replayable like
+    /// Grants temporary hit points, keeping whichever is larger. Replayable like
     /// the rest — temporary HP has to be part of the log or deleting a damage
     /// entry would recompute current HP without the buffer that absorbed it.
     case grantTemporaryHP(amount: Int)
     /// A heal past max that goes above it: current HP fills to max and the rest
-    /// becomes temporary HP, replacing any there was.
+    /// becomes temporary HP, kept only if larger than any there was.
     case healAboveMax(amount: Int)
     /// Temporary HP taken off by hand, never real hit points. Added 2026-11-19;
     /// earlier builds logged it as `damage`, which `LogEntry` migrates on load.

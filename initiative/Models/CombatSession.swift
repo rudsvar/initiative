@@ -502,8 +502,9 @@ class CombatSession {
         Swift.max(0, current + amount - max)
     }
 
-    /// Heals a combatant. A heal past max either goes above max as temporary HP, which
-    /// replaces any earlier temporary HP, or caps at max. Within max, both are the same.
+    /// Heals a combatant. A heal past max either goes above max as temporary HP, or
+    /// caps at max. Within max, both are the same. The overflow is a grant of
+    /// temporary HP, so like any grant it keeps a larger buffer already there.
     func heal(_ id: UUID, amount: Int, goAboveMax: Bool) {
         guard amount > 0, let index = combatants.firstIndex(where: { $0.id == id }),
               let current = combatants[index].currentHP,
@@ -513,12 +514,16 @@ class CombatSession {
             applyHealing(to: id, amount: amount)
             return
         }
+        let existing = combatants[index].temporaryHP ?? 0
         combatants[index].currentHP = maxHP
-        combatants[index].temporaryHP = overflow
+        combatants[index].temporaryHP = Self.grantedTemporaryHP(existing: existing, new: overflow)
         noteHPChange(at: index, by: maxHP - current)
         clearDeathSavesIfAboveZero(at: index)
+        let gained = overflow > existing
+            ? "gained \(overflow) temporary HP"
+            : "kept \(existing) temporary HP instead of \(overflow)"
         appendLog(
-            "\(combatants[index].name) healed \(amount) HP and gained \(overflow) temporary HP (\(maxHP)/\(maxHP) HP)",
+            "\(combatants[index].name) healed \(amount) HP and \(gained) (\(maxHP)/\(maxHP) HP)",
             combatantId: id,
             hpOperation: .healAboveMax(amount: amount)
         )
@@ -668,7 +673,7 @@ class CombatSession {
                 guard let current = currentHP, let max = maxHP else { continue }
                 let overflow = Self.healOverflow(current: current, max: max, amount: amount)
                 currentHP = Swift.min(max, current + amount)
-                if overflow > 0 { temporaryHP = overflow }
+                if overflow > 0 { temporaryHP = Self.grantedTemporaryHP(existing: temporaryHP, new: overflow) }
             case .kill:
                 guard currentHP != nil else { continue }
                 currentHP = 0

@@ -28,6 +28,21 @@ final class HPReplayTests: XCTestCase {
         XCTAssertEqual(alpha(session).temporaryHP, 5)
     }
 
+    /// Temporary HP doesn't stack, so a heal above max keeps a larger buffer that
+    /// is already there, as a grant does, and the replay agrees.
+    func testHealAboveMaxKeepsALargerBuffer() {
+        let (session, id) = session()
+        session.applyDamage(to: id, amount: 2)
+        let damage = session.log.last!.id
+        session.grantTemporaryHP(to: id, amount: 6)
+        session.heal(id, amount: 4, goAboveMax: true) // 2 over max
+        XCTAssertEqual(alpha(session).currentHP, 10)
+        XCTAssertEqual(alpha(session).temporaryHP, 6)
+        XCTAssertEqual(session.log.last?.text, "Alpha healed 4 HP and kept 6 temporary HP instead of 2 (10/10 HP)")
+        session.deleteLogEntry(damage) // now 4 over max, still less than 6
+        XCTAssertEqual(alpha(session).temporaryHP, 6)
+    }
+
     func testLoweredMaxHPSurvivesDeletingAnEarlierEntry() {
         let (session, id) = session()
         session.applyDamage(to: id, amount: 2)

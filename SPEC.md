@@ -232,8 +232,9 @@ combatant and the detail screen's Health card both use the same component)
   a + button. Current HP: − is damage, + is healing (healing past max asks
   whether to go above max as temporary HP or cap at max). Temp HP: + adds to
   it, − takes it off and never touches real hit points; it is logged as a
-  grant of the new total, or as damage the buffer absorbs in full, so the log
-  replays to the same result with no new operation. Max HP: lowered or raised
+  grant of the new total, or as temporary HP lost, so the log replays to the
+  same result. Healing above max keeps a larger temporary HP buffer already
+  there, as a grant does. Max HP: lowered or raised
   directly; raising also raises current HP (a buff or level-up). Temporary HP
   never stacks: a new grant keeps the larger (see below)
 - **On the roster, a buffed number is bold and coloured, with no amount.**
