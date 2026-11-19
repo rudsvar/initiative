@@ -33,6 +33,7 @@
 		30612A0282CDFEEA1E7F79E6 /* DeathSaves.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DF8601F37841A579037DFC0 /* DeathSaves.swift */; };
 		31BACFE55A361B826C6D4A62 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F15EDB5010AF863CF8F00C4 /* RootView.swift */; };
 		36E8165557984F3D2CF84536 /* CombatantDraftTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDC19AC30679B833217CF3E4 /* CombatantDraftTests.swift */; };
+		36FBD373320EF314D249733C /* TurnScenarioTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4D4B3C7865FE780D56831AC /* TurnScenarioTests.swift */; };
 		37B88944DD63CF0D5CB0E944 /* InitiativeEditTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 24F6CBEE0FE8D17BDFF1B2AA /* InitiativeEditTests.swift */; };
 		38EC9CD747BCA3BBC4C17041 /* StatFactsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7394C583A450A2B9EDAAA3A /* StatFactsTests.swift */; };
 		39A9BA2DDE7B0C7A9C00E552 /* ListSectionsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43F9C4DC2EAC8723C1CF43AF /* ListSectionsTests.swift */; };
@@ -231,6 +232,7 @@
 		A275158105AFFBD14B4E3F53 /* CombatantDraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CombatantDraft.swift; sourceTree = "<group>"; };
 		A2D4E292B2659AF52763DAC9 /* EncounterListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncounterListView.swift; sourceTree = "<group>"; };
 		A418113952E8ECEE42D913AA /* EncounterStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncounterStore.swift; sourceTree = "<group>"; };
+		A4D4B3C7865FE780D56831AC /* TurnScenarioTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TurnScenarioTests.swift; sourceTree = "<group>"; };
 		A7394C583A450A2B9EDAAA3A /* StatFactsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatFactsTests.swift; sourceTree = "<group>"; };
 		A8AFA587384E0B7C1B9EE8AC /* LabelColumn.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LabelColumn.swift; sourceTree = "<group>"; };
 		A95FD900EC8AC57340E60983 /* InvisibilityTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InvisibilityTests.swift; sourceTree = "<group>"; };
@@ -286,6 +288,7 @@
 				E385BF84D5CF11F834092397 /* TestCharacters.swift */,
 				1F0B889BD6EAB7BB37340858 /* TestCharactersTests.swift */,
 				F2AB7AA7A046758596462089 /* TestCombats.swift */,
+				A4D4B3C7865FE780D56831AC /* TurnScenarioTests.swift */,
 			);
 			path = Debug;
 			sourceTree = "<group>";
@@ -748,6 +751,7 @@
 				13CAD1BE39F1418784A5E30D /* ThemePaletteTests.swift in Sources */,
 				86364D15EF4A0D15D4A247B8 /* TurnMarkerTests.swift in Sources */,
 				A846E1C8F6638A7F4F7591BA /* TurnPromptTests.swift in Sources */,
+				36FBD373320EF314D249733C /* TurnScenarioTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

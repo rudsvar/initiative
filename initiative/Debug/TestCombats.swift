@@ -152,6 +152,46 @@ enum TestCombats {
         return session
     }
 
+    /// Beta's turn, in round 1. A late arrival added now with initiative 18 takes
+    /// their place between Alpha and Beta, and the turn stays with Beta.
+    static func lateArrivalWaitsForTheirPlace() -> CombatSession {
+        let session = CombatSession()
+        session.addCombatant(name: "Alpha", initiative: 20, maxHP: 7)
+        session.addCombatant(name: "Beta", initiative: 15, maxHP: 7)
+        session.addCombatant(name: "Gamma", initiative: 10, maxHP: 7)
+        session.nextTurn()
+        return session
+    }
+
+    /// Wren is dying with two failed saves, and Omega is burning. Next asks Wren's
+    /// death save; a failure kills Wren, who keeps the turn. The Next after that
+    /// asks Omega's Burning damage.
+    static func lastFailedSaveKeepsTheTurn() -> CombatSession {
+        let session = CombatSession()
+        session.addCombatant(name: "Alpha", initiative: 20, maxHP: 10)
+        session.addCombatant(name: "Wren", initiative: 15, maxHP: 10, isPlayer: true)
+        session.addCombatant(name: "Omega", initiative: 10, maxHP: 10)
+        let wren = session.combatants.first { $0.name == "Wren" }!.id
+        _ = session.applyDamage(to: wren, amount: 10)
+        _ = session.applyDamage(to: wren, amount: 1)
+        _ = session.applyDamage(to: wren, amount: 1)
+        let omega = session.combatants.first { $0.name == "Omega" }!.id
+        session.addEffect(Effect(name: "Burning", durationType: .untilRemoved), to: omega)
+        return session
+    }
+
+    /// Alpha took the Dodge action on their own turn: Dodging lasts until the end
+    /// of their next turn. Two Nexts bring Alpha's next turn round with Dodging
+    /// still on; the Next after that ends it.
+    static func dodgeLastsThroughTheirNextTurn() -> CombatSession {
+        let session = CombatSession()
+        session.addCombatant(name: "Alpha", initiative: 20, maxHP: 10)
+        session.addCombatant(name: "Beta", initiative: 10, maxHP: 10)
+        let alpha = session.combatants[0].id
+        session.addEffect(Effect(name: "Dodging", durationType: .untilEndOfTheirTurn(remainingTurns: 1)), to: alpha)
+        return session
+    }
+
     /// A character with an armor class and no buffers, for armor class tests.
     static func wrenWithArmorClass() -> CombatSession {
         let session = CombatSession()
@@ -177,6 +217,9 @@ extension TestCombats {
         "burningAtStartOfTurn": burningAtStartOfTurn,
         "killAndReviveAreUndoable": killAndReviveAreUndoable,
         "startOfTurnPromptMovesTheMarker": startOfTurnPromptMovesTheMarker,
+        "lateArrivalWaitsForTheirPlace": lateArrivalWaitsForTheirPlace,
+        "lastFailedSaveKeepsTheTurn": lastFailedSaveKeepsTheTurn,
+        "dodgeLastsThroughTheirNextTurn": dodgeLastsThroughTheirNextTurn,
     ]
 }
 #endif

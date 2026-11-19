@@ -8,7 +8,7 @@ import XCTest
 final class DyingScenarioTests: XCTestCase {
 
     func testDyingScenariosStartAtZeroHP() {
-        for name in ["dyingCharacterKeepsItsTurns", "dyingWithTally", "startOfTurnPromptMovesTheMarker"] {
+        for name in ["dyingCharacterKeepsItsTurns", "dyingWithTally", "startOfTurnPromptMovesTheMarker", "lastFailedSaveKeepsTheTurn"] {
             let session = TestCombats.scenarios[name]!()
             let dying = session.combatants.filter { $0.deathSaves != nil }
             XCTAssertFalse(dying.isEmpty, "\(name) has no dying combatant")

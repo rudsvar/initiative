@@ -4,6 +4,23 @@ All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
 
+### Fixed — combat rules found by playing out fights
+
+- Adding a combatant mid-fight no longer takes the turn from whoever has it. Before the first turn has moved, the top of the order still goes first.
+- Removing the current combatant when they are last in the order passes the turn to the top of a new round, not back to someone who already acted.
+- When a character dies on their own death save they keep that turn, so the next combatant's start-of-turn prompts (a save, Burning damage) are asked on the next Next instead of being skipped.
+- Raising max HP on a dying character ends dying, as healing does.
+- Deleting a log entry that leaves a character at 0 HP (the heal that brought them up, the Kill of a dying character) leaves them dying with a fresh tally, not dead.
+- Taking temporary HP off by hand has its own log operation, so deleting the grant before it no longer turns it into real damage. Earlier saves are migrated by their log text. An older build cannot read a session that holds the new operation.
+- Setting HP to 0 by hand, or lowering max HP to 0, ends concentration.
+- "Until the end of their next turn" put on during the combatant's own turn lasts through their next turn; the turn it went on in doesn't count.
+- A dead combatant is not asked its turn prompts.
+- Healing above max keeps a larger temporary HP buffer, as any grant does.
+- Reviving after max HP was lowered to 0 brings max HP back to 1.
+- Damage to the dead logs no second death, and a killed character hit again no longer starts dying.
+- Each turn prompt has its own id.
+- Test scenarios: `lateArrivalWaitsForTheirPlace`, `lastFailedSaveKeepsTheTurn`, `dodgeLastsThroughTheirNextTurn`.
+
 ### Changed — armor class laid out like the health rows
 
 - The Armor Class card now has the same rows as Health: tap the value to type it, Lower/Raise buttons with an amount box, and a Temp AC row (tap to type, 0 clears, Grant temp adds).
