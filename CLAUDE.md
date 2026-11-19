@@ -94,6 +94,10 @@ test suite on every push and pull request. The check needs the repo secret
 `BANNED_TERMS` set to the contents of `scripts/banned-terms.local`. Without that
 secret the workflow fails on purpose.
 
+CI builds on GitHub's `xcode-27` runner image with Xcode pinned through
+`DEVELOPER_DIR` in both workflows. The store rejects uploads built with an
+SDK older than iOS 27, so keep that pin on the newest Xcode the image offers.
+
 ## Project overview
 
 **initiative** is a personal iOS app built with SwiftUI, targeting iOS 17+. It's a single-window app with automatic code signing enabled. The home-screen name is **"Instant Initiative"** (`INFOPLIST_KEY_CFBundleDisplayName` in `project.yml`) — the repo, Xcode project, module, scheme, and bundle id all stay `initiative`; only the user-facing name changed.
