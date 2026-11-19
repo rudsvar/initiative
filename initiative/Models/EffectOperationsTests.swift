@@ -77,3 +77,62 @@ final class EffectOperationsTests: XCTestCase {
         XCTAssertEqual(session.combatants[0].visibleEffects[0].durationType, .untilRemoved)
     }
 }
+
+/// "Until the end of their next turn" means the next turn they start: when the
+/// effect goes on during its owner's own turn, the end of that turn doesn't count.
+final class OwnTurnCountdownTests: XCTestCase {
+
+    private func session() -> CombatSession {
+        let session = CombatSession()
+        session.addCombatant(name: "Alpha", initiative: 20)
+        session.addCombatant(name: "Beta", initiative: 10)
+        return session
+    }
+
+    private func has(_ session: CombatSession, _ name: String, _ effect: Effect) -> Bool {
+        session.combatants.first { $0.name == name }!.effects.contains { $0.id == effect.id }
+    }
+
+    func testAppliedOnOwnTurnLastsThroughTheirNextTurn() {
+        let session = session()
+        let dodge = Effect(name: "Dodging", durationType: .untilEndOfTheirTurn(remainingTurns: 1))
+        session.addEffect(dodge, to: session.combatants[0].id) // Alpha's own turn
+        session.nextTurn() // Alpha's turn ends: it doesn't count
+        XCTAssertTrue(has(session, "Alpha", dodge))
+        session.nextTurn() // Alpha's next turn starts
+        XCTAssertTrue(has(session, "Alpha", dodge))
+        session.nextTurn() // and ends
+        XCTAssertFalse(has(session, "Alpha", dodge))
+    }
+
+    func testAppliedOnSomeoneElsesTurnEndsAtTheEndOfTheirNextTurn() {
+        let session = session()
+        let blind = Effect(name: "Blinded", durationType: .untilEndOfTheirTurn(remainingTurns: 1))
+        session.addEffect(blind, to: session.combatants[1].id) // on Alpha's turn
+        session.nextTurn() // Beta's turn starts
+        XCTAssertTrue(has(session, "Beta", blind))
+        session.nextTurn() // and ends
+        XCTAssertFalse(has(session, "Beta", blind))
+    }
+
+    /// Several turns count the same way: the turn in progress is not one of them.
+    func testCountsOnlyTurnsAfterTheOneInProgress() {
+        let session = session()
+        let haste = Effect(name: "Hasted", durationType: .untilEndOfTheirTurn(remainingTurns: 2))
+        session.addEffect(haste, to: session.combatants[0].id)
+        for _ in 0..<4 { session.nextTurn() } // ends Alpha's own, next and Beta's twice
+        XCTAssertTrue(has(session, "Alpha", haste))
+        session.nextTurn() // end of Alpha's second turn after this one
+        XCTAssertFalse(has(session, "Alpha", haste))
+    }
+
+    func testTheMarkRoundTrips() throws {
+        let session = session()
+        session.addEffect(Effect(name: "Dodging", durationType: .untilEndOfTheirTurn(remainingTurns: 1)), to: session.combatants[0].id)
+        let data = try JSONEncoder().encode(session.makeRecord())
+        let loaded = CombatSession()
+        loaded.load(try JSONDecoder().decode(SessionRecord.self, from: data))
+        loaded.nextTurn()
+        XCTAssertEqual(loaded.combatants[0].effects.count, 1)
+    }
+}

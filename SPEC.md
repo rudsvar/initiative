@@ -192,7 +192,9 @@ An effect is always self-applied by the DM to the combatant it's on — there's 
 instead). Duration is start/end of the owner's own turn, repeated across however
 many of their turns you specify:
 1. "Until start of their turn" — expires the Nth time this combatant's turn begins
-2. "Until end of their turn" — expires the Nth time this combatant's turn ends
+2. "Until end of their turn" — expires the Nth time this combatant's turn ends.
+   Put on during the combatant's own turn, the end of that turn doesn't count:
+   "until the end of their next turn" lasts through their next turn.
 
 (Where "start" = turn begins, "end" = turn advances to next combatant; N = the turn
 count set when adding the effect, default 1)

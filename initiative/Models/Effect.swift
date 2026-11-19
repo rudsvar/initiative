@@ -27,6 +27,11 @@ struct Effect: Identifiable, Codable {
     var isReactionMarker: Bool?
     /// The death-save tally, present only on the Dying effect. See `Combatant.deathSaves`.
     var deathSaves: DeathSaves?
+    /// Set when an end-of-turn countdown goes on during its owner's own turn, so
+    /// the end of that turn doesn't count: "their next turn" is the next one they
+    /// start. Cleared when that turn ends. Nil on effects saved before 2026-11-19,
+    /// which keep counting as they did.
+    var appliedOnOwnTurn: Bool?
 
     init(
         id: UUID = UUID(),
@@ -45,7 +50,7 @@ struct Effect: Identifiable, Codable {
     }
 
     private enum CodingKeys: String, CodingKey {
-        case id, name, durationType, kind, isReactionMarker, deathSaves
+        case id, name, durationType, kind, isReactionMarker, deathSaves, appliedOnOwnTurn
     }
 
     /// Hand-written for the same reason as `Combatant`'s: a synthesized decoder
@@ -59,6 +64,7 @@ struct Effect: Identifiable, Codable {
         kind = try container.decodeIfPresent(EffectKind.self, forKey: .kind) ?? .condition
         isReactionMarker = try container.decodeIfPresent(Bool.self, forKey: .isReactionMarker)
         deathSaves = try container.decodeIfPresent(DeathSaves.self, forKey: .deathSaves)
+        appliedOnOwnTurn = try container.decodeIfPresent(Bool.self, forKey: .appliedOnOwnTurn)
     }
 }
 

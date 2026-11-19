@@ -387,3 +387,20 @@ extension CodableCompatibilityTests {
         XCTAssertNil(session.combatants[0].temporaryHP)
     }
 }
+
+// MARK: - Effects applied on the owner's own turn
+
+extension CodableCompatibilityTests {
+
+    /// An effect as builds before 2026-11-19 write it. It has no record of being
+    /// applied on its owner's turn, so it keeps counting down as it did.
+    func testEffectSavedBeforeOwnTurnTrackingKeepsItsCountdown() throws {
+        let json = """
+        {"id":"99999999-0000-0000-0000-000000000020","name":"Blinded",
+         "durationType":{"kind":"untilEndOfTheirTurn","remainingTurns":1},"kind":"condition"}
+        """
+        let effect = try decode(Effect.self, json)
+        XCTAssertNil(effect.appliedOnOwnTurn)
+        XCTAssertEqual(effect.durationType, .untilEndOfTheirTurn(remainingTurns: 1))
+    }
+}

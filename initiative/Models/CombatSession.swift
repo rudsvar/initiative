@@ -705,6 +705,10 @@ class CombatSession {
 
     func addEffect(_ effect: Effect, to combatantID: UUID) {
         guard let index = combatants.firstIndex(where: { $0.id == combatantID }) else { return }
+        var effect = effect
+        if case .untilEndOfTheirTurn = effect.durationType, combatantID == currentCombatant?.id {
+            effect.appliedOnOwnTurn = true
+        }
         combatants[index].effects.append(effect)
         appendLog("\(combatants[index].name): \(effect.name)", combatantId: combatantID)
     }
@@ -1235,6 +1239,12 @@ class CombatSession {
                 switch effect.durationType {
                 case .untilEndOfTheirTurn(let remaining):
                     guard ownerId == turnEndingCombatantId else { return effect }
+                    // The turn it went on in doesn't count; see `Effect.appliedOnOwnTurn`.
+                    if effect.appliedOnOwnTurn == true {
+                        var updated = effect
+                        updated.appliedOnOwnTurn = nil
+                        return updated
+                    }
                     return Self.tick(effect, remaining: remaining, makeDuration: DurationType.untilEndOfTheirTurn)
                 case .untilStartOfTheirTurn(let remaining):
                     guard ownerId == turnStartingCombatantId else { return effect }
