@@ -946,10 +946,17 @@ class CombatSession {
         let (nextIndex, wrapsRound) = nextActiveIndex(after: currentTurnIndex)
         let starting = combatants[nextIndex]
 
-        var prompts = rollPrompts(for: ending, at: .endOfTurn)
-        prompts += actionPrompts(for: ending)
-        prompts += rollPrompts(for: starting, at: .startOfTurn)
-        prompts += damagePrompts(for: starting)
+        // The dead roll nothing: a combatant killed on its own turn is not asked
+        // its end-of-turn prompts (the starting one is dead only when everyone is).
+        var prompts: [TurnPrompt] = []
+        if !ending.isDead {
+            prompts += rollPrompts(for: ending, at: .endOfTurn)
+            prompts += actionPrompts(for: ending)
+        }
+        if !starting.isDead {
+            prompts += rollPrompts(for: starting, at: .startOfTurn)
+            prompts += damagePrompts(for: starting)
+        }
 
         // Round-anchored rolls come due when the round turns over, not on
         // anyone's turn — so they ride on the advance that wraps.

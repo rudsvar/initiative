@@ -162,4 +162,17 @@ final class TurnPromptTests: XCTestCase {
         XCTAssertEqual(CombatSession.rechargeTitle(for: "Recharging"), "Roll: Recharging")
         XCTAssertEqual(CombatSession.rechargeTitle(for: "Breath Weapon"), "Roll to recharge Breath Weapon")
     }
+
+    /// The dead roll nothing: a creature killed on its own turn is not asked its
+    /// end-of-turn save, or whether it attacked while invisible.
+    func testADeadCombatantIsNotAskedItsPrompts() {
+        let session = CombatSession()
+        session.addCombatant(name: "Alpha", initiative: 20, maxHP: 10)
+        session.addCombatant(name: "Beta", initiative: 15, maxHP: 10)
+        let alpha = session.combatants[0].id
+        session.addEffect(Effect(name: "Frightened", durationType: .untilRollSucceeds(at: .endOfTurn, hint: nil)), to: alpha)
+        session.addEffect(Effect(name: "Invisible", durationType: .untilRemoved), to: alpha)
+        session.kill(alpha)
+        XCTAssertTrue(session.pendingTurnPrompts().isEmpty)
+    }
 }
