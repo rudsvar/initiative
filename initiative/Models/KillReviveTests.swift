@@ -70,4 +70,24 @@ final class KillReviveTests: XCTestCase {
         session.kill(alpha)
         XCTAssertFalse(session.combatants[index(session, "Alpha")].isConcentrating)
     }
+
+    /// Max HP lowered to 0 kills. Revive brings max back to 1 along with current,
+    /// never 1/0 HP, and a replay after a deleted entry agrees.
+    func testReviveAfterMaxHPLoweredToZero() {
+        let session = session()
+        let alpha = session.combatants[index(session, "Alpha")].id
+        session.applyDamage(to: alpha, amount: 2)
+        let damage = session.log.last!.id
+        session.decreaseMaxHP(for: alpha, amount: 7)
+        session.revive(alpha)
+        var revived = session.combatants[index(session, "Alpha")]
+        XCTAssertEqual(revived.currentHP, 1)
+        XCTAssertEqual(revived.maxHP, 1)
+        XCTAssertFalse(revived.isDead)
+
+        session.deleteLogEntry(damage)
+        revived = session.combatants[index(session, "Alpha")]
+        XCTAssertEqual(revived.currentHP, 1)
+        XCTAssertEqual(revived.maxHP, 1)
+    }
 }

@@ -679,6 +679,7 @@ class CombatSession {
                 currentHP = 0
             case .revive:
                 guard let current = currentHP else { continue }
+                maxHP = Swift.max(1, maxHP ?? 1)
                 currentHP = Swift.max(1, current)
             case nil:
                 continue
@@ -922,12 +923,14 @@ class CombatSession {
         loseConcentration(at: index)
     }
 
-    /// Brings a dead combatant back. A tracked HP at 0 comes back to 1. Undoable with Previous.
+    /// Brings a dead combatant back. A tracked HP at 0 comes back to 1, and a max
+    /// HP lowered to 0 comes back to 1 with it. Undoable with Previous.
     func revive(_ id: UUID) {
         guard let index = combatants.firstIndex(where: { $0.id == id }), combatants[index].isDead else { return }
         recordUndoPoint()
         let tracked = combatants[index].currentHP != nil
         if tracked {
+            combatants[index].maxHP = max(1, combatants[index].maxHP ?? 1)
             combatants[index].currentHP = max(1, combatants[index].currentHP ?? 1)
             combatants[index].deathSaves = nil
         }
