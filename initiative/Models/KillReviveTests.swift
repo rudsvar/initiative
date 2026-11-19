@@ -90,4 +90,26 @@ final class KillReviveTests: XCTestCase {
         XCTAssertEqual(revived.currentHP, 1)
         XCTAssertEqual(revived.maxHP, 1)
     }
+
+    /// Death is logged once, on the hit that drops them, not on every hit after.
+    func testHittingACorpseDoesNotLogItsDeathAgain() {
+        let session = session()
+        let alpha = session.combatants[index(session, "Alpha")].id
+        session.applyDamage(to: alpha, amount: 7)
+        session.applyDamage(to: alpha, amount: 3)
+        session.applyDamage(to: alpha, amount: 3)
+        XCTAssertEqual(session.log.filter { $0.text == "Alpha died" }.count, 1)
+    }
+
+    /// A killed character is dead, not dying: hitting them doesn't start death saves.
+    func testHittingAKilledCharacterDoesNotStartDying() {
+        let session = CombatSession()
+        session.addCombatant(name: "Wren", initiative: 15, maxHP: 10, isPlayer: true)
+        let wren = session.combatants[0].id
+        session.kill(wren)
+        session.applyDamage(to: wren, amount: 3)
+        XCTAssertTrue(session.combatants[0].isDead)
+        XCTAssertNil(session.combatants[0].deathSaves)
+        XCTAssertFalse(session.log.contains { $0.text.contains("is dying") || $0.text.contains("failed a death save") })
+    }
 }

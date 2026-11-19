@@ -179,6 +179,8 @@ class CombatSession {
     func applyDamage(to id: UUID, amount: Int) -> TurnPrompt? {
         guard amount > 0, let index = combatants.firstIndex(where: { $0.id == id }),
               let current = combatants[index].currentHP else { return nil }
+        // The dead stay dead: no new death logged, no death saves started.
+        let wasDead = combatants[index].isDead
 
         let before = combatants[index].temporaryHP ?? 0
         let result = Self.absorb(damage: amount, temporaryHP: combatants[index].temporaryHP, currentHP: current)
@@ -193,8 +195,10 @@ class CombatSession {
             combatantId: id,
             hpOperation: .damage(amount: amount)
         )
-        startDyingOrDieIfNeeded(at: index)
-        applyDeathConsequences(at: index, hpDamage: amount - absorbed, hpBefore: current)
+        if !wasDead {
+            startDyingOrDieIfNeeded(at: index)
+            applyDeathConsequences(at: index, hpDamage: amount - absorbed, hpBefore: current)
+        }
         return concentrationCheck(at: index, afterTaking: amount)
     }
 
