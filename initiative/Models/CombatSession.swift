@@ -617,7 +617,11 @@ class CombatSession {
         var currentHP: Int?
         var temporaryHP: Int?
         var maxHPIncreased = false
+        // Whether a Kill is what left them at 0. Kill is final; anything else that
+        // takes a character to 0 leaves them dying.
+        var killed = false
         for entry in log where entry.combatantId == combatantId {
+            if entry.hpOperation != nil { killed = entry.hpOperation == .kill }
             switch entry.hpOperation {
             case .enableTracking(let amount):
                 maxHP = amount
@@ -674,6 +678,12 @@ class CombatSession {
         // saves with it, or they'd be left rolling at full health.
         if let currentHP, currentHP > 0 {
             combatants[index].deathSaves = nil
+        }
+        // And deleting the heal that brought a character up leaves them dying
+        // again. The tally the heal cleared isn't in the log, so it starts fresh.
+        if currentHP == 0, let maxHP, maxHP > 0, !killed,
+           combatants[index].isPlayer, combatants[index].deathSaves == nil {
+            combatants[index].deathSaves = DeathSaves()
         }
     }
 

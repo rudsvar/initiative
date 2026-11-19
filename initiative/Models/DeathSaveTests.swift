@@ -142,6 +142,59 @@ final class DeathSaveTests: XCTestCase {
         XCTAssertNil(combatant(session, "Wren").deathSaves)
     }
 
+    /// The other way round: deleting the heal that brought a downed character up
+    /// leaves them at 0 HP, dying again, not dead with no death saves.
+    func testDeletingTheHealThatBroughtThemUpLeavesThemDying() {
+        let (session, wren) = session()
+        session.applyDamage(to: wren, amount: 10)
+        session.applyHealing(to: wren, amount: 4)
+        let heal = session.log.last { $0.hpOperation == .healing(amount: 4) }!
+
+        session.deleteLogEntry(heal.id)
+
+        XCTAssertEqual(combatant(session, "Wren").currentHP, 0)
+        XCTAssertTrue(combatant(session, "Wren").isDying)
+        XCTAssertFalse(combatant(session, "Wren").isDead)
+    }
+
+    func testDeletingTheKillOfADyingCharacterLeavesThemDying() {
+        let (session, wren) = session()
+        session.applyDamage(to: wren, amount: 10)
+        session.kill(wren)
+        let kill = session.log.last { $0.hpOperation == .kill }!
+
+        session.deleteLogEntry(kill.id)
+
+        XCTAssertTrue(combatant(session, "Wren").isDying)
+    }
+
+    /// Kill is final: deleting some other entry doesn't bring the character back
+    /// to rolling death saves.
+    func testAKilledCharacterStaysDeadWhenAnotherEntryIsDeleted() {
+        let (session, wren) = session()
+        session.applyDamage(to: wren, amount: 3)
+        let damage = session.log.last { $0.hpOperation != nil }!
+        session.kill(wren)
+
+        session.deleteLogEntry(damage.id)
+
+        XCTAssertTrue(combatant(session, "Wren").isDead)
+        XCTAssertNil(combatant(session, "Wren").deathSaves)
+    }
+
+    func testACreatureBroughtBackToZeroIsDeadNotDying() {
+        let (session, _) = session()
+        let goblin = combatant(session, "Goblin").id
+        session.applyDamage(to: goblin, amount: 7)
+        session.applyHealing(to: goblin, amount: 2)
+        let heal = session.log.last { $0.hpOperation == .healing(amount: 2) }!
+
+        session.deleteLogEntry(heal.id)
+
+        XCTAssertTrue(combatant(session, "Goblin").isDead)
+        XCTAssertNil(combatant(session, "Goblin").deathSaves)
+    }
+
     /// Raising max HP raises current HP with it, so it ends dying as healing does.
     func testRaisingMaxHPAboveZeroEndsIt() {
         let (session, wren) = session()
