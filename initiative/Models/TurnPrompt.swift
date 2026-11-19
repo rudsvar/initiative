@@ -38,7 +38,15 @@ struct TurnPrompt: Identifiable, Hashable {
         case endsOnAction(effectID: UUID)
     }
 
-    let id: UUID
+    /// Who the prompt is for and what it asks. Unique among the prompts asked at
+    /// once, even when one effect raises two (a save and Burning damage).
+    struct ID: Hashable {
+        let combatantID: UUID?
+        let subject: Subject
+    }
+
+    var id: ID { ID(combatantID: combatantID, subject: subject) }
+
     /// The owning combatant, or nil for a round-anchored prompt — the round
     /// belongs to no one, which is the whole point of it.
     let combatantID: UUID?

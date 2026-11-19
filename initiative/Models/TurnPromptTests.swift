@@ -175,4 +175,17 @@ final class TurnPromptTests: XCTestCase {
         session.kill(alpha)
         XCTAssertTrue(session.pendingTurnPrompts().isEmpty)
     }
+
+    /// One effect can raise two prompts (a save and Burning damage, a save and
+    /// the Invisible question). Each prompt still has its own id.
+    func testPromptIdsAreUnique() {
+        let session = CombatSession()
+        session.addCombatant(name: "Alpha", initiative: 20, maxHP: 10)
+        session.addCombatant(name: "Beta", initiative: 10, maxHP: 10)
+        session.addEffect(Effect(name: "Invisible", durationType: .untilRollSucceeds(at: .endOfTurn, hint: nil)), to: session.combatants[0].id)
+        session.addEffect(Effect(name: "Burning", durationType: .untilRollSucceeds(at: .startOfTurn, hint: nil)), to: session.combatants[1].id)
+        let ids = session.pendingTurnPrompts().map(\.id)
+        XCTAssertEqual(ids.count, 4)
+        XCTAssertEqual(Set(ids).count, ids.count)
+    }
 }

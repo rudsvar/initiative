@@ -291,7 +291,7 @@ final class DeathSaveTests: XCTestCase {
         session.combatants[0].currentHP = 0
         session.combatants[0].deathSaves = DeathSaves()
         let prompt = session.pendingTurnPrompts().first ?? TurnPrompt(
-            id: wren, combatantID: wren, combatantName: "Wren", subject: .deathSave,
+            combatantID: wren, combatantName: "Wren", subject: .deathSave,
             title: "Death save", hint: nil, deathSaves: DeathSaves()
         )
         session.resolvePrompt(prompt, outcome: .criticalSuccess)
@@ -306,7 +306,7 @@ final class DeathSaveTests: XCTestCase {
         let wren = session.combatants[0].id
         session.combatants[0].deathSaves = DeathSaves()
         let prompt = TurnPrompt(
-            id: wren, combatantID: wren, combatantName: "Wren", subject: .deathSave,
+            combatantID: wren, combatantName: "Wren", subject: .deathSave,
             title: "Death save", hint: nil, deathSaves: DeathSaves()
         )
         session.resolvePrompt(prompt, outcome: .criticalFailure)

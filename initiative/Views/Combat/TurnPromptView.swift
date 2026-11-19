@@ -141,12 +141,12 @@ struct TurnPromptView: View {
         TurnPromptView(
             prompts: [
                 TurnPrompt(
-                    id: UUID(), combatantID: UUID(), combatantName: "Bog Hulk",
+                    combatantID: UUID(), combatantName: "Bog Hulk",
                     subject: .effect(id: UUID()), title: "Roll to recharge Breath Weapon",
                     hint: "5–6 on a d6", deathSaves: nil
                 ),
                 TurnPrompt(
-                    id: UUID(), combatantID: UUID(), combatantName: "Wren",
+                    combatantID: UUID(), combatantName: "Wren",
                     subject: .deathSave, title: "Death save",
                     hint: nil, deathSaves: DeathSaves(successes: 1, failures: 1)
                 ),

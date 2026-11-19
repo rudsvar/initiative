@@ -76,7 +76,7 @@ final class HPReplayTests: XCTestCase {
     func testNaturalTwentySurvivesDeletingALaterEntry() {
         let (session, id) = session(isPlayer: true)
         session.applyDamage(to: id, amount: 10)
-        let save = TurnPrompt(id: id, combatantID: id, combatantName: "Alpha", subject: .deathSave, title: "Death save", hint: nil, deathSaves: alpha(session).deathSaves)
+        let save = TurnPrompt(combatantID: id, combatantName: "Alpha", subject: .deathSave, title: "Death save", hint: nil, deathSaves: alpha(session).deathSaves)
         session.resolvePrompt(save, outcome: .criticalSuccess)
         session.grantTemporaryHP(to: id, amount: 3)
         deleteLastDeletable(session)

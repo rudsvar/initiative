@@ -342,7 +342,6 @@ class CombatSession {
             return nil
         }
         return TurnPrompt(
-            id: UUID(),
             combatantID: combatants[index].id,
             combatantName: combatants[index].name,
             subject: .concentration,
@@ -977,7 +976,6 @@ class CombatSession {
                 guard effect.durationType.awaitsRoll else { return nil }
                 guard case .untilRollSucceeds(_, let hint) = effect.durationType else { return nil }
                 return TurnPrompt(
-                    id: effect.id,
                     combatantID: nil,
                     combatantName: "The round",
                     subject: .roundEffect(id: effect.id),
@@ -990,7 +988,6 @@ class CombatSession {
         if let saves = starting.deathSaves, !saves.isResolved {
             prompts.append(
                 TurnPrompt(
-                    id: starting.id,
                     combatantID: starting.id,
                     combatantName: starting.name,
                     subject: .deathSave,
@@ -1024,7 +1021,6 @@ class CombatSession {
             guard let action = Self.endsOnAction.first(where: { $0.key.localizedCaseInsensitiveCompare(effect.name) == .orderedSame })?.value
             else { return nil }
             return TurnPrompt(
-                id: effect.id,
                 combatantID: combatant.id,
                 combatantName: combatant.name,
                 subject: .endsOnAction(effectID: effect.id),
@@ -1041,7 +1037,6 @@ class CombatSession {
             guard let hint = Self.startOfTurnDamage.first(where: { $0.key.localizedCaseInsensitiveCompare(effect.name) == .orderedSame })?.value,
                   combatant.currentHP != nil else { return nil }
             return TurnPrompt(
-                id: effect.id,
                 combatantID: combatant.id,
                 combatantName: combatant.name,
                 subject: .damage(effectID: effect.id),
@@ -1057,7 +1052,6 @@ class CombatSession {
             guard case .untilRollSucceeds(let effectBoundary, let hint) = effect.durationType,
                   effectBoundary == boundary else { return nil }
             return TurnPrompt(
-                id: effect.id,
                 combatantID: combatant.id,
                 combatantName: combatant.name,
                 subject: .effect(id: effect.id),
