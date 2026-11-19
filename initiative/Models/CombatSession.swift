@@ -846,6 +846,14 @@ class CombatSession {
         }
     }
 
+    /// The round turns over: round effects count down and limited uses refill.
+    private func beginNewRound() {
+        roundNumber += 1
+        appendLog("Round \(roundNumber) began")
+        tickRoundEffects()
+        resetLimitedUses()
+    }
+
     /// Saves the current state so Previous can rewind to it: before each advance,
     /// and before actions that change the fight without advancing the turn.
     private func recordUndoPoint() {
@@ -857,10 +865,16 @@ class CombatSession {
         recordUndoPoint()
         let name = combatants[index].name
         combatants.remove(at: index)
-        if index < currentTurnIndex || (index == currentTurnIndex && currentTurnIndex == combatants.count) {
-            currentTurnIndex = max(0, currentTurnIndex - 1)
-        }
         appendLog("\(name) removed from combat")
+        if index < currentTurnIndex {
+            currentTurnIndex -= 1
+        } else if index == currentTurnIndex, index == combatants.count {
+            // The last in the order had the turn: it passes to the top of the
+            // order in a new round, not back to someone who has already acted.
+            guard !combatants.isEmpty else { currentTurnIndex = 0; return }
+            currentTurnIndex = nextActiveIndex(after: combatants.count - 1).index
+            beginNewRound()
+        }
     }
 
     /// Kills a combatant: a tracked HP goes to 0 and death saves end; a combatant with
@@ -1128,12 +1142,7 @@ class CombatSession {
         let endingCombatantId = combatants[currentTurnIndex].id
         let (nextIndex, wrapped) = nextActiveIndex(after: currentTurnIndex)
         currentTurnIndex = nextIndex
-        if wrapped {
-            roundNumber += 1
-            appendLog("Round \(roundNumber) began")
-            tickRoundEffects()
-            resetLimitedUses()
-        }
+        if wrapped { beginNewRound() }
         let startingCombatantId = combatants[currentTurnIndex].id
         combatants[currentTurnIndex].recentHPChange = nil
         combatants[currentTurnIndex].recentMaxHPChange = nil

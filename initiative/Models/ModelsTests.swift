@@ -353,6 +353,30 @@ final class CombatSessionTests: XCTestCase {
         XCTAssertEqual(session.currentCombatant?.id, p2Id)
     }
 
+    /// The last in the order had the turn: it passes to the top of the order in a
+    /// new round, not back to someone who has already acted.
+    func testRemovingTheCurrentLastCombatantStartsTheNextRound() {
+        session.addCombatant(name: "P1", initiative: 20)
+        session.addCombatant(name: "P2", initiative: 10)
+        session.addCombatant(name: "P3", initiative: 5)
+        session.addRoundEffect(Effect(name: "Fog", durationType: .forRounds(remaining: 1)))
+        session.nextTurn(); session.nextTurn() // P3, round 1
+        session.removeCombatant(id: session.combatants[2].id)
+        XCTAssertEqual(session.currentCombatant?.name, "P1")
+        XCTAssertEqual(session.roundNumber, 2)
+        XCTAssertTrue(session.roundEffects.isEmpty, "the new round ticks round effects as Next does")
+        session.previousTurn()
+        XCTAssertEqual(session.currentCombatant?.name, "P3")
+        XCTAssertEqual(session.roundNumber, 1)
+    }
+
+    func testRemovingTheOnlyCombatantLeavesAnEmptyFight() {
+        session.addCombatant(name: "P1", initiative: 20)
+        session.removeCombatant(id: session.combatants[0].id)
+        XCTAssertNil(session.currentCombatant)
+        XCTAssertEqual(session.roundNumber, 1)
+    }
+
     /// Removing a combatant is undoable with Previous, like the other fight actions.
     func testRemoveCombatantIsUndoable() {
         session.addCombatant(name: "P1", initiative: 20)
