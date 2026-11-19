@@ -142,6 +142,17 @@ final class DeathSaveTests: XCTestCase {
         XCTAssertNil(combatant(session, "Wren").deathSaves)
     }
 
+    /// Raising max HP raises current HP with it, so it ends dying as healing does.
+    func testRaisingMaxHPAboveZeroEndsIt() {
+        let (session, wren) = session()
+        session.applyDamage(to: wren, amount: 10)
+        session.increaseMaxHP(for: wren, amount: 5)
+        XCTAssertEqual(combatant(session, "Wren").currentHP, 5)
+        XCTAssertNil(combatant(session, "Wren").deathSaves)
+        XCTAssertFalse(combatant(session, "Wren").isDying)
+        XCTAssertTrue(session.pendingTurnPrompts().allSatisfy { $0.subject != .deathSave })
+    }
+
     // MARK: - Prompting
 
     func testADyingCombatantIsPromptedAtTheStartOfTheirTurn() {

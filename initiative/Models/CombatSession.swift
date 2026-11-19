@@ -435,6 +435,7 @@ class CombatSession {
             combatantId: id,
             hpOperation: .maxHPIncrease(amount: amount)
         )
+        clearDeathSavesIfAboveZero(at: index)
     }
 
     /// Sets current HP directly, clamped to 0...max. A correction, so temporary HP
