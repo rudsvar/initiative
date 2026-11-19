@@ -85,7 +85,10 @@ change against these rules:
   committed, and it needs the project owner's explicit approval first.
 
 The check in `scripts/public-check.sh` runs in two places. Each clone enables
-the pre-commit hook once with `git config core.hooksPath .githooks`. The GitHub
+the hooks once with `git config core.hooksPath .githooks`: `pre-commit` and
+`pre-push` run the whole check, and `commit-msg` checks each message before it
+enters history. History here means HEAD, local branches and tags, so a rewrite
+can be pushed over the old history it replaces. The GitHub
 Actions workflow `.github/workflows/public-check.yml` runs the check and the
 test suite on every push and pull request. The check needs the repo secret
 `BANNED_TERMS` set to the contents of `scripts/banned-terms.local`. Without that

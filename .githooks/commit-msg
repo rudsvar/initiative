@@ -1,0 +1,5 @@
+#!/bin/sh
+# Checks each commit message against the public-repo rules before it enters
+# history. Enable once per clone with:
+#   git config core.hooksPath .githooks
+exec sh scripts/public-check.sh --message "$1"

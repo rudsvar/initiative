@@ -1,0 +1,5 @@
+#!/bin/sh
+# Runs the public-repo check before every push, so nothing that breaks the
+# rules reaches the remote. Enable once per clone with:
+#   git config core.hooksPath .githooks
+exec sh scripts/public-check.sh

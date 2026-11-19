@@ -2,7 +2,13 @@
 # Checks the repo against the public-repo rules in CLAUDE.md: trademark names,
 # personal details, home paths, and secret-looking files. Scans tracked files
 # and every commit reachable from any ref, since history is public too.
-# Exits non-zero when anything matches. Run before every push.
+# Exits non-zero when anything matches. The hooks in .githooks run it before
+# every commit and every push, and check each commit message as it is written
+# (`public-check.sh --message <file>`).
+#
+# History means HEAD, local branches and tags: everything a push sends comes from
+# them. Remote-tracking refs are left out, so that a rewrite which removes a
+# match can still be pushed over the old history.
 #
 # The list of trademark names is kept out of the repo on purpose, in
 # scripts/banned-terms.local (git-ignored). Each line is one extended regex.
@@ -21,6 +27,14 @@ TRADEMARKS=$(grep -v -E '^(#|$)' "$TERMS" | paste -sd'|' -)
 PERSONAL='/Users/|\.claude/|[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}'
 STRICT="$TRADEMARKS|$PERSONAL"
 
+if [ "${1:-}" = "--message" ]; then
+    if grep -v -E '^#|noreply' "$2" | grep -n -E "$STRICT"; then
+        echo "FAILED: the commit message matches the public-repo rules above"
+        exit 1
+    fi
+    exit 0
+fi
+
 # NOTICE carries the SRD 5.2.1 attribution statement verbatim, which the
 # licence requires, so it is the one file skipped.
 SKIP=':!NOTICE :!scripts/public-check.sh :!scripts/banned-terms.local'
@@ -33,20 +47,20 @@ if git grep -I -n -E "$STRICT" -- . $SKIP | grep -v 'users\.noreply\.github\.com
 fi
 
 echo "== commit history: author, committer, message and file contents"
-for rev in $(git rev-list --all); do
+for rev in $(git rev-list HEAD --branches --tags); do
     if git log -1 --format='%an%n%cn%n%B' "$rev" | grep -v -E 'noreply' | grep -E "$STRICT" >/dev/null; then
         echo "$rev: author, committer or message matches"
         fail=1
     fi
 done
 # shellcheck disable=SC2086
-if git grep -I -l -E "$STRICT" $(git rev-list --all) -- . $SKIP | sed 's/^[^:]*://' | sort -u | grep . ; then
+if git grep -I -l -E "$STRICT" $(git rev-list HEAD --branches --tags) -- . $SKIP | sed 's/^[^:]*://' | sort -u | grep . ; then
     echo "^ history contains banned terms in the files listed"
     fail=1
 fi
 
 echo "== secret-looking paths in history"
-if git log --all --name-only --format= | grep -i -E '\.p8$|mobileprovision$|\.p12$|\.cer$|\.env$|secret' | sort -u | grep . ; then
+if git log HEAD --branches --tags --name-only --format= | grep -i -E '\.p8$|mobileprovision$|\.p12$|\.cer$|\.env$|secret' | sort -u | grep . ; then
     fail=1
 fi
 
