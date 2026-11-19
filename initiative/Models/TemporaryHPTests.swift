@@ -173,6 +173,18 @@ final class TemporaryHPTests: XCTestCase {
         XCTAssertTrue(session.combatants[0].isConcentrating)
     }
 
+    /// Taking temporary HP off by hand never touches real hit points, even once
+    /// the grant it came from is deleted.
+    func testDeletingTheGrantDoesNotTurnALossIntoDamage() {
+        let (session, id) = session()
+        session.grantTemporaryHP(to: id, amount: 5)
+        let grant = session.log.last!.id
+        session.lowerTemporaryHP(of: id, by: 5)
+        session.deleteLogEntry(grant)
+        XCTAssertEqual(session.combatants[0].currentHP, 30)
+        XCTAssertNil(session.combatants[0].temporaryHP)
+    }
+
     func testRaisedAndLoweredAmountsSurviveARecompute() {
         let (session, id) = session()
         _ = session.applyDamage(to: id, amount: 4)

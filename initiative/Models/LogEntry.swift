@@ -25,6 +25,9 @@ enum HPOperation: Codable, Equatable {
     /// A heal past max that goes above it: current HP fills to max and the rest
     /// becomes temporary HP, replacing any there was.
     case healAboveMax(amount: Int)
+    /// Temporary HP taken off by hand, never real hit points. Added 2026-11-19;
+    /// earlier builds logged it as `damage`, which `LogEntry` migrates on load.
+    case lowerTemporaryHP(amount: Int)
     /// Kill: tracked HP drops to 0.
     case kill
     /// Revive, or a natural 20 on a death save: back to at least 1 HP.
@@ -56,5 +59,31 @@ struct LogEntry: Identifiable, Codable {
         self.roundNumber = roundNumber
         self.combatantId = combatantId
         self.hpOperation = hpOperation
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case id, text, timestamp, roundNumber, combatantId, hpOperation
+    }
+
+    /// Written by hand for one migration: builds before 2026-11-19 logged
+    /// temporary HP taken off by hand as `damage`. Replayed as damage it hits real
+    /// HP once an earlier grant is deleted, so it loads as `lowerTemporaryHP`.
+    /// Those entries are recognised by the text that build wrote for them.
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        text = try container.decode(String.self, forKey: .text)
+        timestamp = try container.decode(Date.self, forKey: .timestamp)
+        roundNumber = try container.decode(Int.self, forKey: .roundNumber)
+        combatantId = try container.decodeIfPresent(UUID.self, forKey: .combatantId)
+        hpOperation = try container.decodeIfPresent(HPOperation.self, forKey: .hpOperation)
+        if case .damage(let amount) = hpOperation, Self.isLegacyTemporaryHPLoss(text) {
+            hpOperation = .lowerTemporaryHP(amount: amount)
+        }
+    }
+
+    /// "Wren lost 2 temporary HP (3 left)" or "Wren lost all temporary HP".
+    private static func isLegacyTemporaryHPLoss(_ text: String) -> Bool {
+        text.range(of: #"^.+ lost (\d+ temporary HP \(\d+ left\)|all temporary HP)$"#, options: .regularExpression) != nil
     }
 }

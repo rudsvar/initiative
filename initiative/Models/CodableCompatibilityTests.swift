@@ -328,3 +328,62 @@ extension CodableCompatibilityTests {
         XCTAssertTrue(decoded.maxHPIncreased)
     }
 }
+
+// MARK: - Temporary HP lost by hand
+
+extension CodableCompatibilityTests {
+
+    /// Builds before 2026-11-19 logged "lost temporary HP" as damage the buffer
+    /// absorbed: the op and text below are exactly what they wrote. Replaying it as
+    /// damage hits real HP once the grant before it is deleted, so it loads as the
+    /// operation that only ever takes temporary HP.
+    func testTemporaryHPLostByHandLoadsAsItsOwnOperation() throws {
+        let json = """
+        [{"id":"99999999-0000-0000-0000-000000000001","text":"Wren lost 2 temporary HP (3 left)",
+          "timestamp":785000000,"roundNumber":1,"combatantId":"99999999-0000-0000-0000-0000000000AA",
+          "hpOperation":{"damage":{"amount":2}}},
+         {"id":"99999999-0000-0000-0000-000000000002","text":"Wren lost all temporary HP",
+          "timestamp":785000001,"roundNumber":1,"combatantId":"99999999-0000-0000-0000-0000000000AA",
+          "hpOperation":{"damage":{"amount":3}}},
+         {"id":"99999999-0000-0000-0000-000000000003","text":"Wren took 7 damage, 2 absorbed (25/30 HP)",
+          "timestamp":785000002,"roundNumber":1,"combatantId":"99999999-0000-0000-0000-0000000000AA",
+          "hpOperation":{"damage":{"amount":7}}}]
+        """
+        let entries = try decode([LogEntry].self, json)
+        XCTAssertEqual(entries.map(\.hpOperation), [
+            .lowerTemporaryHP(amount: 2), .lowerTemporaryHP(amount: 3), .damage(amount: 7),
+        ])
+        XCTAssertEqual(entries[0].text, "Wren lost 2 temporary HP (3 left)")
+    }
+
+    func testDecodesLowerTemporaryHPFromLiteralJSON() throws {
+        let decoded = try decode(HPOperation.self, #"{"lowerTemporaryHP":{"amount":4}}"#)
+        XCTAssertEqual(decoded, .lowerTemporaryHP(amount: 4))
+    }
+
+    /// End to end: an old session where temporary HP was granted and then taken
+    /// off by hand. Deleting the grant must not turn the loss into real damage.
+    func testOldSessionDeletingTheGrantKeepsHitPoints() throws {
+        let json = """
+        {"id":"99999999-0000-0000-0000-0000000000BB","name":"Old Fight","savedAt":0,
+         "currentTurnIndex":0,"roundNumber":1,
+         "combatants":[{"id":"99999999-0000-0000-0000-0000000000AA","name":"Wren","initiative":20,
+           "effects":[],"maxHP":30,"currentHP":30,"isPlayer":true}],
+         "log":[
+          {"id":"99999999-0000-0000-0000-000000000010","text":"Wren started tracking HP (30/30)",
+           "timestamp":785000000,"roundNumber":1,"combatantId":"99999999-0000-0000-0000-0000000000AA",
+           "hpOperation":{"enableTracking":{"amount":30}}},
+          {"id":"99999999-0000-0000-0000-000000000011","text":"Wren gained 5 temporary HP",
+           "timestamp":785000001,"roundNumber":1,"combatantId":"99999999-0000-0000-0000-0000000000AA",
+           "hpOperation":{"grantTemporaryHP":{"amount":5}}},
+          {"id":"99999999-0000-0000-0000-000000000012","text":"Wren lost all temporary HP",
+           "timestamp":785000002,"roundNumber":1,"combatantId":"99999999-0000-0000-0000-0000000000AA",
+           "hpOperation":{"damage":{"amount":5}}}]}
+        """
+        let session = CombatSession()
+        session.load(try decode(SessionRecord.self, json))
+        session.deleteLogEntry(UUID(uuidString: "99999999-0000-0000-0000-000000000011")!)
+        XCTAssertEqual(session.combatants[0].currentHP, 30)
+        XCTAssertNil(session.combatants[0].temporaryHP)
+    }
+}

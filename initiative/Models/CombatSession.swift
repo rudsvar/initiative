@@ -280,9 +280,7 @@ class CombatSession {
     }
 
     /// Takes temporary HP off by hand, never real hit points; past zero it is
-    /// gone. Logged as damage the buffer absorbs in full, which replays to the
-    /// same result without a new log operation. Not damage to the combatant, so
-    /// it doesn't threaten concentration.
+    /// gone. Not damage to the combatant, so it doesn't threaten concentration.
     func lowerTemporaryHP(of id: UUID, by amount: Int) {
         guard amount > 0, let index = combatants.firstIndex(where: { $0.id == id }),
               let current = combatants[index].temporaryHP else { return }
@@ -294,7 +292,7 @@ class CombatSession {
                 ? "\(combatants[index].name) lost \(taken) temporary HP (\(left) left)"
                 : "\(combatants[index].name) lost all temporary HP",
             combatantId: id,
-            hpOperation: .damage(amount: taken)
+            hpOperation: .lowerTemporaryHP(amount: taken)
         )
     }
 
@@ -628,6 +626,9 @@ class CombatSession {
                 currentHP = amount
             case .grantTemporaryHP(let amount):
                 temporaryHP = Self.grantedTemporaryHP(existing: temporaryHP, new: amount)
+            case .lowerTemporaryHP(let amount):
+                let left = (temporaryHP ?? 0) - amount
+                temporaryHP = left > 0 ? left : nil
             case .damage(let amount):
                 guard let current = currentHP else { continue }
                 let result = Self.absorb(damage: amount, temporaryHP: temporaryHP, currentHP: current)
