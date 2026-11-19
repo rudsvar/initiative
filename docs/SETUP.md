@@ -45,7 +45,7 @@ xcodebuild test -scheme initiative -destination "platform=iOS Simulator,id=<UDID
   Changing it creates a new app and loses on-device data, so keep it.
 - Home-screen name: `INFOPLIST_KEY_CFBundleDisplayName` in `project.yml`. Changing
   it does not affect signing.
-- Version: `MARKETING_VERSION` in `project.yml` (the version users see), bumped
+- Version: `MARKETING_VERSION` in `project.yml` (the version users see), set
   as in "Versioning" in `CLAUDE.md`. Build numbers are not in the repo: CI sets
   them from the run number on every upload.
 - Export compliance: `INFOPLIST_KEY_ITSAppUsesNonExemptEncryption` is `NO`, because

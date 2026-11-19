@@ -1,12 +1,8 @@
 # Changelog
 
-All notable changes to this project are documented here, newest first. Each
-version is the `MARKETING_VERSION` its beta builds carry; see "Versioning" in
-`CLAUDE.md`.
+All notable changes to this project are documented here, newest first.
 
 ## [Unreleased]
-
-## [1.0.1] — 2026-11-19 (beta)
 
 ### Fixed — combat rules found by playing out fights
 
@@ -24,8 +20,6 @@ version is the `MARKETING_VERSION` its beta builds carry; see "Versioning" in
 - Damage to the dead logs no second death, and a killed character hit again no longer starts dying.
 - Each turn prompt has its own id.
 - Test scenarios: `lateArrivalWaitsForTheirPlace`, `lastFailedSaveKeepsTheTurn`, `dodgeLastsThroughTheirNextTurn`.
-
-## [1.0] — beta builds up to 2026-11-17
 
 ### Changed — armor class laid out like the health rows
 

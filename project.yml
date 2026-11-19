@@ -31,9 +31,9 @@ targets:
     settings:
       ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
       PRODUCT_NAME: initiative
-      # The version users see. Bumped on each push to main that changes the app;
-      # see "Versioning" in CLAUDE.md. Build numbers are set per upload by CI.
-      MARKETING_VERSION: "1.0.1"
+      # The version users see. Stays 1.0.0 through the beta; see "Versioning" in
+      # CLAUDE.md. Build numbers are set per upload by CI.
+      MARKETING_VERSION: "1.0.0"
       # Home-screen name only — bundle id, module name, and the Xcode project
       # itself stay "initiative" so this doesn't touch code signing/provisioning
       # or require reinstalling (a bundle id change loses on-device data).
