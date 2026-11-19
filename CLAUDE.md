@@ -111,6 +111,12 @@ secret the workflow fails on purpose.
   done, then wait. A push to `main` starts a beta build upload, and a push
   of any kind is outward-facing, so only push when the owner says to, for that
   specific push.
+- **Versioning.** `MARKETING_VERSION` in `project.yml` is `MAJOR.MINOR.PATCH`.
+  Bump it in the last commit before a push to `main` that changes the app:
+  PATCH for fixes only, MINOR for a new feature or changed behaviour, MAJOR
+  only for a big change (none before the first public release). Move the
+  `CHANGELOG.md` "Unreleased" entries under the new version with the date. Build
+  numbers come from CI.
 - **Prune redundant tests.** When a test repeats what another test already
   covers, remove or merge it, in its own commit. Clean up a few at a time as
   you go, not in a separate big pass.

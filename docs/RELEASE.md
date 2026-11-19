@@ -51,10 +51,11 @@ Status: beta only. Public release is not planned yet.
   including the Creatures stat columns, a saved session after relaunch, and the
   home-screen name after a fresh install.
 - [ ] Run the full test suite and `scripts/public-check.sh`.
-- [ ] Set `MARKETING_VERSION` in `project.yml` for the release (for example `1.0`).
-  Build numbers come from CI.
-- [ ] Update `CHANGELOG.md`: move "Unreleased" under the version number, using the
-  date of release.
+- [ ] Check `MARKETING_VERSION` in `project.yml` is the version being released.
+  It is bumped on every push that changes the app (see "Versioning" in
+  `CLAUDE.md`). Build numbers come from CI.
+- [ ] Check `CHANGELOG.md` has that version, dated, with nothing left under
+  "Unreleased".
 - [ ] Wait for the beta upload of the release commit to finish, and check it
   processed without warnings. Then pick that build for the version in the store
   console.
@@ -74,7 +75,7 @@ Status: beta only. Public release is not planned yet.
 
 ## After release
 
-- Tag the release commit (`git tag v1.0 <sha>`, then push the tag).
-- Keep beta uploads going for the next version on `main`, but set the next
-  `MARKETING_VERSION` only when that version starts.
+- Tag the release commit (`git tag v<version> <sha>`, then push the tag).
+- Keep beta uploads going on `main`, bumping `MARKETING_VERSION` as in
+  "Versioning" in `CLAUDE.md`.
 - Review this file and fix any step that did not match what happened.
