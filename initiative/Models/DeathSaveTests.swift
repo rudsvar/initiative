@@ -178,6 +178,32 @@ final class DeathSaveTests: XCTestCase {
         XCTAssertEqual(combatant(session, "Wren").deathSaves?.failures, 0)
     }
 
+    /// The prompts asked on Next belong to the turn it moves to. A character who
+    /// dies on their own death save keeps that turn, so the combatant after them
+    /// is asked their own start-of-turn prompts on the next Next, not skipped.
+    func testDyingOnTheirOwnSaveDoesNotSkipTheNextCombatantsPrompts() {
+        let session = CombatSession()
+        session.addCombatant(name: "Alpha", initiative: 20, maxHP: 10)
+        session.addCombatant(name: "Wren", initiative: 15, maxHP: 10, isPlayer: true)
+        session.addCombatant(name: "Omega", initiative: 10, maxHP: 10)
+        let wren = combatant(session, "Wren").id
+        let omega = combatant(session, "Omega").id
+        session.applyDamage(to: wren, amount: 10)
+        session.applyDamage(to: wren, amount: 1)
+        session.applyDamage(to: wren, amount: 1)
+        session.addEffect(Effect(name: "Burning", durationType: .untilRemoved), to: omega)
+
+        let save = session.pendingTurnPrompts().first { $0.subject == .deathSave }!
+        session.nextTurn(resolving: [save: .failure])
+        XCTAssertTrue(combatant(session, "Wren").isDead)
+        XCTAssertEqual(session.currentCombatant?.name, "Wren")
+
+        let next = session.pendingTurnPrompts()
+        XCTAssertTrue(next.contains { $0.subject == .damage(effectID: combatant(session, "Omega").effects[0].id) })
+        session.nextTurn()
+        XCTAssertEqual(session.currentCombatant?.name, "Omega")
+    }
+
     // MARK: - Helpers
 
     /// Advances turns until Wren's death save comes up, then answers it — the

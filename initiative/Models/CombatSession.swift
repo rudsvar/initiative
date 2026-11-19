@@ -1135,12 +1135,16 @@ class CombatSession {
 
         recordUndoPoint()
 
+        // Who goes next is settled before the answers apply: the prompts were asked
+        // for that turn. A character who dies on their own death save keeps it, so
+        // the combatant after them is asked their prompts on the next Next.
+        let endingCombatantId = combatants[currentTurnIndex].id
+        let (nextIndex, wrapped) = nextActiveIndex(after: currentTurnIndex)
+
         for (prompt, outcome) in answers.sorted(by: { $0.key.combatantName < $1.key.combatantName }) {
             resolvePrompt(prompt, outcome: outcome)
         }
 
-        let endingCombatantId = combatants[currentTurnIndex].id
-        let (nextIndex, wrapped) = nextActiveIndex(after: currentTurnIndex)
         currentTurnIndex = nextIndex
         if wrapped { beginNewRound() }
         let startingCombatantId = combatants[currentTurnIndex].id
